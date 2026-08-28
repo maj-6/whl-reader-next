@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WHL Next — Streaming architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+.wrap{max-width:1220px;margin:0 auto;padding:0 var(--pad) 80px}
+section{margin:46px 0}
+.kick{font:600 11px var(--font-chrome);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+h1{font-size:34px;margin:26px 0 8px}
+h2{font-size:25px}
+h3{font-size:18px}
+.stand{max-width:72ch;color:var(--ink-2);font-family:var(--font-read);font-size:15.5px;margin:0 0 20px}
+.pgtitle{font:600 13px var(--font-chrome)}
+.crumb{font-size:13px;color:var(--ink-2)}
+.dim{color:var(--ink-3)}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+
+/* ---------- architecture diagram (SVG) ---------- */
+.arch{width:100%;height:auto;display:block;min-width:760px}
+.archscroll{overflow-x:auto;padding-bottom:4px}
+.arch .frame{fill:var(--bg-raise);stroke:var(--line-2)}
+.arch .subframe{fill:var(--bg);stroke:var(--line-2);stroke-dasharray:4 3}
+.arch .box{fill:var(--bg-sunk);stroke:var(--line)}
+.arch .chipbox{fill:var(--bg-raise);stroke:var(--line-2)}
+.arch .notecard{fill:var(--tint-select);stroke:var(--accent)}
+.arch text{font-family:var(--font-chrome)}
+.arch .t{fill:var(--ink);font-size:11.5px;font-weight:600}
+.arch .d{fill:var(--ink-3);font-size:9.5px}
+.arch .an{fill:var(--ink-2);font-size:10.5px;font-weight:500}
+.arch .nt{fill:var(--ink);font-size:10.5px}
+.arch .cap{fill:var(--ink-3);font-size:10px;letter-spacing:.14em;font-weight:600}
+.arch .h{fill:var(--ink-3);font-size:8.5px;font-family:ui-monospace,Consolas,monospace}
+.arch .cn{stroke:var(--ink-3);stroke-width:1.2;fill:none;marker-end:url(#arr)}
+.arch .mk{fill:var(--ink-3)}
+.arch .pyr{fill:var(--tint-region);stroke:var(--line-2)}
+.arch .numc{fill:var(--accent)}
+.arch .numt{fill:var(--accent-ink);font-size:9px;font-weight:700}
+.arch .sq{stroke:var(--line);fill:var(--bg-sunk)}
+.arch .sq.d0{fill:var(--accent);stroke:var(--accent)}
+.arch .sq.d1{fill:var(--tint-select);stroke:var(--line-2)}
+.arch .sq.d2{fill:var(--tint-region);stroke:var(--line)}
+
+/* ---------- EB02 case card ---------- */
+.ebcase{display:flex;gap:20px;padding:20px;margin-top:20px;align-items:flex-start}
+.ebcase .cover{width:76px;border-radius:3px;border:1px solid var(--line-2);display:block}
+.ebcase h3{margin-bottom:2px}
+.ebmeta{font-size:12.5px;color:var(--ink-3);margin:0 0 14px}
+.brow{margin:12px 0}
+.bk{font:600 10.5px var(--font-chrome);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+.btrack{height:20px;background:var(--bg-sunk);border:1px solid var(--line);border-radius:3px;display:flex;overflow:hidden}
+.bseg{height:100%}
+.bseg.old{width:100%;background:var(--warn)}
+.bseg.man{width:5px;min-width:5px;background:var(--accent)}
+.bseg.page{width:13px;min-width:13px;background:var(--ok)}
+.bseg.pre{width:26px;border:1.5px dashed var(--ok);border-left:none;background:transparent;box-sizing:border-box}
+.bv{font-size:11.5px;color:var(--ink-2);margin-top:4px}
+.scalenote{font-size:10.5px;color:var(--ink-3);font-style:italic;margin-top:2px}
+.ebchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+
+/* ---------- simulation ---------- */
+.simwrap{margin-top:20px;overflow:hidden}
+.simbar{display:flex;align-items:center;gap:16px;padding:12px var(--pad);border-bottom:1px solid var(--line);flex-wrap:wrap;background:var(--bg-raise)}
+.tog{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;color:var(--ink-2);cursor:pointer;user-select:none}
+.dots{display:flex;gap:14px;margin-left:auto;flex-wrap:wrap}
+.dotw{display:flex;gap:5px;align-items:center;font:500 10px var(--font-chrome);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--line-2);background:transparent;flex:none}
+.dot.run{border-color:var(--accent);background:var(--tint-select);animation:pulse .9s infinite}
+.dot.done{border-color:var(--ok);background:var(--ok)}
+@keyframes pulse{50%{opacity:.35}}
+
+.simgrid{display:grid;grid-template-columns:250px minmax(0,1fr) 340px;gap:calc(var(--pad) + 6px);padding:calc(var(--pad) + 6px)}
+@media(max-width:1000px){.simgrid{grid-template-columns:1fr}.arch{min-width:700px}}
+
+.pchead{font:600 11px var(--font-chrome);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+.imgwrap{position:relative;aspect-ratio:1100/1600;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--bg-sunk)}
+.imgwrap img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .5s}
+#simzone.has-img .imgwrap img{opacity:1}
+.imgskel{position:absolute;inset:0;border-radius:0}
+#simzone.has-img .imgskel{display:none}
+.rgn{position:absolute;border:1.5px solid transparent;border-radius:2px;pointer-events:none;transition:border-color .2s,background .2s}
+#simzone.has-asc .rgn.g-hov{border-color:var(--accent);background:var(--tint-select)}
+#simzone.rgn-flash .rgn{border-color:var(--accent);background:var(--tint-region)}
+.pcap{font-size:10.5px;color:var(--ink-3);margin-top:6px;line-height:1.45}
+
+.enthead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.enthead .hw{font-family:var(--font-display);font-size:21px;font-weight:600}
+.lay{margin-bottom:16px}
+.laycap{font:600 10px var(--font-chrome);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.lay .content{display:none}
+.skels .skel{height:13px;margin:9px 0}
+#simzone.has-src .lay-src .content{display:block}
+#simzone.has-src .lay-src .skels{display:none}
+#simzone.has-par .lay-par .content{display:block}
+#simzone.has-par .lay-par .skels{display:none}
+.srctext{font-family:var(--font-read);font-size:16.5px;line-height:2.0}
+.partext{background:var(--tint-translation);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-family:var(--font-read);font-size:14.5px;line-height:1.72}
+span[data-g]{transition:background .15s;border-radius:2px}
+#simzone.has-par span.g-hov{background:var(--tint-select)}
+#simzone:not(.has-par) [data-g]{cursor:text}
+#simzone.has-par [data-g]{cursor:pointer}
+#simzone:not(.has-ent) .ent{color:inherit;text-decoration:none;cursor:inherit}
+.hoverstate{font-size:11px;color:var(--ink-3);margin-top:2px}
+.hoverstate b{color:var(--ok);font-weight:600}
+
+.netlog{display:flex;flex-direction:column;min-height:0}
+#log{font:11px/1.55 ui-monospace,"Cascadia Mono",Consolas,monospace;background:var(--bg-sunk);border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;height:400px;overflow-y:auto}
+.lg{display:flex;gap:8px;padding:2.5px 0;align-items:baseline}
+.lg .lt{color:var(--ink-3);flex:0 0 58px}
+.lg .lp{flex:1;color:var(--ink-2);word-break:break-all;min-width:0}
+.lg .lp i{color:var(--ink-3);font-style:normal}
+.lg .ls{color:var(--ink-3);white-space:nowrap}
+.lg .lc{font-weight:700;white-space:nowrap}
+.lg .lc.hit{color:var(--ok)}
+.lg .lc.mis{color:var(--warn)}
+.lg.info{color:var(--accent)}
+.lg.pf .lp,.lg.pf .lt{color:var(--ink-3)}
+.lg.sum{color:var(--ink);border-top:1px dashed var(--line-2);margin-top:4px;padding-top:6px;display:block}
+.logempty{color:var(--ink-3)}
+.simfoot{padding:10px var(--pad) 14px;font-size:11.5px;color:var(--ink-3);border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+
+<div class="topbar">
+  <a class="crumb" href="index.html">&larr; Mockups</a>
+  <span class="pgtitle">Streaming architecture &amp; progressive hydration</span>
+  <div class="mock-switch">
+    <select class="btn" id="schemeSel" aria-label="scheme">
+      <option value="archive">Archive</option>
+      <option value="herbarium">Herbarium</option>
+      <option value="oxford">Oxford</option>
+    </select>
+    <button class="btn" id="modeTog">mode</button>
+  </div>
+</div>
+
+<div class="mock-note"><button class="mn-x" aria-label="Dismiss">×</button>Shows the object-store delivery architecture (static, top) and a live simulation of per-page layer streaming (bottom). Interactive: Play / Replay, Slow&nbsp;3G, warm-cache toggle; once the parallel layer lands, hover the aligned text.</div>
+
+<div class="wrap">
+
+<h1>Streaming, not shipping</h1>
+<p class="stand">The current reader hydrates a whole book before the first word is readable. The redesign treats every page as a small set of independently fetched, content-hashed objects: the page becomes usable the moment its first layer arrives, and each further layer only enriches it.</p>
+
+<!-- ============ 01 · ARCHITECTURE ============ -->
+<section>
+  <p class="kick">01 &middot; Delivery architecture</p>
+  <h2>Everything is a static object</h2>
+  <p class="stand">No API server in the read path. The client resolves <span class="mono">catalog &rarr; manifest &rarr; per-page objects</span> against plain object storage, and a scheduler orders fetches by layer priority and viewport distance.</p>
+
+  <div class="archscroll">
+  <svg class="arch" viewBox="0 0 1160 480" role="img" aria-label="Architecture: object store, HTTP, client scheduler and cache">
+    <defs>
+      <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L8 4L0 8z" class="mk"/></marker>
+    </defs>
+
+    <!-- ======== object store ======== -->
+    <text x="20" y="24" class="cap">OBJECT STORE &middot; S3 / SUPABASE STORAGE</text>
+    <rect x="16" y="34" width="376" height="430" rx="10" class="frame"/>
+
+    <rect x="40" y="58" width="170" height="38" rx="4" class="box"/>
+    <text x="54" y="75" class="t">catalog.json</text>
+    <text x="54" y="88" class="d">library index &middot; works &middot; tiers</text>
+
+    <line x1="125" y1="96" x2="125" y2="114" class="cn"/>
+
+    <rect x="40" y="118" width="240" height="44" rx="4" class="box"/>
+    <text x="54" y="136" class="t">E17/manifest.json</text>
+    <text x="54" y="150" class="d">per book &middot; page &rarr; object hashes &middot; 38.7 KB</text>
+
+    <line x1="125" y1="162" x2="125" y2="182" class="cn"/>
+
+    <rect x="36" y="186" width="340" height="128" rx="8" class="subframe"/>
+    <text x="48" y="205" class="cap">PER-PAGE BUNDLE &middot; P.1682</text>
+    <text x="252" y="205" class="d">content-hashed objects</text>
+
+    <rect x="48" y="216" width="96" height="36" rx="4" class="chipbox"/>
+    <text x="56" y="231" class="t">source.json</text>
+    <text x="56" y="245" class="h">o/57d0c4&#8230;</text>
+    <rect x="152" y="216" width="86" height="36" rx="4" class="chipbox"/>
+    <text x="160" y="231" class="t">map.json</text>
+    <text x="160" y="245" class="h">o/b21e77&#8230;</text>
+    <rect x="246" y="216" width="112" height="36" rx="4" class="chipbox"/>
+    <text x="254" y="231" class="t">parallel.json</text>
+    <text x="254" y="245" class="h">o/8ea4f0&#8230;</text>
+    <rect x="48" y="262" width="96" height="36" rx="4" class="chipbox"/>
+    <text x="56" y="277" class="t">assoc.json</text>
+    <text x="56" y="291" class="h">o/44c9d1&#8230;</text>
+    <rect x="152" y="262" width="110" height="36" rx="4" class="chipbox"/>
+    <text x="160" y="277" class="t">entities.json</text>
+    <text x="160" y="291" class="h">o/d17b8e&#8230;</text>
+    <text x="274" y="284" class="d">one fetch per layer,</text>
+    <text x="274" y="296" class="d">each cancelable</text>
+
+    <line x1="125" y1="314" x2="125" y2="336" class="cn"/>
+    <text x="48" y="352" class="cap">IMAGE.DZI &middot; TILE PYRAMID</text>
+    <rect x="96" y="362" width="220" height="13" rx="2" class="pyr"/>
+    <rect x="140" y="379" width="132" height="13" rx="2" class="pyr"/>
+    <rect x="174" y="396" width="64" height="13" rx="2" class="pyr"/>
+    <text x="96" y="428" class="d">levels 0&ndash;12 &middot; 256 px JPEG tiles &middot; built offline</text>
+    <text x="96" y="441" class="d">viewer pulls only visible tiles at current zoom</text>
+
+    <!-- ======== HTTP lane ======== -->
+    <text x="568" y="96" class="an" text-anchor="middle">HTTP GET</text>
+    <text x="568" y="111" class="d" text-anchor="middle">content-hashed, immutable paths &middot; CDN-friendly</text>
+    <line x1="396" y1="140" x2="738" y2="140" class="cn"/>
+    <line x1="396" y1="250" x2="738" y2="250" class="cn"/>
+    <text x="568" y="270" class="d" text-anchor="middle">Cache-Control: public, max-age=31536000, immutable</text>
+    <line x1="396" y1="392" x2="738" y2="392" class="cn"/>
+    <text x="568" y="412" class="d" text-anchor="middle">tiles stream as the viewport moves</text>
+
+    <rect x="428" y="292" width="280" height="66" rx="6" class="notecard"/>
+    <text x="442" y="312" class="nt">SHA-256 pins already exist in the corpus:</text>
+    <text x="442" y="327" class="nt">every object path is its own cache validator.</text>
+    <text x="442" y="342" class="d">no ETags, no revalidation, no rebuild &mdash; a rename.</text>
+
+    <!-- ======== client ======== -->
+    <text x="748" y="24" class="cap">CLIENT &middot; READER APP</text>
+    <rect x="744" y="34" width="400" height="430" rx="10" class="frame"/>
+
+    <rect x="764" y="58" width="234" height="164" rx="6" class="box"/>
+    <text x="778" y="78" class="t">fetch scheduler</text>
+    <text x="778" y="92" class="d">priority = layer order &times; viewport distance</text>
+    <circle cx="788" cy="110" r="8" class="numc"/><text x="788" y="113" class="numt" text-anchor="middle">1</text>
+    <text x="804" y="114" class="an">image tiles</text>
+    <circle cx="788" cy="132" r="8" class="numc"/><text x="788" y="135" class="numt" text-anchor="middle">2</text>
+    <text x="804" y="136" class="an">source text</text>
+    <circle cx="788" cy="154" r="8" class="numc"/><text x="788" y="157" class="numt" text-anchor="middle">3</text>
+    <text x="804" y="158" class="an">parallel</text>
+    <circle cx="788" cy="176" r="8" class="numc"/><text x="788" y="179" class="numt" text-anchor="middle">4</text>
+    <text x="804" y="180" class="an">associations</text>
+    <circle cx="788" cy="198" r="8" class="numc"/><text x="788" y="201" class="numt" text-anchor="middle">5</text>
+    <text x="804" y="202" class="an">entities</text>
+    <text x="1010" y="114" class="d">off-screen pages</text>
+    <text x="1010" y="127" class="d">demoted; leaving</text>
+    <text x="1010" y="140" class="d">the window</text>
+    <text x="1010" y="153" class="d">cancels in-flight</text>
+    <text x="1010" y="166" class="d">fetches</text>
+
+    <line x1="880" y1="222" x2="880" y2="238" class="cn"/>
+
+    <rect x="764" y="242" width="364" height="88" rx="6" class="box"/>
+    <text x="778" y="262" class="cap">VIEWPORT DISTANCE &middot; PREFETCH WINDOW</text>
+    <rect x="778" y="272" width="26" height="26" rx="3" class="sq"/>
+    <rect x="812" y="272" width="26" height="26" rx="3" class="sq"/>
+    <rect x="846" y="272" width="26" height="26" rx="3" class="sq d2"/>
+    <rect x="880" y="272" width="26" height="26" rx="3" class="sq d1"/>
+    <rect x="914" y="272" width="26" height="26" rx="3" class="sq d0"/>
+    <rect x="948" y="272" width="26" height="26" rx="3" class="sq d1"/>
+    <rect x="982" y="272" width="26" height="26" rx="3" class="sq d2"/>
+    <rect x="1016" y="272" width="26" height="26" rx="3" class="sq"/>
+    <rect x="1050" y="272" width="26" height="26" rx="3" class="sq"/>
+    <text x="859" y="313" class="d" text-anchor="middle">2</text>
+    <text x="893" y="313" class="d" text-anchor="middle">1</text>
+    <text x="927" y="313" class="d" text-anchor="middle">0</text>
+    <text x="961" y="313" class="d" text-anchor="middle">1</text>
+    <text x="995" y="313" class="d" text-anchor="middle">2</text>
+    <text x="1040" y="313" class="d">window d &le; 2</text>
+
+    <line x1="880" y1="330" x2="880" y2="346" class="cn"/>
+
+    <rect x="764" y="350" width="364" height="82" rx="6" class="box"/>
+    <text x="778" y="370" class="t">Cache API &middot; immutable-path store</text>
+    <text x="778" y="386" class="d">hit &rarr; zero network &middot; miss &rarr; fetch, cache.put, never revalidate</text>
+    <text x="778" y="400" class="d">hash-named objects are safe forever; a corrected edition is a new hash</text>
+    <text x="778" y="420" class="d">second visit to EB02: the whole reading session can run offline</text>
+  </svg>
+  </div>
+
+  <!-- EB02 worked example -->
+  <div class="card ebcase">
+    <img class="cover" src="assets/thumbs/EB02.jpg" alt="EB02 cover">
+    <div style="flex:1;min-width:0">
+      <h3>The page that forced the redesign</h3>
+      <p class="ebmeta">EB02 &middot; H. Joachim, <i>Papyros Ebers</i>, German translation &middot; Berlin 1890 &middot; 236 pages &middot; landmark (Ebers work, with witness EB01)</p>
+      <div class="brow">
+        <div class="bk">Today &mdash; monolithic hydration</div>
+        <div class="btrack"><div class="bseg old"></div></div>
+        <div class="bv">~20 MB &mdash; all 236 pages, every layer, parsed up front, before anything renders</div>
+      </div>
+      <div class="brow">
+        <div class="bk">Next &mdash; streamed</div>
+        <div class="btrack"><div class="bseg man" title="manifest ~40 KB"></div><div class="bseg page" title="current page ~300 KB"></div><div class="bseg pre" title="prefetch window, background"></div></div>
+        <div class="bv"><span class="mono">manifest 40 KB</span> + <span class="mono">current page ~300 KB</span> + prefetch window (dashed) filling quietly in the background</div>
+        <div class="scalenote">both bars drawn to the same scale</div>
+      </div>
+      <div class="ebchips">
+        <span class="chip">236 pages</span>
+        <span class="chip accent">&asymp; 60&times; less before first readable word</span>
+        <span class="chip">hashes already pinned in corpus &mdash; no recompute</span>
+        <span class="chip">same story for E54 (Ben Cao Gang Mu) and the scroll EB01</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 · SIMULATION ============ -->
+<section>
+  <p class="kick">02 &middot; Streaming UX</p>
+  <h2>A page enters the viewport</h2>
+  <p class="stand">The simulation below replays the exact layer order from the design brief &mdash; image tiles, source text, parallel, associations, entities &mdash; against E17, <i>Zhongyao da cidian</i> vol.&nbsp;2 (1977), at the entry for <i>Cnidium monnieri</i>. The page is usable at every stage; each arrival only adds capability.</p>
+
+  <div class="card simwrap" id="simzone">
+    <div class="simbar">
+      <button class="btn primary" id="playBtn">&#9654;&nbsp; Play &mdash; page enters viewport</button>
+      <label class="tog"><input type="checkbox" id="slowTog"> Slow 3G</label>
+      <label class="tog"><input type="checkbox" id="warmTog"> Warm cache (second visit)</label>
+      <div class="dots">
+        <span class="dotw"><span class="dot" id="d-img"></span>image</span>
+        <span class="dotw"><span class="dot" id="d-src"></span>source</span>
+        <span class="dotw"><span class="dot" id="d-par"></span>parallel</span>
+        <span class="dotw"><span class="dot" id="d-asc"></span>assoc</span>
+        <span class="dotw"><span class="dot" id="d-ent"></span>entities</span>
+      </div>
+    </div>
+
+    <div class="simgrid">
+      <!-- facsimile card -->
+      <div>
+        <div class="pchead">Facsimile &middot; E17 &middot; p.&nbsp;1682</div>
+        <div class="imgwrap">
+          <div class="skel imgskel"></div>
+          <img id="simimg" src="assets/pages/E17-page.jpg" alt="Zhongyao da cidian, printed page">
+          <div class="rgn" data-g="g1" style="left:12%;top:16.5%;width:36%;height:4.2%"></div>
+          <div class="rgn" data-g="g2" style="left:12%;top:24%;width:42%;height:4.2%"></div>
+          <div class="rgn" data-g="g5" style="left:12%;top:29%;width:46%;height:4.2%"></div>
+          <div class="rgn" data-g="g4" style="left:54%;top:38%;width:34%;height:4.2%"></div>
+          <div class="rgn" data-g="g3" style="left:54%;top:47%;width:38%;height:4.2%"></div>
+        </div>
+        <div class="pcap">Deep-zoom tiles arrive first: the page is <i>readable as an image</i> before any text layer exists. Region outlines light up once associations land.</div>
+      </div>
+
+      <!-- reading column -->
+      <div>
+        <div class="enthead">
+          <span class="hw">&#12304;&#34503;&#24202;&#23376;&#12305;</span>
+          <span class="chip">entry 3242 of 5767</span>
+          <span class="badge-tier notable">notable</span>
+        </div>
+
+        <div class="lay lay-src">
+          <div class="laycap">Source &middot; Chinese</div>
+          <div class="skels"><div class="skel" style="width:96%"></div><div class="skel" style="width:88%"></div><div class="skel" style="width:92%"></div><div class="skel" style="width:64%"></div></div>
+          <div class="content srctext">
+            <span class="ent plant" data-g="g1">&#34503;&#24202;&#23376;</span>&#12290;&#20026;&#20254;&#24418;&#31185;&#26893;&#29289;&#34503;&#24202; <span class="ent plant">Cnidium monnieri</span> (L.) Cusson &#30340;&#26524;&#23454;&#12290;<span data-g="g2">&#24615;&#28201;&#65292;&#21619;&#36763;&#33510;</span>&#12290;<span data-g="g5">&#28201;&#32958;&#22766;&#38451;&#65292;&#29157;&#28287;&#65292;&#26432;&#34411;</span>&#12290;&#27835;&#38451;&#30207;&#65292;&#23467;&#20919;&#65292;&#28287;&#30129;&#33136;&#30171;&#65307;&#22806;&#29992;&#37197;<span class="ent substance" data-g="g4">&#30333;&#30718;</span>&#29006;&#27748;&#29071;&#27927;&#65292;&#27835;&#38452;&#30162;&#28287;&#30126;&#12290;<span class="ent cite" data-g="g3">&#12298;&#26412;&#33609;&#32434;&#30446;&#12299;</span>&#65306;&#19981;&#29420;&#21161;&#30007;&#23376;&#22766;&#28779;&#65292;&#20134;&#33021;&#25955;&#22919;&#20154;&#37057;&#27668;&#12290;
+          </div>
+        </div>
+
+        <div class="lay lay-par">
+          <div class="laycap">Parallel &middot; English (working translation)</div>
+          <div class="skels"><div class="skel" style="width:92%"></div><div class="skel" style="width:96%"></div><div class="skel" style="width:70%"></div></div>
+          <div class="content partext">
+            <span class="ent plant" data-g="g1">Shechuangzi</span> &mdash; the fruit of <span class="ent plant">Cnidium monnieri</span> (L.) Cusson, Umbelliferae. <span data-g="g2">Nature warm; flavour acrid, bitter.</span> <span data-g="g5">Warms the kidney and strengthens yang; dries damp; kills parasites.</span> For impotence, cold womb, and damp pain of the loins; externally, decocted with <span class="ent substance" data-g="g4">alum</span> as a fumigating wash. <span class="ent author">Li Shizhen</span>, <span class="ent cite" data-g="g3">Ben cao gang mu</span>: &ldquo;it does not only fortify the male fire, but also disperses stagnant qi in women.&rdquo;
+          </div>
+        </div>
+
+        <div class="hoverstate" id="hoverstate">hover: &mdash;</div>
+      </div>
+
+      <!-- network log -->
+      <div class="netlog">
+        <div class="pchead">Network &middot; simulated</div>
+        <div id="log"><div class="logempty">&#9654; press Play to stream p.&nbsp;1682</div></div>
+      </div>
+    </div>
+
+    <div class="simfoot">Failure mode by design: a layer that 404s or times out is skipped &mdash; the page stays readable with whatever layers it has. Layer status dots are advanced-mode chrome; basic mode shows none of this.</div>
+  </div>
+</section>
+
+</div><!-- /wrap -->
+
+<script>
+/* ---- mockup chrome: scheme + mode ---- */
+(function(){
+  var sel=document.getElementById('schemeSel');sel.value=document.documentElement.dataset.scheme;
+  sel.addEventListener('change',function(e){document.documentElement.dataset.scheme=e.target.value;localStorage.setItem('whlnext-scheme',e.target.value);});
+  var mt=document.getElementById('modeTog');
+  function sync(){mt.textContent=document.documentElement.dataset.mode==='dark'?'☀ Light':'☾ Dark';}
+  mt.addEventListener('click',function(){var m=document.documentElement.dataset.mode==='dark'?'light':'dark';document.documentElement.dataset.mode=m;localStorage.setItem('whlnext-mode',m);sync();});
+  sync();
+  document.querySelector('.mock-note .mn-x').addEventListener('click',function(e){e.currentTarget.closest('.mock-note').remove();});
+})();
+
+/* ---- streaming simulation ---- */
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var zone=$('simzone'),log=$('log');
+  var dots={img:$('d-img'),src:$('d-src'),par:$('d-par'),asc:$('d-asc'),ent:$('d-ent')};
+  var timers=[],running=false;
+
+  function row(html,cls){var d=document.createElement('div');d.className='lg '+(cls||'');d.innerHTML=html;log.appendChild(d);log.scrollTop=log.scrollHeight;}
+  function dot(k,st){dots[k].className='dot'+(st?' '+st:'');}
+
+  function reset(){
+    timers.forEach(clearTimeout);timers=[];
+    ['has-img','has-src','has-par','has-asc','has-ent','rgn-flash'].forEach(function(c){zone.classList.remove(c);});
+    Object.keys(dots).forEach(function(k){dot(k,'');});
+    log.innerHTML='';
+    $('hoverstate').textContent='hover: —';
+  }
+
+  function play(){
+    if(running)return;
+    running=true;
+    var slow=$('slowTog').checked,warm=$('warmTog').checked;
+    var M=warm?0.25:(slow?4:1);
+    reset();
+    $('playBtn').disabled=true;$('slowTog').disabled=true;$('warmTog').disabled=true;
+
+    var T=function(x){return Math.round(x*M);};
+    var ts=function(x){return 't+'+(T(x)/1000).toFixed(2)+'s';};
+    var ev=function(at,fn){timers.push(setTimeout(fn,T(at)));};
+    var st=warm?'HIT':'MISS', sc=warm?'hit':'mis';
+    var net=warm?'· Cache API':'';
+    var f=function(at,path,size,state,cls,note){
+      ev(at,function(){row('<span class="lt">'+ts(at)+'</span><span class="lp">GET '+path+(note?' <i>'+note+'</i>':'')+'</span><span class="ls">'+size+'</span><span class="lc '+(state==='HIT'?'hit':'mis')+'">'+state+'</span>',cls||'');});
+    };
+
+    ev(0,function(){row('<span class="lt">'+ts(0)+'</span><span class="lp">viewport: p.1682 enters (distance 0) — queue: image → source → parallel → assoc → entities</span>','info');});
+    f(50,'E17/manifest.json','38.7 KB','HIT','', warm?'(Cache API)':'(memory · book open)');
+    f(110,'o/9f31c2…/image.dzi','1.1 KB',st);
+    ev(110,function(){dot('img','run');});
+    f(200,'o/9f31c2…/tiles/10/0_0.jpg','148.2 KB',st);
+    ev(200,function(){zone.classList.add('has-img');dot('img','done');});
+    f(270,'o/9f31c2…/tiles/10/0_1.jpg','71.3 KB',st);
+    f(300,'o/57d0c4…/source.json','14.2 KB',st);
+    ev(300,function(){dot('src','run');});
+    ev(350,function(){zone.classList.add('has-src');dot('src','done');});
+    f(520,'o/b21e77…/map.json','48.9 KB',st,'','(regions · lines · words)');
+    f(560,'o/8ea4f0…/parallel.json','11.6 KB',st);
+    ev(560,function(){dot('par','run');});
+    ev(600,function(){zone.classList.add('has-par');dot('par','done');$('hoverstate').innerHTML='hover: <b>enabled</b> — text ↔ translation';});
+    f(840,'o/44c9d1…/assoc.json','22.3 KB',st,'','(atomic groups)');
+    ev(840,function(){dot('asc','run');});
+    ev(900,function(){zone.classList.add('has-asc');dot('asc','done');$('hoverstate').innerHTML='hover: <b>enabled</b> — text ↔ translation ↔ facsimile regions';
+      zone.classList.add('rgn-flash');timers.push(setTimeout(function(){zone.classList.remove('rgn-flash');},1300));});
+    f(1130,'o/d17b8e…/entities.json','6.8 KB',st);
+    ev(1130,function(){dot('ent','run');});
+    ev(1200,function(){zone.classList.add('has-ent');dot('ent','done');});
+    ev(1320,function(){row('<span class="lt">'+ts(1320)+'</span><span class="lp">idle: prefetch p.1681 · p.1683 (distance 1), lowest priority</span>','info');});
+    f(1500,'o/2f88ab…/image.dzi','1.1 KB',st,'pf','(p.1683 · prefetch)');
+    f(1650,'o/77c3d9…/source.json','13.8 KB',st,'pf','(p.1683 · prefetch)');
+    ev(1800,function(){
+      var sum = warm
+        ? 'interactive at '+ts(1200)+' · 0 KB over the network — every object from Cache API (immutable paths)'
+        : 'readable at '+ts(200)+' · interactive at '+ts(1200)+' · 324 KB over the wire — vs ~20 MB monolithic';
+      row(sum,'sum');
+      running=false;
+      $('playBtn').disabled=false;$('slowTog').disabled=false;$('warmTog').disabled=false;
+      $('playBtn').innerHTML='↻  Replay';
+    });
+  }
+  $('playBtn').addEventListener('click',play);
+
+  /* aligned hover: parallel pairs + facsimile regions (post-assoc) */
+  function mark(g,on){
+    var els=zone.querySelectorAll('[data-g="'+g+'"]');
+    for(var i=0;i<els.length;i++){els[i].classList.toggle('g-hov',on);}
+  }
+  var gs=zone.querySelectorAll('span[data-g]');
+  for(var i=0;i<gs.length;i++){
+    (function(el){
+      el.addEventListener('mouseenter',function(){if(zone.classList.contains('has-par'))mark(el.getAttribute('data-g'),true);});
+      el.addEventListener('mouseleave',function(){mark(el.getAttribute('data-g'),false);});
+    })(gs[i]);
+  }
+})();
+</script>
+</body>
+</html>

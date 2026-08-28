@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WHL — Library (mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+/* ---------- page scaffold ---------- */
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px 80px; }
+.kicker { font: 600 11px var(--font-chrome); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+.pagehead { padding: 44px 0 8px; }
+.pagehead h1 { font-size: 36px; margin: 6px 0 4px; }
+.pagehead .sub { font-family: var(--font-read); font-size: 15.5px; color: var(--ink-2); max-width: 620px; margin: 0; }
+.sechead { display: flex; align-items: baseline; gap: 14px; margin: 38px 0 16px; }
+.sechead h2 { font-size: 21px; margin: 0; }
+.sechead .rule { flex: 1; height: 1px; background: var(--line); align-self: center; }
+.sechead .count { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+
+/* ---------- landmark hero row ---------- */
+.landmarks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.lm { display: flex; gap: 16px; padding: 18px; text-decoration: none; color: inherit;
+  transition: transform .16s ease, box-shadow .16s ease; }
+.lm:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); text-decoration: none; }
+.lm .lthumb { flex: 0 0 104px; }
+.lm .lthumb img { width: 104px; aspect-ratio: 3 / 4.2; object-fit: cover; display: block;
+  border-radius: var(--radius); border: 1px solid var(--line-2); box-shadow: var(--shadow); }
+.lm .lbody { min-width: 0; display: flex; flex-direction: column; }
+.lm .era { font: 600 10.5px var(--font-chrome); letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lm h3 { font-size: 20px; margin: 0 0 2px; }
+.lm .lmeta { font-size: 12.5px; color: var(--ink-2); margin: 0 0 8px; }
+.lm .sig { font-family: var(--font-read); font-size: 13.5px; line-height: 1.5; color: var(--ink-2); margin: 0 0 10px; }
+.lm .lnote { margin-top: auto; }
+.lm .lnote .chip { font-size: 11px; }
+
+/* ---------- filter bar ---------- */
+.filterbar { margin: 34px 0 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.search { position: relative; flex: 0 1 330px; min-width: 240px; }
+.search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--ink-3); }
+.search input { width: 100%; padding: 8px 12px 8px 32px; border: 1px solid var(--line-2); border-radius: 99px;
+  background: var(--bg-raise); color: var(--ink); font: 13px var(--font-chrome); outline: none; }
+.search input::placeholder { color: var(--ink-3); }
+.search input:focus { border-color: var(--accent); }
+.fgroup { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.fgroup .flabel { font: 600 10.5px var(--font-chrome); letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-3); margin-right: 2px; }
+.fchip { cursor: pointer; user-select: none; transition: border-color .12s; font-family: var(--font-chrome); }
+.fchip:hover { border-color: var(--accent); }
+.fchip.active { background: var(--tint-select); color: var(--ink); border-color: var(--accent); }
+
+/* ---------- works grid ---------- */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 18px; }
+.work { display: flex; flex-direction: column; text-decoration: none; color: inherit; overflow: hidden;
+  transition: transform .16s ease, box-shadow .16s ease; }
+.work:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); text-decoration: none; }
+.wthumb { position: relative; aspect-ratio: 3 / 4; background: var(--bg-sunk); border-bottom: 1px solid var(--line); overflow: hidden; }
+.wthumb > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.wthumb .copies { position: absolute; top: 8px; right: 8px; background: var(--bg-raise); box-shadow: var(--shadow);
+  font-weight: 600; font-size: 10.5px; letter-spacing: .04em; }
+.stack img.b1 { transform: rotate(2.4deg) translate(7px, -4px) scale(.985); }
+.stack img.b2 { transform: rotate(-2deg) translate(-7px, -2px) scale(.985); }
+.stack img.top { transform: none; border-left: 1px solid var(--line-2); }
+.wbody { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.wbody h3 { font-size: 16.5px; margin: 0; line-height: 1.25; }
+.wmeta { font-size: 12px; color: var(--ink-2); margin: 0; }
+.wtags { margin-top: auto; padding-top: 10px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.empty { display: none; padding: 42px 0; text-align: center; color: var(--ink-3);
+  font-family: var(--font-read); font-size: 15px; }
+.empty a { cursor: pointer; }
+.grid.is-empty + .empty { display: block; }
+
+footer { margin-top: 64px; border-top: 1px solid var(--line); padding-top: 16px;
+  font-size: 11.5px; color: var(--ink-3); }
+
+@media (max-width: 940px) {
+  .landmarks { grid-template-columns: 1fr; }
+  .pagehead h1 { font-size: 29px; }
+}
+</style>
+</head>
+<body>
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+
+<div class="topbar">
+  <a href="index.html">&larr; Mockups</a>
+  <strong style="font-family:var(--font-display);font-size:16px;">Library</strong>
+  <div class="mock-switch">
+    <select id="schemeSel" class="btn" aria-label="Colour scheme">
+      <option value="archive">Archive</option>
+      <option value="herbarium">Herbarium</option>
+      <option value="oxford">Oxford</option>
+    </select>
+    <button id="modeBtn" class="btn" aria-label="Toggle light/dark"></button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="pagehead">
+    <div class="kicker">WHL &middot; Historical Herbal &amp; Materia-Medica Library</div>
+    <h1>Library</h1>
+    <p class="sub">Thirteen works, nineteen witnesses &mdash; from the Ebers Papyrus to twentieth-century pharmacognosy. Every page streamed, every witness compared.</p>
+  </header>
+
+  <!-- ============ landmarks ============ -->
+  <section aria-label="Landmark works">
+    <div class="sechead"><h2>Landmarks</h2><div class="rule"></div></div>
+    <div class="landmarks">
+
+      <a class="lm card" href="overview-landmark.html">
+        <div class="lthumb"><img src="assets/thumbs/EB01.jpg" alt="Papyrus Ebers, hieratic column"></div>
+        <div class="lbody">
+          <div class="era"><span class="badge-tier landmark">Landmark</span> c.&thinsp;1550 BC &middot; Thebes</div>
+          <h3>Papyrus Ebers</h3>
+          <p class="lmeta">Hieratic roll, Leipzig &middot; with Joachim&rsquo;s German translation (1890)</p>
+          <p class="sig">The oldest substantially complete pharmacological text: 110 columns of prescriptions, from myrrh plasters to remedies of the eye.</p>
+          <div class="lnote"><span class="chip accent">2 witnesses: papyrus + Joachim 1890 translation</span></div>
+        </div>
+      </a>
+
+      <a class="lm card" href="overview-landmark.html">
+        <div class="lthumb"><img src="assets/thumbs/E54.jpg" alt="Ben Cao Gang Mu, 1888 edition"></div>
+        <div class="lbody">
+          <div class="era"><span class="badge-tier landmark">Landmark</span> 1578 &middot; China</div>
+          <h3>Ben Cao Gang Mu <span lang="zh">本草綱目</span></h3>
+          <p class="lmeta">Li Shizhen &middot; Hongbaozhai woodblock ed., 1888</p>
+          <p class="sig">The great synthesis of Chinese materia medica &mdash; 1,892 drug entries across 52 juan, each with names, provenance, and formulae.</p>
+          <div class="lnote"><span class="chip accent">1888 Hongbaozhai edition</span></div>
+        </div>
+      </a>
+
+      <a class="lm card" href="work-dioscorides.html">
+        <div class="lthumb"><img src="assets/thumbs/E49.jpg" alt="Dioscorides, Italian translation, Florence 1547"></div>
+        <div class="lbody">
+          <div class="era"><span class="badge-tier landmark">Landmark</span> 1st c. AD &middot; Anatolia</div>
+          <h3>Dioscorides, De materia medica</h3>
+          <p class="lmeta">Italian trans. Montigiano (Florence 1547) &middot; Amatus Lusitanus, enarrationes (Venice 1557)</p>
+          <p class="sig">The spine of Western pharmacy for fifteen centuries &mdash; read here through its Renaissance translators and commentators.</p>
+          <div class="lnote"><span class="chip accent">2 versions &middot; 3 items</span></div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ============ filters ============ -->
+  <div class="filterbar" role="search">
+    <div class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg>
+      <input type="text" placeholder="Search titles, authors, plants &mdash; betony, 蛇床子, myrrh&hellip;" aria-label="Search the library (mock)">
+    </div>
+    <div class="fgroup" data-group="lang">
+      <span class="flabel">Language</span>
+      <span class="chip fchip" data-val="latin">Latin</span>
+      <span class="chip fchip" data-val="english">English</span>
+      <span class="chip fchip" data-val="french">French</span>
+      <span class="chip fchip" data-val="italian">Italian</span>
+      <span class="chip fchip" data-val="chinese">Chinese</span>
+    </div>
+    <div class="fgroup" data-group="century">
+      <span class="flabel">Century</span>
+      <span class="chip fchip" data-val="pre1500">before 1500</span>
+      <span class="chip fchip" data-val="c16">16th</span>
+      <span class="chip fchip" data-val="c17">17th</span>
+      <span class="chip fchip" data-val="c18">18th</span>
+      <span class="chip fchip" data-val="modern">19th&ndash;20th</span>
+    </div>
+    <div class="fgroup" data-group="subject">
+      <span class="flabel">Subject</span>
+      <span class="chip fchip" data-val="herbal">herbal</span>
+      <span class="chip fchip" data-val="pharmacopoeia">pharmacopoeia</span>
+      <span class="chip fchip" data-val="materia-medica">materia medica</span>
+      <span class="chip fchip" data-val="manuscript">manuscript</span>
+    </div>
+  </div>
+
+  <!-- ============ works ============ -->
+  <section aria-label="All works">
+    <div class="sechead"><h2>Works</h2><div class="rule"></div><span class="count" id="workCount"></span></div>
+    <div class="grid" id="workGrid">
+
+      <a class="work card" href="overview-standard.html" data-lang="italian" data-century="pre1500" data-subject="herbal manuscript">
+        <div class="wthumb stack">
+          <img class="b1" src="assets/thumbs/E23.jpg" alt="">
+          <img class="b2" src="assets/thumbs/E53.jpg" alt="">
+          <img class="top" src="assets/thumbs/E52.jpg" alt="Anonymous Italian herbal, Yale Cushing MS 49">
+          <span class="chip copies">&times;3</span>
+        </div>
+        <div class="wbody">
+          <h3>Herbal, anonymous <em>(Yale, Cushing MS&nbsp;49)</em></h3>
+          <p class="wmeta">Northern Italy, 14th&ndash;15th c. &middot; 3 witnesses</p>
+          <div class="wtags"><span class="chip">Italian</span><span class="badge-tier notable">Notable</span></div>
+        </div>
+      </a>
+
+      <a class="work card" href="overview-standard.html" data-lang="latin" data-century="pre1500" data-subject="herbal">
+        <div class="wthumb"><img src="assets/thumbs/E01.jpg" alt="Hortus Sanitatis"></div>
+        <div class="wbody">
+          <h3>Hortus Sanitatis</h3>
+          <p class="wmeta">Strasbourg, not after 1497 &middot; incunable</p>
+          <div class="wtags"><span class="chip">Latin</span><span class="badge-tier notable">Notable</span></div>
+        </div>
+      </a>
+
+      <a class="work card" href="overview-standard.html" data-lang="latin" data-century="c16" data-subject="pharmacopoeia">
+        <div class="wthumb"><img src="assets/thumbs/E44.jpg" alt="Regimen Sanitatis Salernitanum"></div>
+        <div class="wbody">
+          <h3>Regimen Sanitatis Salernitanum</h3>
+          <p class="wmeta">School of Salerno &middot; Venice, c.&thinsp;1500</p>
+          <div class="wtags"><span class="chip">Latin</span><span class="badge-tier minimal">Minimal</span></div>
+        </div>
+      </a>
+
+      <a class="work card" href="overview-standard.html" data-lang="french" data-century="c16" data-subject="herbal">
+        <div class="wthumb stack">
+          <img class="b1" src="assets/thumbs/E51.jpg" alt="">
+          <img class="top" src="assets/thumbs/E45.jpg" alt="Le grant herbier en francoys">
+          <span class="chip copies">&times;2</span>
+        </div>
+        <div class="wbody">
+          <h3>Le grant herbier en francoys</h3>
+          <p class="wmeta">Paris, c.&thinsp;1525&ndash;30 &middot; 2 copies</p>
+          <div class="wtags"><span class="chip">French</span><span class="badge-tier standard">Standard</span></div>
+        </div>
+      </a>
+
+      <a class="work card" href="overview-standard.html" data-lang="english" data-century="c16" data-subject="herbal">
+        <div class="wthumb"><img src="assets/thumbs/E48.jpg" alt="Banckes's Herbal, blackletter"></div>
+        <div class="wbody">
+          <h3>Banckes&rsquo;s Herbal</h3>
+          <p class="wmeta">London, c.&thinsp;1552 &middot; blackletter</p>
+          <div class="wtags"><span class="chip">English</span><span class="badge-tier notable">Notable</span></div>
+        </div>
+      </a>
+
+      <a class="work card" href="work-dioscorides.html" data-lang="latin" data-century="c16" data-subject="materia-medica">
+        <div class="wthumb stack">
+          <img class="b1" src="assets/thumbs/E47.jpg" alt="">
+          <img class="top" src="assets/thumbs/E46.jpg" alt="Amatus Lusitanus, In Dioscoridis enarrationes">
+          <span class="chip copies">&times;2</span>
+        </div>
+        <div class="wbody">
+          <h3>In Dioscoridis enarrationes</h3>
+          <p class="wmeta">Amatus Lusitanus &middot; Venice, 1557 &middot; 2 copies</p>
+          <div class="wtags"><span class="chip">Latin</span><span class="badge-tier standard">Standard</span></div>
+        </div>
+      </a>
+
+      <a class="work card" href="overview-standard.html" data-lang="english" data-century="c17" data-subject="herbal">
+        <div class="wthumb"><img src="assets/thumbs/E28.jpg" alt="Culpeper, The English Physitian"></div>
+        <div class="wbody">
+          <h3>The English Physitian</h3>
+          <p class="wmeta">Nicholas Culpeper &middot; London, 1652</p>
+          <div class="wtags"><span class="chip">English</span><span class="badge-tier notable">Notable</span></div>
+        </div>
+      </a>
+
+      <a class="work card" href="overview-standard.html" data-lang="english" data-century="c18" data-subject="pharmacopoeia">
+        <div class="wthumb"><img src="assets/thumbs/E18.jpg" alt="Gaubius, The Extemporaneous Dispensatory"></div>
+        <div class="wbody">
+          <h3>The Extemporaneous Dispensatory</h3>
+          <p class="wmeta">H.&thinsp;D. Gaubius &middot; London, 1741</p>
+          <div class="wtags"><span class="chip">English</span><span class="badge-tier standard">Standard</span></div>
+        </div>
+      </a>
+
+      <a class="work card" href="overview-standard.html" data-lang="english" data-century="modern" data-subject="materia-medica">
+        <div class="wthumb"><img src="assets/thumbs/E25.jpg" alt="Parry, The Chemistry of Essential Oils, vol. I"></div>
+        <div class="wbody">
+          <h3>The Chemistry of Essential Oils, I</h3>
+          <p class="wmeta">Ernest J. Parry &middot; London, 1918</p>
+          <div class="wtags"><span class="chip">English</span><span class="badge-tier standard">Standard</span></div>
+        </div>
+      </a>
+
+      <a class="work card" href="overview-standard.html" data-lang="english" data-century="modern" data-subject="materia-medica">
+        <div class="wthumb"><img src="assets/thumbs/E10.jpg" alt="Standardized Plant Names"></div>
+        <div class="wbody">
+          <h3>Standardized Plant Names</h3>
+          <p class="wmeta">Kelsey &amp; Dayton &middot; Harrisburg, 1942</p>
+          <div class="wtags"><span class="chip">English</span><span class="badge-tier standard">Standard</span></div>
+        </div>
+      </a>
+
+      <a class="work card" href="overview-standard.html" data-lang="chinese" data-century="modern" data-subject="materia-medica">
+        <div class="wthumb"><img src="assets/thumbs/E17.jpg" alt="Zhongyao da cidian, vol. 2"></div>
+        <div class="wbody">
+          <h3>Zhongyao da cidian <span lang="zh">中药大辞典</span>, vol.&nbsp;2</h3>
+          <p class="wmeta">Jiangsu New Medical College &middot; Shanghai, 1977</p>
+          <div class="wtags"><span class="chip">Chinese</span><span class="badge-tier notable">Notable</span></div>
+        </div>
+      </a>
+
+    </div>
+    <div class="empty">No works match these filters &mdash; <a id="clearFilters">clear them</a>.</div>
+  </section>
+
+  <footer>WHL Reader Next &mdash; static design mockup. Thumbnails from corpus scans; landmark works also appear in the hero row and are not filtered.</footer>
+</div>
+
+<div class="mock-note"><button class="mn-x" aria-label="Dismiss">×</button><strong>Library home.</strong> Landmark hero row, faceted works grid with tier badges and multi-copy clusters. Interactive: filter chips really filter the grid; scheme/mode switcher top right; cards hover-raise and link to overview mockups. Search is styled but inert.</div>
+
+<script>
+(function () {
+  // scheme / mode switcher
+  var root = document.documentElement;
+  var sel = document.getElementById('schemeSel');
+  var btn = document.getElementById('modeBtn');
+  sel.value = root.dataset.scheme;
+  sel.addEventListener('change', function () {
+    root.dataset.scheme = sel.value;
+    localStorage.setItem('whlnext-scheme', sel.value);
+  });
+  function paintBtn() { btn.textContent = root.dataset.mode === 'dark' ? '☀ Light' : '☾ Dark'; }
+  btn.addEventListener('click', function () {
+    root.dataset.mode = root.dataset.mode === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('whlnext-mode', root.dataset.mode);
+    paintBtn();
+  });
+  paintBtn();
+
+  // dismissible mock-note
+  document.querySelector('.mock-note .mn-x').addEventListener('click', function () {
+    this.parentElement.remove();
+  });
+
+  // faceted filtering (single-select per group, AND across groups)
+  var active = { lang: null, century: null, subject: null };
+  var cards = Array.prototype.slice.call(document.querySelectorAll('#workGrid .work'));
+  var grid = document.getElementById('workGrid');
+  var countEl = document.getElementById('workCount');
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.fchip'));
+
+  function apply() {
+    var shown = 0;
+    cards.forEach(function (card) {
+      var ok = Object.keys(active).every(function (g) {
+        if (!active[g]) return true;
+        return (card.dataset[g] || '').split(' ').indexOf(active[g]) !== -1;
+      });
+      card.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+    countEl.textContent = shown + ' of ' + cards.length + ' works';
+    grid.classList.toggle('is-empty', shown === 0);
+  }
+
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      var group = chip.parentElement.dataset.group, val = chip.dataset.val;
+      active[group] = (active[group] === val) ? null : val;
+      chip.parentElement.querySelectorAll('.fchip').forEach(function (c) {
+        c.classList.toggle('active', c.dataset.val === active[group]);
+      });
+      apply();
+    });
+  });
+  document.getElementById('clearFilters').addEventListener('click', function () {
+    active = { lang: null, century: null, subject: null };
+    chips.forEach(function (c) { c.classList.remove('active'); });
+    apply();
+  });
+  apply();
+})();
+</script>
+</body>
+</html>

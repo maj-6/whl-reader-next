@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EB01 Scroll Reader — WHL Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Egyptian+Hieroglyphs&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  html, body { height: 100%; }
+  body { display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ---- topbar ---- */
+  .topbar .back { font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+  .topbar .tdiv { width: 1px; height: 20px; background: var(--line); }
+  .topbar h1 { font-size: 19px; margin: 0; white-space: nowrap; }
+  .topbar .tmeta { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+  @media (max-width: 900px) { .topbar .tmeta { display: none; } }
+
+  /* ---- stage ---- */
+  .main { flex: 1; display: flex; min-height: 0; }
+  .viewwrap { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+  #osd { flex: 1; min-height: 0; position: relative; background: var(--bg-sunk); }
+  #osd .openseadragon-canvas:focus { outline: none; }
+
+  /* floating column chip */
+  .col-chip { position: absolute; top: 14px; left: 16px; z-index: 6;
+    background: var(--bg-raise); border: 1px solid var(--line); border-radius: 99px;
+    box-shadow: var(--shadow); padding: 6px 14px; font: 600 11px var(--font-chrome);
+    letter-spacing: .09em; text-transform: uppercase; color: var(--ink-2); opacity: .96; }
+  .col-chip b { color: var(--ink); font-weight: 600; }
+
+  /* RTL hint, top right of viewer */
+  .rtl-hint { position: absolute; top: 14px; right: 16px; z-index: 6; font-size: 11px;
+    color: var(--ink-3); background: var(--bg-raise); border: 1px solid var(--line);
+    border-radius: 99px; padding: 5px 12px; opacity: .9; }
+
+  /* prev/next — the roll reads right-to-left, so NEXT is on the LEFT */
+  .navbtn { position: absolute; top: 42%; z-index: 6; display: flex; flex-direction: column;
+    align-items: center; gap: 2px; padding: 9px 11px 7px; cursor: pointer;
+    background: var(--bg-raise); border: 1px solid var(--line); border-radius: 22px;
+    box-shadow: var(--shadow); color: var(--ink); opacity: .94; }
+  .navbtn:hover { border-color: var(--accent); }
+  .navbtn .arr { font: 400 21px/0.9 var(--font-display); }
+  .navbtn .cap { font: 600 8.5px var(--font-chrome); letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-3); }
+  .navbtn.next { left: 16px; }
+  .navbtn.prev { right: 16px; }
+  .navbtn[disabled] { opacity: .35; cursor: default; }
+  .navbtn[disabled]:hover { border-color: var(--line); }
+
+  /* prefetch toast */
+  .toast { position: absolute; right: 16px; bottom: 14px; z-index: 7;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg-raise); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 7px 12px; font-size: 12px; color: var(--ink-2);
+    opacity: 0; transform: translateY(6px); transition: opacity .35s, transform .35s; pointer-events: none; }
+  .toast.show { opacity: .96; transform: none; }
+  .tdot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn);
+    animation: tpulse 1s infinite ease-in-out; }
+  @keyframes tpulse { 50% { opacity: .3; } }
+
+  /* ---- reading strip ---- */
+  .strip { height: 38%; min-height: 46px; background: var(--bg-raise);
+    border-top: 1px solid var(--line); display: flex; flex-direction: column; }
+  .strip.collapsed { height: 46px; }
+  .strip.collapsed .strip-body { display: none; }
+  .strip-head { display: flex; align-items: center; gap: 12px; padding: 8px 20px;
+    border-bottom: 1px solid var(--line); flex: none; }
+  .strip.collapsed .strip-head { border-bottom: 0; }
+  .strip-col { font: 600 13px var(--font-chrome); color: var(--ink); white-space: nowrap; }
+  .strip-sub { font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; }
+  .strip-head .spacer { flex: 1; }
+  .hiero-glyph { font-family: "Noto Sans Egyptian Hieroglyphs", "Segoe UI Historic", serif; }
+  .strip-body { flex: 1; overflow-y: auto; }
+  .strip-inner { max-width: 860px; margin: 0 auto; padding: 20px 28px 26px; }
+  .lbl { display: block; font: 600 10px var(--font-chrome); letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-3); margin-bottom: 5px; }
+  .line { margin-bottom: 18px; }
+  .line:last-child { margin-bottom: 0; }
+  .hiero-txt { font-family: "Noto Sans Egyptian Hieroglyphs", "Segoe UI Historic", serif;
+    font-size: 21px; line-height: 1.5; letter-spacing: .06em; color: var(--ink-2); }
+  .translit-txt { font-family: var(--font-display); font-style: italic; font-size: 17.5px;
+    line-height: 1.5; color: var(--ink-2); }
+  .trans-txt { margin: 0; color: var(--ink); }
+
+  /* ---- sidebar rail + panel ---- */
+  .rail { width: 46px; flex: none; background: var(--bg-raise); border-left: 1px solid var(--line);
+    display: flex; flex-direction: column; align-items: center; padding: 10px 0 12px; gap: 6px; }
+  .railbtn { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid transparent; border-radius: var(--radius); background: none; cursor: pointer;
+    color: var(--ink-2); font-size: 15px; }
+  .railbtn:hover { background: var(--tint-select); color: var(--ink); }
+  .rail-glyph { margin-top: auto; font-size: 19px; color: var(--ink-3); opacity: .55; }
+  .sidebar { flex: none; }
+  .sidebar[hidden] { display: none; }
+  .side-head { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); }
+  .side-head .sidebar-tabs { flex: 1; border-bottom: 0; }
+  .side-head .railbtn { align-self: center; margin-right: 6px; flex: none; }
+
+  /* column strip map */
+  .colmap { display: flex; gap: 1px; height: 26px; align-items: flex-end; margin: 4px 0 6px; }
+  .colmap .bar { flex: 1; min-width: 1px; height: 13px; background: var(--line); border-radius: 1px; }
+  .colmap .bar.win { height: 21px; background: var(--ink-3); cursor: pointer; }
+  .colmap .bar.cur { height: 26px; background: var(--accent); }
+  .mapmeta { display: flex; justify-content: space-between; font-size: 10px; color: var(--ink-3); }
+  .maplegend { font-size: 11px; color: var(--ink-3); margin-top: 7px; line-height: 1.45; }
+
+  .colrow { display: flex; align-items: baseline; gap: 10px; padding: 7px 9px;
+    border-radius: var(--radius); cursor: pointer; }
+  .colrow:hover { background: var(--bg-sunk); }
+  .colrow.cur { background: var(--tint-select); }
+  .colrow .cn { font: 600 12px var(--font-chrome); color: var(--ink-2); width: 20px; flex: none; }
+  .colrow .ct { font-size: 13px; color: var(--ink); }
+  .colrow .ce { font-size: 11px; color: var(--ink-3); }
+
+  /* entity cards */
+  .ecard { display: flex; gap: 10px; padding: 10px 11px; margin-bottom: 8px;
+    background: var(--bg-raise); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+  .edot { width: 8px; height: 8px; border-radius: 50%; flex: none; margin-top: 5px; }
+  .ename { font: 600 13px var(--font-chrome); color: var(--ink); }
+  .etag { font: 600 9.5px var(--font-chrome); letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-3); margin-left: 6px; }
+  .esub { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+  .enote { font-size: 11.5px; color: var(--ink-3); margin-top: 3px; font-style: italic; }
+  .eact { margin-top: 6px; display: flex; gap: 12px; }
+  .linkish { border: 0; background: none; padding: 0; color: var(--accent);
+    font: 500 11.5px var(--font-chrome); cursor: pointer; }
+  .linkish:hover { text-decoration: underline; }
+  .sidenote { font-size: 11px; color: var(--ink-3); line-height: 1.5; margin-top: 4px; }
+
+  /* static fallback when the OpenSeadragon CDN is unavailable */
+  .osd-fallback { position: absolute; inset: 0; display: flex; direction: rtl;
+    overflow-x: auto; overflow-y: hidden; align-items: center; gap: 2px; }
+  .osd-fallback img { height: 96%; width: auto; flex: none; }
+</style>
+</head>
+<body>
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+
+<header class="topbar">
+  <a class="back" href="index.html">← Mockups</a>
+  <span class="tdiv"></span>
+  <h1>Papyrus Ebers · EB01</h1>
+  <span class="badge-tier landmark">landmark</span>
+  <span class="chip">scroll-h · RTL</span>
+  <span class="tmeta">Hieratic roll, c. 1550 BC · Universitätsbibliothek Leipzig · trans. EB02 Joachim 1890</span>
+  <div class="mock-switch">
+    <select class="btn" id="schemeSel" aria-label="Scheme">
+      <option value="archive">Archive</option>
+      <option value="herbarium">Herbarium</option>
+      <option value="oxford">Oxford</option>
+    </select>
+    <button class="btn" id="modeBtn">☾ Dark</button>
+  </div>
+</header>
+
+<div class="main">
+  <div class="viewwrap">
+    <div id="osd"></div>
+    <div class="col-chip" id="colChip"><b>Column 45</b> · Eb 188–190</div>
+    <div class="rtl-hint">roll reads right → left</div>
+    <button class="navbtn next" id="btnNext" title="Next column — the text continues to the left">
+      <span class="arr">‹</span><span class="cap">next</span></button>
+    <button class="navbtn prev" id="btnPrev" title="Previous column">
+      <span class="arr">›</span><span class="cap">prev</span></button>
+    <div class="toast" id="toast"><span class="tdot"></span><span id="toastTxt"></span></div>
+
+    <section class="strip" id="strip" aria-label="Reading strip">
+      <div class="strip-head">
+        <span class="strip-col" id="stripCol">Column 45</span>
+        <span class="strip-sub" id="stripSub"></span>
+        <span class="spacer"></span>
+        <button class="btn ghost" id="hieroBtn"
+          title="Editorial default: the original is hieratic — the hieroglyphic transcription is a modern aid, off unless asked for">
+          <span class="hiero-glyph">𓏛</span>&nbsp;hieroglyphic · off</button>
+        <button class="btn ghost" id="stripBtn" title="Collapse reading strip">collapse ▾</button>
+      </div>
+      <div class="strip-body">
+        <div class="strip-inner">
+          <div class="line" id="hieroLine" hidden>
+            <span class="lbl">hieroglyphic transcription · editorial</span>
+            <div class="hiero-txt" id="hieroTxt"></div>
+          </div>
+          <div class="line">
+            <span class="lbl">transliteration</span>
+            <div class="translit-txt" id="translitTxt"></div>
+          </div>
+          <div class="line">
+            <span class="lbl">translation · after EB02 · Joachim 1890</span>
+            <p class="reading trans-txt" id="transTxt"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="rail" id="rail" aria-label="Sidebar rail">
+    <button class="railbtn" data-tab="contents" title="Contents — column map">☰</button>
+    <button class="railbtn" data-tab="oncol" title="On this column">◈</button>
+    <div class="rail-glyph hiero-glyph">𓄣</div>
+  </nav>
+
+  <aside class="sidebar" id="sidebar" hidden>
+    <div class="side-head">
+      <div class="sidebar-tabs">
+        <button data-tab="contents" id="tabBtnContents">Contents</button>
+        <button data-tab="oncol" id="tabBtnOncol">On this column</button>
+      </div>
+      <button class="railbtn" id="sideClose" title="Collapse sidebar">»</button>
+    </div>
+    <div class="sidebar-body">
+      <div id="tab-contents">
+        <div class="side-sec">
+          <h4>Column map · 110 columns</h4>
+          <div class="mapmeta"><span>col 110 · end</span><span>col 1 · start</span></div>
+          <div class="colmap" id="colmap"></div>
+          <div class="maplegend">Columns 44–48 are in the loaded window; the rest stream in
+            as the viewport approaches. Click a loaded bar to pan.</div>
+        </div>
+        <div class="side-sec">
+          <h4>Loaded columns</h4>
+          <div id="colList"></div>
+        </div>
+      </div>
+      <div id="tab-oncol" hidden>
+        <div class="side-sec">
+          <h4 id="oncolH">On column 45</h4>
+          <div id="entCards"></div>
+          <p class="sidenote">Cards are relevance-ranked from entity mentions on this column;
+            citations resolve to their parallel in EB02.</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="mock-note" id="mockNote">
+  <button class="mn-x" aria-label="Dismiss">×</button>
+  <b>EB01 scroll reader.</b> Five real columns (44–48) stitched edge-to-edge as one
+  continuous RTL roll in OpenSeadragon. Interactive: pan/zoom, ‹ next / prev › (next pans left),
+  reading strip collapse + hieroglyphic toggle, sidebar rail, column map, scheme/mode switch.
+  Eb paragraph numbering here is illustrative, not the real concordance.
+  Article/Appearance sidebar tabs are intentionally omitted in this mockup.
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0/build/openseadragon/openseadragon.min.js"></script>
+<script>
+/* ---------- mockup chrome: scheme / mode ---------- */
+const schemeSel = document.getElementById('schemeSel'), modeBtn = document.getElementById('modeBtn');
+schemeSel.value = document.documentElement.dataset.scheme;
+schemeSel.onchange = () => { document.documentElement.dataset.scheme = schemeSel.value;
+  localStorage.setItem('whlnext-scheme', schemeSel.value); };
+function paintMode(){ modeBtn.textContent = document.documentElement.dataset.mode === 'dark' ? '☀ Light' : '☾ Dark'; }
+modeBtn.onclick = () => { const m = document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.mode = m; localStorage.setItem('whlnext-mode', m); paintMode(); };
+paintMode();
+document.querySelector('.mock-note .mn-x').onclick = () => document.getElementById('mockNote').remove();
+
+/* ---------- column data (mock; Eb numbering illustrative) ---------- */
+const DIMS = {44:[834,1600], 45:[916,1600], 46:[880,1600], 47:[996,1600], 48:[967,1600]};
+const COLS = {
+  44: { ebs:'Eb 185–187', title:'Heat in the belly',
+    translit:'k.t n.t dr srf m ẖ.t · dꜣb ꜥntjw bj.t ḥ(n)q.t nḏm.t',
+    hiero:'𓎡𓏏 𓈖𓏏 𓂧𓂋 𓋴𓂋𓆑 𓅓 𓄡𓏏 · 𓂧𓄿𓃀𓏥 𓂝𓈖𓍿𓅱 𓃀𓇋𓏏 𓎛𓈎𓏏',
+    trans:'<span class="rub">Another, to drive out heat in the belly.</span> Figs of the <span class="ent plant">sycamore</span>, notched; <span class="ent substance">honey</span>; <span class="ent substance">sweet beer</span>. To be strained and drunk during four days.',
+    cards:[
+      {c:'cite', tag:'remedy · citation', n:'Eb 185', s:'Heat in the belly — cooling draught', note:'Parallel: EB02 · Joachim (1890), p. 61'},
+      {c:'plant', tag:'plant', n:'Sycamore fig · nh.t', s:'Ficus sycomorus — fruit, notched', note:'Recurs in 31 remedies across EB01'}]},
+  45: { ebs:'Eb 188–190', title:'Treatise on the stomach',
+    translit:'ḥꜣ.t-ꜥ m sšꜣw n mn.t rꜣ-jb · jr ḫꜣi̯=k s ḥr šnꜥ m rꜣ-jb=f',
+    hiero:'𓎛𓄿𓏏𓂝 𓅓 𓋴𓈙𓄿𓅱𓏛𓏥 𓈖 𓏠𓈖𓏏 𓂋𓄣 · 𓇋𓂋 𓆼𓄿𓇋𓎡 𓋴',
+    trans:'<span class="rub">Beginning of the treatise on the stomach.</span> If thou examinest a man with an obstruction of his stomach, whose body is too heavy for him to eat bread, then shalt thou prepare for him: <span class="ent substance">myrrh</span>, fruit of the <span class="ent plant">date-palm</span>, <span class="ent substance">sweet beer</span>; boil, strain into one, and let him drink on four mornings <span class="ent cite">(Eb 188)</span>.',
+    cards:[
+      {c:'cite', tag:'remedy · citation', n:'Eb 188', s:'Treatise on the stomach — opening diagnosis', note:'Parallel: EB02 · Joachim (1890), p. 63'},
+      {c:'substance', tag:'substance', n:'Myrrh · ꜥntjw', s:'Commiphora resin, imported via Punt', note:'47 mentions in EB01 · cf. E18 Gaubius, tinct. myrrhae'},
+      {c:'author', tag:'author · version', n:'H. Joachim', s:'Papyros Ebers — German translation, 1890', note:'Open EB02 at this passage →'}]},
+  46: { ebs:'Eb 191–194', title:'The stomach that burneth',
+    translit:'k.t n.t rꜣ-jb wnn=f m tꜣw · jšd sṯj bj.t mw',
+    hiero:'𓎡𓏏 𓈖𓏏 𓂋𓄣 𓃹𓈖𓈖 𓆑 𓅓 𓇾𓅱 · 𓇋𓈙𓂧𓏥 𓃀𓇋𓏏',
+    trans:'<span class="rub">Another, for the stomach when it burneth.</span> Fruit of the <span class="ent plant">jšd-tree</span>(?), yellow <span class="ent substance">ochre</span>, <span class="ent substance">honey</span>; to be mashed in water, strained, and drunk warm. The reading <em>sṯj</em> is uncertain.',
+    cards:[
+      {c:'cite', tag:'remedy · citation', n:'Eb 191', s:'The burning stomach — warm infusion', note:'Parallel: EB02 · Joachim (1890), p. 64'},
+      {c:'substance', tag:'substance', n:'Yellow ochre · sṯj', s:'Reading uncertain; mineral pigment', note:'Flagged low-confidence in associations layer'}]},
+  47: { ebs:'Eb 195–198', title:'Hardness under the fingers',
+    translit:'jr ḫꜣi̯=k s ḥr nḫt m rꜣ-jb=f šm=f jwi̯=f ẖr ḏbꜥ.w=k',
+    hiero:'𓇋𓂋 𓆼𓄿𓇋𓎡 𓋴 𓁷𓂋 𓈖𓆼𓏏 𓅓 𓂋𓄣𓆑 · 𓈙𓅓𓆑 𓇋𓅱𓆑',
+    trans:'If thou examinest a man with a hardness in his stomach, and it goeth and cometh under thy fingers like oil in a skin, <span class="rub">then say thou: this is a case that I will treat.</span> <span class="ent plant">Wormwood</span>(?), <span class="ent substance">natron</span>, <span class="ent substance">honey</span>; apply as a warm compress during four days.',
+    cards:[
+      {c:'cite', tag:'remedy · citation', n:'Eb 195', s:'Palpation prognosis — a case to treat', note:'Parallel: EB02 · Joachim (1890), p. 66'},
+      {c:'substance', tag:'substance', n:'Natron · ḥsmn', s:'Mineral soda, Wadi Natrun', note:'Also in embalming and mouth-rinse recipes'}]},
+  48: { ebs:'Eb 199–202', title:'That the stomach receive bread',
+    translit:'k.t n.t rdi̯.t šsp rꜣ-jb tʾ · dꜣb wꜥḥ bj.t',
+    hiero:'𓎡𓏏 𓈖𓏏 𓂋𓂝𓏏 𓈙𓊃𓊪 𓂋𓄣 𓏐𓏒 · 𓂧𓄿𓃀𓏥 𓃀𓇋𓏏',
+    trans:'<span class="rub">Another, to cause the stomach to receive bread.</span> Figs of the <span class="ent plant">sycamore</span>; <span class="ent plant">earth-almond</span> (<em>wꜥḥ</em>); <span class="ent substance">honey</span>; ground, made into a cake, and eaten warm before sleeping.',
+    cards:[
+      {c:'cite', tag:'remedy · citation', n:'Eb 199', s:'Restoring appetite — fig cake', note:'Parallel: EB02 · Joachim (1890), p. 67'},
+      {c:'plant', tag:'plant', n:'Earth-almond · wꜥḥ', s:'Cyperus esculentus, tiger nut', note:'Staple sweetener beside honey and dates'}]}
+};
+const ENT_VAR = {cite:'--ent-cite', substance:'--ent-substance', plant:'--ent-plant', author:'--ent-author'};
+
+/* ---------- world layout: RTL, col 44 rightmost ----------
+   The scans carry a black scanner border top/bottom (~120 px / ~140 px);
+   CROP holds the papyrus band [topPx, botPx], which is clipped out and
+   normalized so the papyrus itself spans world height 0..1. */
+const CROP = {44:[122,1462], 45:[134,1455], 46:[124,1454], 47:[129,1461], 48:[123,1449]};
+const ORDER = [44,45,46,47,48];
+const W = {}, HW = {}, YW = {}; let TOTAL = 0;
+ORDER.forEach(n => {
+  const band = CROP[n][1] - CROP[n][0];
+  W[n]  = DIMS[n][0] / band;          /* world width  */
+  HW[n] = DIMS[n][1] / band;          /* world height of full (clipped) scan */
+  YW[n] = -CROP[n][0] / band;         /* y so papyrus band sits at 0..1 */
+  TOTAL += W[n];
+});
+const X = {}; let xr = TOTAL;
+ORDER.forEach(n => { xr -= W[n]; X[n] = xr; });   /* 44:[TOTAL-w44..TOTAL], 45 to its left, ... */
+/* aspect-aware focus rect: column + a sliver of each neighbour; crop
+   vertically on wide viewports instead of shrinking the roll to a ribbon */
+function viewRect(n) {
+  if (!viewer) return null;
+  const a = viewer.viewport.getAspectRatio();
+  const dw = W[n] * 2.15, dh = dw / a;
+  if (dh >= 1.08) return new OpenSeadragon.Rect(X[n] - .035, -.03, W[n] + .07, 1.06);
+  return new OpenSeadragon.Rect(X[n] + W[n]/2 - dw/2, .5 - dh/2, dw, dh);
+}
+
+let cur = 45, ready = false, toastShown = false;
+let viewer = null;
+
+/* ---------- viewer (guarded: the OpenSeadragon CDN may be unavailable) ---------- */
+if (window.OpenSeadragon) {
+  viewer = OpenSeadragon({
+    element: 'osd', showNavigationControl: false, animationTime: 1.0, springStiffness: 7.5,
+    visibilityRatio: .9, constrainDuringPan: true, minZoomImageRatio: .55, maxZoomPixelRatio: 2.4,
+    homeFillsViewer: false, gestureSettingsMouse: { clickToZoom: false, dblClickToZoom: true },
+    tileSources: ORDER.map(n => ({
+      tileSource: { type: 'image', url: 'assets/pages/EB01-col-00' + n + '.jpg' },
+      x: X[n], y: YW[n], height: HW[n] }))
+  });
+  viewer.world.addHandler('add-item', e => {          /* clip the scanner border */
+    const m = /EB01-col-00(\d\d)/.exec(e.item.source.url || '');
+    if (!m) return;
+    const n = +m[1];
+    e.item.setClip(new OpenSeadragon.Rect(0, CROP[n][0], DIMS[n][0], CROP[n][1] - CROP[n][0]));
+  });
+  viewer.addHandler('open', () => {
+    viewer.viewport.fitBounds(viewRect(45), true);
+    setTimeout(() => ready = true, 900);
+  });
+  viewer.addHandler('viewport-change', () => {
+    const cx = viewer.viewport.getCenter(true).x;
+    let n = cx >= TOTAL ? 44 : cx <= 0 ? 48 : cur;
+    ORDER.forEach(k => { if (cx >= X[k] && cx < X[k] + W[k]) n = k; });
+    if (n !== cur) {
+      const dir = n > cur ? 1 : -1;   /* +1 = forward in reading order = leftward */
+      cur = n; renderAll();
+      if (ready && !toastShown) {
+        toastShown = true;
+        showToast('fetching col ' + Math.min(110, Math.max(1, n + dir)) + ' layers · tiles → text → parallel');
+      }
+    }
+  });
+} else {
+  /* static fallback: the five column JPGs in a scrollable RTL flex row */
+  const fb = document.createElement('div');
+  fb.className = 'osd-fallback';
+  ORDER.forEach(n => {
+    const img = document.createElement('img');
+    img.id = 'fb-col-' + n;
+    img.src = 'assets/pages/EB01-col-00' + n + '.jpg';
+    img.alt = 'EB01 column ' + n;
+    fb.appendChild(img);
+  });
+  document.getElementById('osd').appendChild(fb);
+  fb.addEventListener('scroll', () => {               /* track the column nearest centre */
+    const mid = fb.getBoundingClientRect().left + fb.clientWidth / 2;
+    let best = cur, bd = Infinity;
+    ORDER.forEach(n => {
+      const r = document.getElementById('fb-col-' + n).getBoundingClientRect();
+      const d = Math.abs((r.left + r.right) / 2 - mid);
+      if (d < bd) { bd = d; best = n; }
+    });
+    if (best !== cur) { cur = best; renderAll(); }
+  });
+  window.addEventListener('load', () => {             /* centre col 45 once images have size */
+    const el = document.getElementById('fb-col-45');
+    if (el) el.scrollIntoView({ inline: 'center', block: 'nearest' });
+  });
+}
+const goto_ = n => {
+  if (!viewer) {                                      /* fallback: scroll the strip row */
+    const el = document.getElementById('fb-col-' + n);
+    if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    if (n !== cur) { cur = n; renderAll(); }
+    return;
+  }
+  viewer.viewport.fitBounds(viewRect(n));
+};
+document.getElementById('btnNext').onclick = () => { if (cur < 48) goto_(cur + 1); };
+document.getElementById('btnPrev').onclick = () => { if (cur > 44) goto_(cur - 1); };
+document.addEventListener('keydown', e => {
+  if (/input|select|textarea/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowLeft'  && cur < 48) { goto_(cur + 1); e.preventDefault(); }
+  if (e.key === 'ArrowRight' && cur > 44) { goto_(cur - 1); e.preventDefault(); }
+});
+
+/* ---------- prefetch toast ---------- */
+const toast = document.getElementById('toast');
+function showToast(msg) {
+  document.getElementById('toastTxt').textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3200);
+}
+
+/* ---------- reading strip ---------- */
+let hieroOn = false;
+const strip = document.getElementById('strip'), stripBtn = document.getElementById('stripBtn'),
+      hieroBtn = document.getElementById('hieroBtn');
+stripBtn.onclick = () => {
+  const c = strip.classList.toggle('collapsed');
+  stripBtn.textContent = c ? 'expand ▴' : 'collapse ▾';
+};
+hieroBtn.onclick = () => {
+  hieroOn = !hieroOn;
+  hieroBtn.classList.toggle('active', hieroOn);
+  hieroBtn.innerHTML = '<span class="hiero-glyph">𓏛</span>&nbsp;hieroglyphic · ' + (hieroOn ? 'on' : 'off');
+  document.getElementById('hieroLine').hidden = !hieroOn;
+};
+
+/* ---------- sidebar ---------- */
+const rail = document.getElementById('rail'), sidebar = document.getElementById('sidebar');
+function openSide(tab) {
+  rail.style.display = 'none'; sidebar.hidden = false; selectTab(tab);
+}
+function selectTab(tab) {
+  document.getElementById('tab-contents').hidden = tab !== 'contents';
+  document.getElementById('tab-oncol').hidden = tab !== 'oncol';
+  document.getElementById('tabBtnContents').classList.toggle('active', tab === 'contents');
+  document.getElementById('tabBtnOncol').classList.toggle('active', tab === 'oncol');
+}
+rail.querySelectorAll('.railbtn').forEach(b => b.onclick = () => openSide(b.dataset.tab));
+sidebar.querySelectorAll('.sidebar-tabs button').forEach(b => b.onclick = () => selectTab(b.dataset.tab));
+document.getElementById('sideClose').onclick = () => { sidebar.hidden = true; rail.style.display = ''; };
+
+/* column map: 110 bars, RTL (col 110 leftmost, col 1 rightmost) */
+const colmap = document.getElementById('colmap');
+for (let n = 110; n >= 1; n--) {
+  const b = document.createElement('div');
+  b.className = 'bar' + (ORDER.includes(n) ? ' win' : '');
+  b.dataset.n = n; b.title = 'Column ' + n + (ORDER.includes(n) ? '' : ' · outside loaded window');
+  colmap.appendChild(b);
+}
+colmap.onclick = e => {
+  const n = +e.target.dataset.n;
+  if (ORDER.includes(n)) goto_(n);
+};
+
+/* loaded-columns list */
+const colList = document.getElementById('colList');
+ORDER.forEach(n => {
+  const r = document.createElement('div');
+  r.className = 'colrow'; r.dataset.n = n;
+  r.innerHTML = '<span class="cn">' + n + '</span><div><div class="ct">' + COLS[n].title +
+    '</div><div class="ce">' + COLS[n].ebs + '</div></div>';
+  r.onclick = () => goto_(n);
+  colList.appendChild(r);
+});
+
+/* ---------- render ---------- */
+function renderAll() {
+  const d = COLS[cur];
+  document.getElementById('colChip').innerHTML = '<b>Column ' + cur + '</b> · ' + d.ebs;
+  document.getElementById('stripCol').textContent = 'Column ' + cur;
+  document.getElementById('stripSub').textContent = d.ebs + ' · ' + d.title;
+  document.getElementById('hieroTxt').textContent = d.hiero;
+  document.getElementById('translitTxt').textContent = d.translit;
+  document.getElementById('transTxt').innerHTML = d.trans;
+  document.getElementById('btnNext').disabled = cur >= 48;
+  document.getElementById('btnPrev').disabled = cur <= 44;
+  document.getElementById('oncolH').textContent = 'On column ' + cur;
+  document.getElementById('entCards').innerHTML = d.cards.map(c =>
+    '<div class="ecard"><div class="edot" style="background:var(' + ENT_VAR[c.c] + ')"></div>' +
+    '<div class="ebody"><div class="ename">' + c.n + '<span class="etag">' + c.tag + '</span></div>' +
+    '<div class="esub">' + c.s + '</div><div class="enote">' + c.note + '</div>' +
+    '<div class="eact"><button class="linkish">+ reading list</button>' +
+    '<button class="linkish">open ↗</button></div></div></div>').join('');
+  colmap.querySelectorAll('.bar.cur').forEach(b => b.classList.remove('cur'));
+  const cb = colmap.querySelector('.bar[data-n="' + cur + '"]'); if (cb) cb.classList.add('cur');
+  colList.querySelectorAll('.colrow').forEach(r => r.classList.toggle('cur', +r.dataset.n === cur));
+}
+renderAll();
+</script>
+</body>
+</html>

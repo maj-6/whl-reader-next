@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Ebers Papyrus — Work Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px}
+
+.kicker{font:600 11px var(--font-chrome);letter-spacing:.15em;text-transform:uppercase;
+  color:var(--ink-3);display:flex;align-items:center;gap:14px;margin:0 0 18px}
+.kicker::after{content:"";flex:1;border-top:1px solid var(--line)}
+.kicker.plain::after{display:none}
+
+/* ---------- hero ---------- */
+.hero{padding:54px 0 48px}
+.hero-grid{display:grid;grid-template-columns:350px minmax(0,1fr);gap:60px;align-items:center}
+.thumb-stack{position:relative;width:302px;margin:0 auto}
+.thumb-stack .t-main{display:block;width:262px;height:auto;border:1px solid var(--line-2);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-lg)}
+.thumb-stack .t-sub{position:absolute;right:-4px;bottom:-30px;width:138px;height:auto;
+  border:1px solid var(--line-2);border-radius:var(--radius);box-shadow:var(--shadow-lg);
+  transform:rotate(2.4deg);background:var(--bg-raise)}
+.thumb-cap{margin-top:44px;text-align:center;font-size:11.5px;color:var(--ink-3)}
+
+.hero-info .eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:12px;
+  font:600 11px var(--font-chrome);letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3)}
+.hero-info h1{font-size:clamp(34px,4.6vw,49px);margin:0 0 6px;letter-spacing:.005em}
+.hero-info .alt{font-family:var(--font-read);font-style:italic;color:var(--ink-2);
+  font-size:17.5px;margin:0 0 20px}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 26px}
+.cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.cta-row .btn{padding:10px 18px;font-size:13.5px}
+.cta-hint{font-size:12px;color:var(--ink-3);margin:0}
+
+/* ---------- roll band ---------- */
+.roll{background:var(--bg-sunk);border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  padding:22px 0 16px}
+.roll-head{display:flex;align-items:baseline;gap:14px;margin-bottom:14px}
+.roll-head .kicker{flex:1;margin:0}
+.roll-head a{font-size:12.5px;white-space:nowrap}
+.roll-strip{display:flex;direction:rtl;justify-content:center;justify-content:safe center;gap:3px;overflow-x:auto;padding:4px 2px}
+.roll-strip a{flex:0 0 auto;font-size:0;line-height:0}
+.roll-strip img{height:198px;width:auto;border:1px solid var(--line-2);background:var(--bg-raise);
+  transition:box-shadow .15s ease}
+.roll-strip a:hover img{box-shadow:0 0 0 2px var(--accent)}
+.roll-cap{direction:ltr;text-align:center;font-size:11.5px;color:var(--ink-3);margin-top:12px}
+
+/* ---------- main columns ---------- */
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:60px;padding:50px 0 10px}
+section{margin-bottom:50px}
+
+.summary{font-size:17.5px;margin:0}
+details.readmore{margin-top:18px;border-top:1px solid var(--line)}
+details.readmore summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px;
+  padding:11px 0;font:600 12.5px var(--font-chrome);letter-spacing:.02em;color:var(--accent)}
+details.readmore summary::-webkit-details-marker{display:none}
+details.readmore summary::before{content:"+";width:14px;font-size:15px;line-height:1;text-align:center}
+details.readmore[open] summary::before{content:"\2212"}
+details.readmore .more p{margin:.3em 0 1em;font-size:15.5px}
+
+/* witnesses */
+.wit-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.wit{padding:16px;display:flex;gap:15px;align-items:flex-start}
+.wit img{width:76px;height:110px;object-fit:cover;border:1px solid var(--line-2);
+  border-radius:3px;flex:0 0 auto}
+.wit .k{font:600 10.5px var(--font-chrome);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.wit h3{font-size:19.5px;margin:3px 0 2px}
+.wit .wmeta{font-size:12px;color:var(--ink-2);margin:0 0 7px}
+.wit .desc{font-size:13px;line-height:1.5;color:var(--ink-2);margin:0 0 11px}
+.wit .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.compare{margin-top:16px;padding:15px 18px;display:flex;gap:20px;align-items:center;
+  border-left:3px solid var(--accent)}
+.compare p{margin:0;flex:1;font-size:13px;line-height:1.55;color:var(--ink-2)}
+.compare .btn{white-space:nowrap}
+
+/* knowledge articles */
+.art-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+a.art{display:block;padding:18px 20px;color:inherit;transition:border-color .15s ease}
+a.art:hover{text-decoration:none;border-color:var(--accent)}
+a.art .k{font:600 10.5px var(--font-chrome);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+a.art h3{font-size:20px;margin:7px 0 6px}
+a.art p{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:var(--ink-2)}
+a.art .go{font:600 12px var(--font-chrome);color:var(--accent)}
+
+/* ---------- right rail ---------- */
+.rail .card{padding:19px 20px;margin-bottom:22px}
+.rail .kicker{margin-bottom:15px}
+dl.cat{margin:0;display:grid;grid-template-columns:94px minmax(0,1fr);row-gap:10px;column-gap:14px}
+dl.cat dt{font:600 10.5px var(--font-chrome);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);padding-top:3px}
+dl.cat dd{margin:0;font-family:var(--font-read);font-size:13.5px;line-height:1.45}
+dl.cat dd .sub{display:block;font-size:12px;color:var(--ink-3);font-family:var(--font-chrome);margin-top:1px}
+
+ul.readlist{list-style:none;margin:0;padding:0}
+ul.readlist li{padding:13px 0;border-top:1px solid var(--line)}
+ul.readlist li:first-child{padding-top:2px;border-top:0}
+.rtitle{font-family:var(--font-read);font-size:14px;line-height:1.4;margin:0}
+.rtitle i{font-style:italic}
+.rmeta{font-size:11.5px;color:var(--ink-3);margin:2px 0 7px}
+.rnote{font-size:12px;color:var(--ink-2);margin:6px 0 0;line-height:1.5}
+
+/* footer */
+.foot{border-top:1px solid var(--line);margin-top:16px;padding:24px 0 96px;font-size:13px;color:var(--ink-2)}
+.foot .wrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.foot .spacer{flex:1}
+
+.topbar .ttl{font:600 13px var(--font-chrome);color:var(--ink-2)}
+
+@media (max-width:940px){
+  .hero-grid{grid-template-columns:1fr;gap:44px}
+  .cols{grid-template-columns:1fr;gap:44px}
+  .wit-grid,.art-grid{grid-template-columns:1fr}
+  .compare{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+
+<nav class="topbar">
+  <a href="index.html">&larr; Mockups</a>
+  <span class="ttl">Work overview &middot; landmark tier</span>
+  <div class="mock-switch">
+    <select class="btn" id="scheme" aria-label="Colour scheme">
+      <option value="archive">Archive</option>
+      <option value="herbarium">Herbarium</option>
+      <option value="oxford">Oxford</option>
+    </select>
+    <button class="btn" id="mode">&#9790; Dark</button>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <figure class="thumb-stack" style="margin-block:0">
+      <img class="t-main" src="assets/thumbs/EB01.jpg" alt="Facsimile cover of the Ebers Papyrus (EB01)">
+      <img class="t-sub" src="assets/thumbs/EB02.jpg" alt="Joachim's 1890 German translation (EB02)">
+      <figcaption class="thumb-cap">EB01 &middot; the papyrus roll &nbsp;&bull;&nbsp; EB02 &middot; Joachim&rsquo;s translation, 1890</figcaption>
+    </figure>
+    <div class="hero-info">
+      <div class="eyebrow"><span class="badge-tier landmark">Landmark</span> <span>Work &middot; Ancient Egypt</span></div>
+      <h1>The Ebers Papyrus</h1>
+      <p class="alt"><span lang="de">Papyros Ebers</span> &middot; Thebes, c.&thinsp;1550&nbsp;BC &middot; Leipzig, Universit&auml;tsbibliothek</p>
+      <div class="meta-row">
+        <span class="chip">c.&thinsp;1550 BC</span>
+        <span class="chip">Egyptian &middot; hieratic</span>
+        <span class="chip">German &middot; trans. 1890</span>
+        <span class="chip accent">2 versions in library</span>
+      </div>
+      <div class="cta-row">
+        <a class="btn primary" href="reader-scroll.html">Read the papyrus</a>
+        <a class="btn" href="reader-codex.html">Read Joachim&rsquo;s translation</a>
+      </div>
+      <p class="cta-hint">The papyrus opens in the horizontal scroll reader; the translation opens as a 236-page codex.</p>
+    </div>
+  </div>
+</header>
+
+<!-- ================= ROLL BAND ================= -->
+<div class="roll">
+  <div class="wrap">
+    <div class="roll-head">
+      <span class="kicker" style="margin:0">From the roll</span>
+      <a href="reader-scroll.html">Open the scroll reader &rarr;</a>
+    </div>
+    <div class="roll-strip">
+      <a href="reader-scroll.html" title="Column XLIV"><img src="assets/pages/EB01-col-0044.jpg" alt="Ebers Papyrus, column 44"></a>
+      <a href="reader-scroll.html" title="Column XLV"><img src="assets/pages/EB01-col-0045.jpg" alt="Ebers Papyrus, column 45"></a>
+      <a href="reader-scroll.html" title="Column XLVI"><img src="assets/pages/EB01-col-0046.jpg" alt="Ebers Papyrus, column 46"></a>
+      <a href="reader-scroll.html" title="Column XLVII"><img src="assets/pages/EB01-col-0047.jpg" alt="Ebers Papyrus, column 47"></a>
+      <a href="reader-scroll.html" title="Column XLVIII"><img src="assets/pages/EB01-col-0048.jpg" alt="Ebers Papyrus, column 48"></a>
+    </div>
+    <p class="roll-cap">Columns XLIV&ndash;XLVIII &middot; the roll reads right to left, edge to edge</p>
+  </div>
+</div>
+
+<!-- ================= MAIN ================= -->
+<main class="wrap cols">
+  <div class="main">
+
+    <section>
+      <h2 class="kicker">About this work</h2>
+      <p class="reading summary">The Ebers Papyrus is the longest and best-preserved medical book to survive from ancient Egypt: a roll of 110 columns written in hieratic around 1550&nbsp;BC, gathering nearly nine hundred remedies for complaints of the belly, skin, eyes and heart. Its prescriptions draw on a rich materia medica &mdash; <span class="ent substance">myrrh</span>, <span class="ent substance">honey</span>, <span class="ent substance">frankincense</span> and the <span class="ent plant">castor plant</span> recur throughout &mdash; and its treatise on the vessels sketches the earliest surviving theory of physiology. The library holds the papyrus itself (EB01) alongside <span class="ent author">Heinrich Joachim</span>&rsquo;s German translation of 1890 (EB02).</p>
+
+      <details class="readmore">
+        <summary>Read more &mdash; discovery, contents, significance</summary>
+        <div class="more reading">
+          <p>The roll was bought at Luxor in 1862 by the American collector <span class="ent author">Edwin Smith</span>, said to have been found between the legs of a mummy in the Assasif necropolis. <span class="ent author">Georg Ebers</span> acquired it in 1872 for the Leipzig University Library, published a full facsimile with introduction in 1875, and gave the papyrus its modern name. It has remained at Leipzig ever since, under the shelfmark P.&nbsp;Eb.</p>
+          <p>The text is a compilation rather than a single treatise: recipe collections against diseases of the belly and worms, an eye-book, a skin-book, gynaecological prescriptions, and the celebrated treatise on the heart and vessels (<span class="ent cite">Eb 854&ndash;856</span>), in which channels &mdash; the <i>metu</i> &mdash; carry air, blood and disease through the body. The numbered remedies name plants, minerals and animal substances with quantities in fractions of the <i>hekat</i>, each new section opened by a rubric in <span class="rub">red</span>.</p>
+          <p>A calendar on the verso naming year 9 of Amenhotep&nbsp;I anchors the roll near 1550&nbsp;BC, making it a fixed point for Egyptian chronology as well as for the history of medicine. Together with the Edwin Smith surgical papyrus it defines most of what is known of pharaonic medical practice. <span class="ent author">Joachim</span>&rsquo;s translation of 1890 &mdash; imperfect, but unreplaced in scope until the <span class="ent cite">Grundriss</span> of the 1950s &mdash; opened the text to historians of medicine and remains the version through which most readers first meet it.</p>
+        </div>
+      </details>
+    </section>
+
+    <section>
+      <h2 class="kicker">Witnesses &amp; versions</h2>
+      <div class="wit-grid">
+        <article class="card wit">
+          <img src="assets/thumbs/EB01.jpg" alt="EB01 thumbnail">
+          <div>
+            <div class="k">EB01 &middot; Papyrus witness</div>
+            <h3>The papyrus roll</h3>
+            <p class="wmeta">Leipzig P.&thinsp;Eb. &middot; hieratic &middot; 110 columns &middot; c.&thinsp;1550 BC</p>
+            <p class="desc">Read edge to edge as a continuous roll, right to left, with column navigation and hieroglyphic transcription layers.</p>
+            <div class="row"><a class="btn" href="reader-scroll.html">Open scroll reader</a> <span class="chip">RTL roll</span></div>
+          </div>
+        </article>
+        <article class="card wit">
+          <img src="assets/thumbs/EB02.jpg" alt="EB02 thumbnail">
+          <div>
+            <div class="k">EB02 &middot; Translation</div>
+            <h3>Joachim&rsquo;s German translation</h3>
+            <p class="wmeta"><span lang="de"><i>Papyros Ebers: Das &auml;lteste Buch &uuml;ber Heilkunde</i></span> &middot; Berlin, 1890 &middot; 236 pp</p>
+            <p class="desc">The first complete rendering into a modern language, read as a codex with facing facsimile pages.</p>
+            <div class="row"><a class="btn" href="reader-codex.html">Open codex reader</a> <span class="chip">Codex</span></div>
+          </div>
+        </article>
+      </div>
+      <div class="card compare">
+        <p><strong>Tafel numerals cross-link the two.</strong> Joachim&rsquo;s Tafel headings (Taf.&thinsp;I&ndash;CX) map one-to-one onto the papyrus columns: open both witnesses side by side and a Tafel heading in the translation lights up its column in the roll.</p>
+        <button class="btn primary" disabled title="Mock &mdash; compare view not in this mockup">Compare witnesses</button>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="kicker">Knowledge articles</h2>
+      <div class="art-grid">
+        <a class="card art" href="#">
+          <span class="k">Knowledge article &middot; 6 min</span>
+          <h3>Egyptian medicine and the channel theory</h3>
+          <p>The <i>metu</i> treatise (<span class="ent cite">Eb 854&ndash;856</span>) pictures the body as a network of vessels carrying air, blood and disease &mdash; a physiology the papyrus shares, at a distance, with later humoral systems.</p>
+          <span class="go">Read the article &rarr;</span>
+        </a>
+        <a class="card art" href="#">
+          <span class="k">Knowledge article &middot; 4 min</span>
+          <h3>Reading hieratic</h3>
+          <p>How the cursive hand of the Ebers scribe abbreviates hieroglyphs, why the rubrics are <span class="rub">red</span>, and how to follow the transcription layer in the reader.</p>
+          <span class="go">Read the article &rarr;</span>
+        </a>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ================= RAIL ================= -->
+  <aside class="rail">
+    <div class="card">
+      <h2 class="kicker plain" style="margin-bottom:15px">Catalogue entry</h2>
+      <dl class="cat">
+        <dt>Shelfmark</dt><dd>Leipzig, Universit&auml;tsbibliothek, P.&thinsp;Eb.</dd>
+        <dt>Date</dt><dd>c.&thinsp;1550 BC <span class="sub">verso calendar: year 9 of Amenhotep&nbsp;I</span></dd>
+        <dt>Script</dt><dd>Hieratic, one trained hand; rubrics in <span class="rub">red</span></dd>
+        <dt>Language</dt><dd>Egyptian (Middle Egyptian)</dd>
+        <dt>Extent</dt><dd>110 numbered columns &middot; roll c.&thinsp;18.6&nbsp;m</dd>
+        <dt>Material</dt><dd>Papyrus</dd>
+        <dt>Source</dt><dd>Leipzig UB IIIF <span class="sub">content-hashed tiles, streamed</span></dd>
+        <dt>In corpus</dt><dd>EB01 (facsimile) &middot; EB02 (Joachim trans.)</dd>
+      </dl>
+    </div>
+
+    <div class="card">
+      <h2 class="kicker plain" style="margin-bottom:15px">Suggested reading</h2>
+      <ul class="readlist">
+        <li>
+          <p class="rtitle"><span class="ent author">Joachim, H.</span> &mdash; <i lang="de">Papyros Ebers: Das &auml;lteste Buch &uuml;ber Heilkunde</i></p>
+          <p class="rmeta">Berlin: Reimer, 1890 &middot; 236 pp</p>
+          <a class="chip accent" href="reader-codex.html">In library &middot; EB02</a>
+        </li>
+        <li>
+          <p class="rtitle">Grapow, von Deines &amp; Westendorf &mdash; <i lang="de">Grundriss der Medizin der alten &Auml;gypter</i></p>
+          <p class="rmeta">9 vols &middot; Berlin, 1954&ndash;1973 &middot; the standard reference lexicon</p>
+          <span class="chip">External &#8599;</span>
+        </li>
+        <li>
+          <p class="rtitle"><span class="ent author">Li Shizhen</span> &mdash; <i>Ben Cao Gang Mu</i> <span lang="zh">本草綱目</span></p>
+          <p class="rmeta">Hongbaozhai ed., 1888 &middot; another landmark pharmacopoeia</p>
+          <a class="chip accent" href="library.html">In library &middot; E54</a>
+          <p class="rnote">Compare its mineral and animal drugs with the Ebers materia medica.</p>
+        </li>
+        <li>
+          <p class="rtitle">Westendorf, W. &mdash; <i lang="de">Handbuch der alt&auml;gyptischen Medizin</i></p>
+          <p class="rmeta">Leiden: Brill, 1999</p>
+          <span class="chip">External &#8599;</span>
+        </li>
+      </ul>
+    </div>
+  </aside>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <a href="library.html">&larr; Back to the library</a>
+    <a href="index.html">Mockup hub</a>
+    <span class="spacer"></span>
+    <span>WHL Reader &middot; design mockup &middot; landmark tier</span>
+  </div>
+</footer>
+
+<div class="mock-note"><button class="mn-x" aria-label="Dismiss">&times;</button><strong>Mockup:</strong> landmark-tier work overview (Ebers Papyrus). Interactive: scheme/mode switcher, &ldquo;Read more&rdquo; collapsible, roll strip &amp; witness cards link to the reader mockups. &ldquo;Compare witnesses&rdquo; and article links are illustrative. This Ebers page stands in for all landmark-tier overviews (Ben Cao Gang Mu links land here too).</div>
+
+<script>
+const sel=document.getElementById('scheme');
+sel.value=document.documentElement.dataset.scheme;
+sel.addEventListener('change',()=>{document.documentElement.dataset.scheme=sel.value;localStorage.setItem('whlnext-scheme',sel.value);});
+const modeBtn=document.getElementById('mode');
+function paintMode(){modeBtn.innerHTML=document.documentElement.dataset.mode==='dark'?'&#9788; Light':'&#9790; Dark';}
+modeBtn.addEventListener('click',()=>{const m=document.documentElement.dataset.mode==='dark'?'light':'dark';document.documentElement.dataset.mode=m;localStorage.setItem('whlnext-mode',m);paintMode();});
+paintMode();
+document.querySelector('.mn-x').addEventListener('click',e=>e.target.closest('.mock-note').remove());
+</script>
+</body>
+</html>

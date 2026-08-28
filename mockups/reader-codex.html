@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reader — codex (E17) · WHL mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+/* ---------- frame ---------- */
+html, body { height: 100%; }
+body { display: flex; flex-direction: column; overflow: hidden; }
+.stage { display: flex; flex: 1; min-height: 0; }
+
+/* ---------- topbar additions ---------- */
+.tb-title { font: 600 10.5px var(--font-chrome); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+.tb-sep { width: 1px; height: 20px; background: var(--line); }
+.bookpick { display: flex; align-items: center; gap: 9px; padding: 4px 10px 4px 5px; border: 1px solid transparent;
+  border-radius: var(--radius); background: none; cursor: pointer; color: var(--ink); font-family: var(--font-chrome); text-align: left; }
+.bookpick:hover { border-color: var(--line-2); background: var(--bg); }
+.bookpick img { width: 24px; height: 33px; object-fit: cover; border-radius: 2px; border: 1px solid var(--line-2); }
+.bookpick .bp-t { display: flex; flex-direction: column; line-height: 1.25; }
+.bookpick .bp-t b { font-size: 13.5px; font-weight: 600; }
+.bookpick .bp-t small { font-size: 10.5px; color: var(--ink-3); }
+.bookpick .caret { color: var(--ink-3); font-size: 9px; margin-left: 2px; }
+
+.seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: var(--radius); overflow: hidden; background: var(--bg-raise); }
+.seg button { border: 0; border-right: 1px solid var(--line); background: none; padding: 5px 13px;
+  font: 12.5px var(--font-chrome); color: var(--ink-2); cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button.active { background: var(--tint-select); color: var(--ink); font-weight: 600; }
+.seg button:disabled { opacity: .4; cursor: not-allowed; }
+.seg.mini button { padding: 4px 10px; font-size: 11.5px; }
+
+.advtog { display: flex; align-items: center; gap: 7px; font: 11px var(--font-chrome); color: var(--ink-3); cursor: pointer; user-select: none; }
+.advtog .lb.on { color: var(--ink); font-weight: 600; }
+.sw { width: 34px; height: 19px; border-radius: 99px; background: var(--bg-sunk); border: 1px solid var(--line-2); position: relative; cursor: pointer; padding: 0; }
+.sw::after { content: ''; position: absolute; left: 2px; top: 2px; width: 13px; height: 13px; border-radius: 50%; background: var(--ink-3); transition: left .16s, background .16s; }
+body[data-adv="1"] .sw { background: var(--tint-select); border-color: var(--accent); }
+body[data-adv="1"] .sw::after { left: 17px; background: var(--accent); }
+
+.pageind { display: flex; align-items: center; gap: 8px; font: 12px var(--font-chrome); color: var(--ink-2); white-space: nowrap; }
+.pageind b { color: var(--ink); font-weight: 600; }
+.ldots { display: inline-flex; gap: 4px; align-items: center; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); flex: none; }
+.dot.fetch { background: var(--warn); animation: pulse 1.1s infinite; }
+.dot.idle { background: transparent; border: 1px solid var(--line-2); }
+@keyframes pulse { 50% { opacity: .3; } }
+@keyframes tickflash { 0% { background: var(--tint-select); } 100% { background: transparent; } }
+.pageind.tick { animation: tickflash .9s ease-out; border-radius: var(--radius); }
+
+body:not([data-adv="1"]) .adv-only { display: none !important; }
+
+/* ---------- viewer pane ---------- */
+#viewerPane { position: relative; width: 45%; min-width: 0; background: var(--bg-sunk); display: flex; flex-direction: column; transition: width .25s ease; }
+body.dragging #viewerPane { transition: none; }
+body.dragging { cursor: col-resize; user-select: none; }
+#osd { flex: 1; min-height: 0; }
+#osd canvas { outline: none; }
+
+.vtools { position: absolute; top: 10px; left: 10px; z-index: 20; display: flex; gap: 6px; }
+.vtools .btn { padding: 5px 9px; font-size: 12px; box-shadow: var(--shadow); }
+.pop { position: absolute; top: 42px; left: 10px; z-index: 30; width: 240px; background: var(--bg-raise);
+  border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 10px 12px; }
+.pop h5 { margin: 0 0 8px; font: 600 10.5px var(--font-chrome); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.pop label { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12.5px; cursor: pointer; }
+.pop label.off { color: var(--ink-3); cursor: not-allowed; }
+.pop .lstat { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--ink-3); }
+.pop .pfoot { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 10.5px; color: var(--ink-3); line-height: 1.45; }
+
+/* overlays */
+.ovl { border: 1px solid var(--accent); background: var(--tint-region); border-radius: 2px; cursor: pointer;
+  transition: background .15s, box-shadow .15s; }
+.ovl.hot { background: var(--tint-select); }
+.ovl.sel { background: var(--tint-select); box-shadow: 0 0 0 2px var(--accent); }
+.ovl-line { border: 1px dashed var(--line-2); pointer-events: none; border-radius: 1px; }
+.ovl-word { border: 1px solid var(--ink-3); opacity: .55; pointer-events: none; border-radius: 1px; }
+.layer-hidden { visibility: hidden; }
+
+/* study-mode thumbnail rail */
+#rail { display: none; flex: 1; min-height: 0; overflow-y: auto; padding: 10px 0; flex-direction: column; gap: 10px; align-items: center; }
+.rl { width: 72px; background: none; border: 0; cursor: pointer; text-align: center; padding: 0; color: var(--ink-3); font: 10.5px var(--font-chrome); }
+.rl img { display: block; width: 62px; margin: 0 auto 3px; border: 1px solid var(--line-2); border-radius: 2px; opacity: .82; }
+.rl.cur { color: var(--accent); font-weight: 600; }
+.rl.cur img { border: 2px solid var(--accent); width: 64px; opacity: 1; box-shadow: var(--shadow); }
+.rl:hover img { opacity: 1; }
+
+body[data-rmode="study"] #viewerPane { width: 90px !important; }
+body[data-rmode="study"] #osd, body[data-rmode="study"] .vtools, body[data-rmode="study"] .pop { display: none; }
+body[data-rmode="study"] #rail { display: flex; }
+body[data-rmode="study"] #divider { display: none; }
+body[data-rmode="study"] .reading-inner { max-width: 740px; }
+
+/* ---------- divider ---------- */
+#divider { flex: none; width: 9px; cursor: col-resize; position: relative; }
+#divider::after { content: ''; position: absolute; left: 4px; top: 0; bottom: 0; width: 1px; background: var(--line); transition: background .15s, width .15s; }
+#divider:hover::after, body.dragging #divider::after { background: var(--accent); width: 3px; left: 3px; }
+
+/* ---------- reading pane ---------- */
+#readingPane { flex: 1; min-width: 0; overflow-y: auto; }
+.reading-inner { max-width: 640px; margin: 0 auto; padding: 30px 36px 56px; transition: max-width .25s; }
+.crumb { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font: 600 10.5px var(--font-chrome);
+  letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+.crumb .chip { text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+.reading, .reading p { font-size: var(--readsize, 16.5px); }
+.pair { padding: 8px 12px 10px 14px; margin: 0 -12px 14px -17px; border-left: 3px solid transparent; border-radius: var(--radius); transition: background .15s, border-color .15s; }
+.pair.hot { background: var(--tint-region); border-left-color: var(--line-2); }
+.pair.sel { background: var(--tint-region); border-left-color: var(--accent); }
+.pair p { margin: 0; }
+.zh { font-family: var(--font-read), "Noto Serif SC", "Songti SC", SimSun, serif;
+  font-size: calc(var(--readsize, 16.5px) + 1px); line-height: 1.92; }
+.tr { background: var(--tint-translation); border-radius: var(--radius); padding: 9px 13px; margin-top: 8px;
+  line-height: 1.6; color: var(--ink); }
+.tr b { font: 600 11px var(--font-chrome); letter-spacing: .07em; color: var(--ink-2); }
+.trlbl { display: inline-block; font: 600 9px var(--font-chrome); letter-spacing: .1em; color: var(--ink-3);
+  border: 1px solid var(--line-2); border-radius: 3px; padding: 1px 4px; margin-right: 6px; vertical-align: 2px; }
+.rom { font-family: var(--font-read); font-style: italic; color: var(--ink-2); font-size: .84em; }
+.hw { font-size: 1.5em; font-weight: 600; letter-spacing: .04em; }
+.entry-no { font: 600 11.5px var(--font-chrome); color: var(--ink-3); letter-spacing: .05em; margin-right: 4px; }
+.srcbk { color: var(--ink-3); font-size: .85em; }
+.unc { border-bottom: 1px dashed var(--warn); cursor: help; }
+.ent:hover { background: var(--tint-region); border-radius: 2px; }
+.ents-off .ent { color: inherit; text-decoration: none; cursor: text; }
+.ents-off .ent:hover { background: none; }
+.pair .pend { float: right; margin: 2px 0 4px 10px; }
+
+.conf-note { margin-top: 26px; padding-top: 12px; border-top: 1px solid var(--line); font: 11px var(--font-chrome);
+  color: var(--ink-3); line-height: 1.6; }
+.entry-nav { display: flex; justify-content: space-between; margin-top: 30px; gap: 10px; }
+
+/* ---------- sidebar ---------- */
+.sidebar-tabs button { font-size: 10.5px; }
+.sb-caption { font: 11px var(--font-chrome); color: var(--ink-3); margin: -2px 0 12px; line-height: 1.5; }
+
+.pcard { display: flex; gap: 11px; padding: 11px; margin-bottom: 10px; }
+.pcard.pulse { animation: cardpulse 1.2s ease-out; }
+@keyframes cardpulse { 0% { box-shadow: 0 0 0 3px var(--tint-select); } 100% { box-shadow: var(--shadow); } }
+.pthumb { flex: none; width: 46px; height: 58px; border-radius: 3px; background: var(--bg-sunk); border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 23px; color: var(--ink-3); }
+.pcard .pc-b { min-width: 0; flex: 1; }
+.pcard h5 { margin: 0 0 3px; font: 600 13px var(--font-chrome); display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+.pcard h5 .rom { font-size: 11px; }
+.pcard .sum { font-size: 11.5px; color: var(--ink-2); line-height: 1.5; margin: 0; }
+.relchip { margin-left: auto; align-self: flex-start; flex: none; }
+.pc-kind { font: 600 9.5px var(--font-chrome); letter-spacing: .09em; text-transform: uppercase; }
+.pc-kind.plant { color: var(--ent-plant); } .pc-kind.substance { color: var(--ent-substance); } .pc-kind.cite { color: var(--ent-cite); } .pc-kind.author { color: var(--ent-author); }
+
+.exc-toggle { width: 100%; justify-content: space-between; margin-top: 8px; }
+.exc { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 9px; }
+.exc .zh { font-size: 12.5px; line-height: 1.8; }
+.exc .exc-tr { font-size: 11.5px; color: var(--ink-2); font-family: var(--font-read); margin: 6px 0 0; line-height: 1.55; }
+.exc-src { display: flex; align-items: center; gap: 8px; margin-top: 9px; font: 10.5px var(--font-chrome); color: var(--ink-3); }
+.exc-src img { width: 20px; height: 27px; object-fit: cover; border-radius: 2px; border: 1px solid var(--line); }
+.cardacts { display: flex; gap: 6px; margin-top: 10px; }
+.cardacts .btn { font-size: 11.5px; padding: 5px 10px; }
+
+/* contents tree */
+.toc details { margin-bottom: 2px; }
+.toc summary { cursor: pointer; padding: 5px 6px; border-radius: var(--radius); font: 600 12.5px var(--font-chrome); list-style: none; display: flex; align-items: baseline; gap: 7px; }
+.toc summary::before { content: '\25B8'; font-size: 9px; color: var(--ink-3); transition: transform .15s; flex: none; position: relative; top: -1px; }
+.toc details[open] > summary::before { transform: rotate(90deg); }
+.toc summary:hover { background: var(--bg); }
+.toc-meta { font: 10.5px var(--font-chrome); font-weight: 400; color: var(--ink-3); margin-left: auto; }
+.toc ul { list-style: none; margin: 2px 0 6px; padding: 0 0 0 18px; }
+.toc li { padding: 4px 7px; border-radius: var(--radius); font-size: 12.5px; display: flex; align-items: baseline; gap: 7px; cursor: pointer; border-left: 2px solid transparent; }
+.toc li:hover { background: var(--bg); }
+.toc li .no { font: 10.5px var(--font-chrome); color: var(--ink-3); margin-left: auto; }
+.toc li.cur { border-left-color: var(--accent); background: var(--tint-region); font-weight: 600; }
+.toc .dim, .toc details.dim > summary { color: var(--ink-3); }
+.toc .dim li { color: var(--ink-3); }
+.toc-note { font-size: 11px; color: var(--ink-3); padding: 3px 6px 5px 18px; }
+.toc-more summary { font-weight: 400; font-size: 11.5px; color: var(--ink-3); }
+
+/* article tab */
+.art { padding: 13px; margin-bottom: 10px; }
+.art .kick { font: 600 9.5px var(--font-chrome); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.art h3 { font-size: 17px; margin: 5px 0 6px; }
+.art p { font-size: 12px; color: var(--ink-2); line-height: 1.55; margin: 0 0 10px; }
+.art .meta { font-size: 10.5px; color: var(--ink-3); margin-bottom: 10px; }
+
+/* appearance tab */
+.ap-row { margin-bottom: 16px; }
+.ap-row > h4 { margin: 0 0 7px; font: 600 11px var(--font-chrome); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.ap-note { font-size: 11px; color: var(--ink-3); line-height: 1.55; border-top: 1px solid var(--line); padding-top: 10px; }
+</style>
+</head>
+<body>
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+
+<div class="topbar">
+  <a href="index.html">&larr; Mockups</a>
+  <span class="tb-sep"></span>
+  <span class="tb-title">Reader &middot; Codex</span>
+  <button class="bookpick" title="Book picker — non-functional in this mockup">
+    <img src="assets/thumbs/E17.jpg" alt="">
+    <span class="bp-t"><b>中药大辞典</b><small>Zhōngyào dà cídiǎn &middot; vol. 2 &middot; 1977</small></span>
+    <span class="caret">&#9662;</span>
+  </button>
+  <div class="seg" id="modeSeg">
+    <button data-m="study">Study</button>
+    <button data-m="facsimile" class="active">Facsimile</button>
+    <button data-m="explore" disabled title="Explore mode — see reader-explore.html">Explore</button>
+  </div>
+  <div class="advtog" id="advTog" title="Basic hides layer chrome; Advanced exposes layers, streaming status, confidence">
+    <span class="lb" id="lbBasic">Basic</span>
+    <button class="sw" role="switch" aria-checked="false" aria-label="Advanced mode"></button>
+    <span class="lb" id="lbAdv">Advanced</span>
+  </div>
+  <div class="pageind" id="pageind" title="Data layers loaded for this page (tiles, source, parallel, associations, entities)">
+    <span class="ldots adv-only" id="ldots"></span>
+    <span>p.&nbsp;<b>1682</b><span class="adv-only"> &middot; <span id="nLoaded">3</span>/5 loaded</span></span>
+  </div>
+  <div class="mock-switch">
+    <select class="btn" id="schemeSel" aria-label="Colour scheme">
+      <option value="archive">Archive</option>
+      <option value="herbarium">Herbarium</option>
+      <option value="oxford">Oxford</option>
+    </select>
+    <button class="btn" id="modeBtn">&#9790; Dark</button>
+  </div>
+</div>
+
+<div class="stage">
+  <div id="viewerPane">
+    <div class="vtools">
+      <button class="btn" id="zIn" title="Zoom in">+</button>
+      <button class="btn" id="zOut" title="Zoom out">&minus;</button>
+      <button class="btn" id="zFit" title="Fit page">Fit</button>
+      <button class="btn adv-only" id="layersBtn" title="Overlay layers">Layers</button>
+    </div>
+    <div class="pop" id="layerPop" hidden>
+      <h5>Overlay layers</h5>
+      <label><input type="checkbox" id="ckRegions" checked> Regions <span class="lstat"><span class="dot" id="dRegions"></span> loaded</span></label>
+      <label><input type="checkbox" id="ckLines"> Lines <span class="lstat"><span class="dot" id="dLines"></span> loaded</span></label>
+      <label class="off" id="rowWords"><input type="checkbox" id="ckWords" disabled> Words <span class="lstat"><span class="dot fetch" id="dWords"></span> <span id="sWords">fetching&hellip;</span></span></label>
+      <label><input type="checkbox" id="ckEnts" checked> Entities <span class="lstat"><span class="dot" id="dEnts"></span> loaded</span></label>
+      <div class="pfoot">Layers stream per page as bundles arrive; dots show arrival. Errors degrade to fewer layers, never block reading.</div>
+    </div>
+    <div id="osd"></div>
+    <div id="rail"></div>
+  </div>
+
+  <div id="divider" title="Drag to resize"></div>
+
+  <div id="readingPane">
+    <div class="reading-inner">
+      <div class="crumb">第二卷 &middot; 十一画 &middot; 蛇 <span class="rom" style="text-transform:none">shé</span>
+        <span class="chip" style="margin-left:auto">entry 3242 of 5767</span></div>
+
+      <div class="reading" id="reading">
+
+        <div class="pair" data-r="r1">
+          <p class="zh"><span class="entry-no">3242</span><span class="hw"><span class="ent plant">蛇床子</span></span>&ensp;<span class="rom">shé chuáng zǐ</span>&ensp;<span class="srcbk">(《本经》)</span><br>
+          <span class="rub">【异名】</span>蛇米(《本经》),<span class="unc" title="OCR confidence 0.81">虺床</span>(《尔雅》),蛇珠(《吴普本草》),蛇床仁(《药性论》)。<span class="rub">【基原】</span>为伞形科植物蛇床的干燥成熟果实。</p>
+          <p class="tr"><span class="trlbl">EN</span><b>SHECHUANGZI</b> — fruit of <i class="ent plant">Cnidium monnieri</i> (L.) Cusson; first listed in the <i>Ben jing</i>. Also <span class="rom">shé mǐ</span> (<i>Ben jing</i>), <span class="rom">huǐ chuáng</span> (<i>Erya</i>), <span class="rom">shé zhū</span> (Wu Pu). Source: the dried ripe fruit of <i>she chuang</i>, family Apiaceae.</p>
+        </div>
+
+        <div class="pair" data-r="r2">
+          <p class="zh"><span class="rub">【性味】</span>辛苦,温。①《本经》:"味苦,平。"②《别录》:"辛甘,无毒。"<br>
+          <span class="rub">【功用主治】</span>温肾助阳,祛风,燥湿,杀虫。治阳痿,宫冷,寒湿带下,湿痹腰痛。</p>
+          <p class="tr"><span class="trlbl">EN</span><b>NATURE &amp; FLAVOUR</b> — acrid, bitter; warm. <i>Ben jing</i>: "bitter, neutral." <i>Bie lu</i>: "acrid and sweet, non-toxic." <b>ACTIONS</b> — warms the kidney and assists yang; dispels wind, dries dampness, kills parasites. For impotence, cold uterus, damp leukorrhea, lumbar pain from damp obstruction.</p>
+        </div>
+
+        <div class="pair" data-r="r3">
+          <p class="zh"><span class="rub">【选方】</span>①治妇人阴痒:<span class="ent plant">蛇床子</span>一两,<span class="ent substance">白矾</span>二钱。煎汤频洗。(《<span class="unc" title="OCR confidence 0.79">濒</span>湖集简方》)</p>
+          <p class="tr"><span class="trlbl">EN</span><b>SELECTED PRESCRIPTION</b> — for pruritus vulvae: one <span class="rom">liǎng</span> of shechuangzi and two <span class="rom">qián</span> of <span class="ent substance">alum</span> (<span class="rom">bái fán</span>), decocted; applied warm as a frequent wash. (<i>Binhu jijian fang</i>.)</p>
+        </div>
+
+        <div class="pair no-region">
+          <span class="chip pend adv-only" title="Region bundle for this block not yet arrived">region &middot; queued</span>
+          <p class="zh"><span class="rub">【各家论述】</span><span class="ent cite" data-cite="e54">《纲目》</span>:"蛇床乃右肾命门、少阳三焦气分之药。《神农》列之上品,不独助男子,而又有益妇人。"</p>
+          <p class="tr"><span class="trlbl">EN</span><b>COMMENTARY</b> — <span class="ent cite" data-cite="e54">Gang mu</span>: "Shechuang is a drug of the gate of life of the right kidney and of the qi aspect of the lesser-yang <span class="rom">sān jiāo</span>. The <i>Shen nong</i> ranks it in the top grade: it does not merely assist men — it benefits women too."</p>
+        </div>
+
+        <div class="conf-note adv-only">Source text: OCR PP-OCRv3, profile <i>zh-dict-1977</i> &middot; page mean confidence 0.94 &middot; dashed tokens fall below 0.85 (2 on this page). Layout: layout-v2 regions; word boxes pending. Parallel EN: draft machine translation, editorially unreviewed.</div>
+
+        <div class="entry-nav">
+          <button class="btn ghost" title="Mock — no navigation in this mockup">&lsaquo; 蛇蜕 <span class="rom">shé tuì</span></button>
+          <button class="btn ghost" title="Mock — no navigation in this mockup">蛇莓 <span class="rom">shé méi</span> &rsaquo;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-tabs" id="sbTabs">
+      <button data-t="contents">Contents</button>
+      <button data-t="page" class="active">This page</button>
+      <button data-t="article">Article</button>
+      <button data-t="appearance">Appearance</button>
+    </div>
+
+    <div class="sidebar-body" id="tab-contents" hidden>
+      <div class="toc">
+        <details class="dim">
+          <summary>第一卷 <span class="toc-meta">一画–四画 &middot; 条 1–1483</span></summary>
+          <div class="toc-note">Outside the loaded window — fetched on demand.</div>
+        </details>
+        <details open>
+          <summary>第二卷 <span class="toc-meta">五画–十一画 &middot; 条 1484–3630</span></summary>
+          <details class="dim">
+            <summary>十画 <span class="toc-meta">条 2871–3195</span></summary>
+            <div class="toc-note">325 entries &middot; outside the loaded window.</div>
+          </details>
+          <details>
+            <summary>十画 &middot; 铁 <span class="toc-meta">条 3252–3271</span></summary>
+            <ul class="dim">
+              <li>铁落 <span class="no">3252</span></li>
+              <li>铁锈 <span class="no">3253</span></li>
+              <li>铁精 <span class="no">3254</span></li>
+            </ul>
+          </details>
+          <details open>
+            <summary>十一画 &middot; 蛇 <span class="toc-meta">条 3238–3251</span></summary>
+            <ul>
+              <li class="dim" title="Outside loaded window">蛇白蔹 <span class="no">3238</span></li>
+              <li class="dim" title="Outside loaded window">蛇根草 <span class="no">3240</span></li>
+              <li>蛇蜕 <span class="no">3241</span></li>
+              <li class="cur">蛇床子 <span class="no">3242</span></li>
+              <li>蛇莓 <span class="no">3243</span></li>
+              <li>蛇胆汁 <span class="no">3244</span></li>
+              <details class="toc-more">
+                <summary>8 further entries</summary>
+                <ul class="dim">
+                  <li>蛇含石 <span class="no">3245</span></li>
+                  <li>蛇王藤 <span class="no">3246</span></li>
+                  <li>蛇疙瘩 <span class="no">3247</span></li>
+                  <li>蛇附子 <span class="no">3248</span></li>
+                </ul>
+              </details>
+            </ul>
+          </details>
+        </details>
+        <details class="dim">
+          <summary>第三卷 <span class="toc-meta">十二画以上 &middot; 附编</span></summary>
+          <div class="toc-note">Index by pinyin, Latin binomial, and pharmacognosy group.</div>
+        </details>
+      </div>
+    </div>
+
+    <div class="sidebar-body" id="tab-page">
+      <p class="sb-caption">Follows the viewport &middot; ranked by relevance to p.&nbsp;1682.</p>
+
+      <div class="card pcard" id="card-plant">
+        <div class="pthumb">蛇</div>
+        <div class="pc-b">
+          <h5><span class="pc-kind plant">plant</span> 蛇床子 <span class="rom">Cnidium monnieri</span><span class="chip relchip" title="mention relevance">0.97</span></h5>
+          <p class="sum">Umbellifer of sandy lowlands; the fruit is the drug. Top-grade in the <i>Ben jing</i>; modern work centres on its coumarin osthole.</p>
+        </div>
+      </div>
+
+      <div class="card pcard" id="card-substance">
+        <div class="pthumb">矾</div>
+        <div class="pc-b">
+          <h5><span class="pc-kind substance">substance</span> 白矾 <span class="rom">alum</span><span class="chip relchip" title="mention relevance">0.71</span></h5>
+          <p class="sum">Potassium alum (<span class="rom">míng fán</span>). Astringent mineral; paired with shechuangzi in the external wash prescribed on this page.</p>
+        </div>
+      </div>
+
+      <div class="card pcard" id="card-cite" style="display:block">
+        <h5 style="margin-bottom:3px"><span class="pc-kind cite">citation</span> 《本草纲目》 <span class="rom">Ben Cao Gang Mu</span><span class="chip relchip" title="mention relevance">0.64</span></h5>
+        <p class="sum">Cited in 各家论述. Resolved against E54 (1888 Hongbaozhai woodblock edition).</p>
+        <button class="btn ghost exc-toggle" id="excBtn" aria-expanded="false"><span>Resolved excerpt &middot; E54</span><span id="excCaret">&#9662;</span></button>
+        <div class="exc" id="exc" hidden>
+          <p class="zh">蛇床乃右肾命门、少阳三焦气分之药。神农列之上品,不独助男子,而又有益妇人。世人舍此而求补药于远域,岂非贵耳贱目乎。</p>
+          <p class="exc-tr">"…people neglect it and seek tonics from distant lands — is this not prizing the ear and despising the eye?" — Li Shizhen, 草部 卷十四.</p>
+          <div class="exc-src"><img src="assets/thumbs/E54.jpg" alt=""> E54 &middot; 本草纲目 &middot; Hongbaozhai 1888 &middot; 草部卷十四 &middot; 蛇床</div>
+          <div class="cardacts">
+            <button class="btn" id="addList">Add to reading list</button>
+            <button class="btn ghost" title="Mock — would open E54 at 草部卷十四">Open in tab</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-body" id="tab-article" hidden>
+      <div class="card art">
+        <div class="kick">Knowledge article</div>
+        <h3>Snake's bed: Cnidium across three pharmacopoeias</h3>
+        <p>Why a modest umbellifer holds top-grade rank from the <i>Ben jing</i> to this 1977 dictionary — and how its external-wash uses travelled almost unchanged for two millennia while the internal indications narrowed.</p>
+        <div class="meta">Bound to entries 3238–3251 &middot; 6 min read &middot; links E54, E49</div>
+        <button class="btn primary" title="Mock — article view not in this mockup">Read article</button>
+      </div>
+      <div class="card art">
+        <div class="kick">About this book</div>
+        <h3>Reading a stroke-count dictionary</h3>
+        <p>How 中药大辞典 orders its 5,767 entries, what the bracketed rubrics (异名 &middot; 基原 &middot; 性味 &middot; 选方) mean, and how citations resolve to their source herbals.</p>
+        <div class="meta">Bound to volume &middot; 4 min read</div>
+        <button class="btn ghost" title="Mock">Read article</button>
+      </div>
+    </div>
+
+    <div class="sidebar-body" id="tab-appearance" hidden>
+      <div class="ap-row">
+        <h4>Scheme</h4>
+        <div class="seg mini" id="apScheme">
+          <button data-v="archive">Archive</button>
+          <button data-v="herbarium">Herbarium</button>
+          <button data-v="oxford">Oxford</button>
+        </div>
+      </div>
+      <div class="ap-row">
+        <h4>Mode</h4>
+        <div class="seg mini" id="apMode">
+          <button data-v="light">Light</button>
+          <button data-v="dark">Dark</button>
+        </div>
+      </div>
+      <div class="ap-row">
+        <h4>Reading size</h4>
+        <div class="seg mini" id="apSize">
+          <button data-v="15px">S</button>
+          <button data-v="16.5px" class="active">M</button>
+          <button data-v="18.5px">L</button>
+        </div>
+      </div>
+      <div class="ap-row">
+        <h4>Layout</h4>
+        <div class="seg mini">
+          <button class="active" title="Mock">Split</button>
+          <button title="Mock — per-book default editor not in this mockup">Stacked</button>
+        </div>
+      </div>
+      <p class="ap-note">Book default for E17: Study &middot; shown in Facsimile for demonstration. Your choices override it locally and persist per book; scheme &amp; mode persist across the whole library.</p>
+    </div>
+  </aside>
+</div>
+
+<div class="mock-note"><button class="mn-x" aria-label="Dismiss">&times;</button><b>Core two-pane reader (E17).</b> Interactive: drag the divider; Study&nbsp;/&nbsp;Facsimile; Basic&nbsp;/&nbsp;Advanced; hover a paragraph or a page region for bidirectional highlight (click pins &amp; zooms, Esc clears); all sidebar tabs; Advanced &rarr; Layers popover + streaming dots (words layer "arrives" after a few seconds); Appearance controls are live.</div>
+
+<script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0/build/openseadragon/openseadragon.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+  var root = document.documentElement, body = document.body;
+
+  /* ---------- scheme / mode ---------- */
+  function setScheme(v) { root.dataset.scheme = v; localStorage.setItem('whlnext-scheme', v); syncAppearance(); }
+  function setColorMode(v) { root.dataset.mode = v; localStorage.setItem('whlnext-mode', v); syncAppearance(); }
+  function syncAppearance() {
+    $('#schemeSel').value = root.dataset.scheme;
+    $('#modeBtn').textContent = root.dataset.mode === 'dark' ? '☀ Light' : '☾ Dark';
+    $$('#apScheme button').forEach(function (b) { b.classList.toggle('active', b.dataset.v === root.dataset.scheme); });
+    $$('#apMode button').forEach(function (b) { b.classList.toggle('active', b.dataset.v === root.dataset.mode); });
+  }
+  $('#schemeSel').addEventListener('change', function () { setScheme(this.value); });
+  $('#modeBtn').addEventListener('click', function () { setColorMode(root.dataset.mode === 'dark' ? 'light' : 'dark'); });
+  $('.mock-note .mn-x').addEventListener('click', function () { this.closest('.mock-note').remove(); });
+  $$('#apScheme button').forEach(function (b) { b.addEventListener('click', function () { setScheme(b.dataset.v); }); });
+  $$('#apMode button').forEach(function (b) { b.addEventListener('click', function () { setColorMode(b.dataset.v); }); });
+  syncAppearance();
+
+  /* ---------- basic / advanced ---------- */
+  function setAdv(on) {
+    body.dataset.adv = on ? '1' : '0';
+    localStorage.setItem('whlnext-adv', on ? '1' : '0');
+    $('#lbBasic').classList.toggle('on', !on);
+    $('#lbAdv').classList.toggle('on', on);
+    $('.sw').setAttribute('aria-checked', on ? 'true' : 'false');
+    if (!on) { $('#layerPop').hidden = true; }
+  }
+  function togAdv() { setAdv(body.dataset.adv !== '1'); }
+  $('.sw').addEventListener('click', togAdv);
+  $('#lbBasic').addEventListener('click', togAdv);
+  $('#lbAdv').addEventListener('click', togAdv);
+  setAdv(localStorage.getItem('whlnext-adv') === '1');
+
+  /* ---------- reader mode (study / facsimile) ---------- */
+  var viewer = null;
+  function setRMode(m) {
+    body.dataset.rmode = m;
+    $$('#modeSeg button').forEach(function (b) { b.classList.toggle('active', b.dataset.m === m); });
+    if (m === 'facsimile' && viewer) { requestAnimationFrame(function () { viewer.forceRedraw(); }); }
+  }
+  $$('#modeSeg button').forEach(function (b) {
+    if (!b.disabled) { b.addEventListener('click', function () { setRMode(b.dataset.m); }); }
+  });
+  setRMode('facsimile');
+
+  /* study-mode thumbnail rail */
+  (function buildRail() {
+    var rail = $('#rail');
+    [1680, 1681, 1682, 1683, 1684].forEach(function (p) {
+      var b = document.createElement('button');
+      b.className = 'rl' + (p === 1682 ? ' cur' : '');
+      b.title = p === 1682 ? 'Current page' : 'Mock — no navigation in this mockup';
+      b.innerHTML = '<img src="assets/pages/E17-page.jpg" alt="">' + p;
+      rail.appendChild(b);
+    });
+  })();
+
+  /* ---------- divider drag ---------- */
+  var divider = $('#divider'), vp = $('#viewerPane'), stage = $('.stage');
+  divider.addEventListener('pointerdown', function (e) {
+    if (body.dataset.rmode === 'study') return;
+    e.preventDefault();
+    divider.setPointerCapture(e.pointerId);
+    body.classList.add('dragging');
+    var move = function (ev) {
+      var r = stage.getBoundingClientRect();
+      var px = Math.min(Math.max(ev.clientX - r.left, r.width * 0.22), r.width * 0.65);
+      vp.style.width = (px / r.width * 100).toFixed(2) + '%';
+    };
+    var up = function (ev) {
+      body.classList.remove('dragging');
+      divider.releasePointerCapture(ev.pointerId);
+      divider.removeEventListener('pointermove', move);
+      divider.removeEventListener('pointerup', up);
+    };
+    divider.addEventListener('pointermove', move);
+    divider.addEventListener('pointerup', up);
+  });
+
+  /* ---------- regions (pixel coords on 1100x1600 sample page) ---------- */
+  var IMGW = 1100, IMGH = 1600;
+  var REG = { r1: [56, 780, 492, 84], r2: [56, 926, 492, 152], r3: [56, 1396, 492, 128] };
+  var LINES = [[60, 932, 482, 26], [60, 961, 482, 26], [60, 990, 482, 26], [60, 1019, 482, 26], [60, 1048, 482, 26]];
+  var WORDS = [[96, 786, 64, 38], [162, 786, 64, 38], [232, 794, 88, 26], [326, 798, 118, 22]];
+  var ovlEls = {}, lineEls = [], wordEls = [];
+
+  function wireOvl(el, r) {
+    el.addEventListener('mouseenter', function () { setHot(r, true); });
+    el.addEventListener('mouseleave', function () { setHot(r, false); });
+    el.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setSel(sel === r ? null : r);
+      if (sel === r) {
+        var p = pairFor(r);
+        if (p) p.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  }
+
+  function makeOvl(cls, r) {
+    var el = document.createElement('div');
+    el.className = cls;
+    if (r) { el.dataset.r = r; wireOvl(el, r); }
+    return el;
+  }
+
+  /* ---------- OpenSeadragon ---------- */
+  if (window.OpenSeadragon) {
+    viewer = OpenSeadragon({
+      id: 'osd',
+      tileSources: { type: 'image', url: 'assets/pages/E17-page.jpg' },
+      showNavigationControl: false,
+      minZoomImageRatio: 0.75,
+      maxZoomPixelRatio: 2.5,
+      visibilityRatio: 0.85,
+      animationTime: 0.9,
+      springStiffness: 8
+    });
+    viewer.addHandler('open', function () {
+      Object.keys(REG).forEach(function (r) {
+        var el = makeOvl('ovl', r);
+        ovlEls[r] = el;
+        viewer.addOverlay({ element: el, location: pxRect(REG[r]) });
+      });
+      LINES.forEach(function (c) {
+        var el = makeOvl('ovl-line layer-hidden');
+        lineEls.push(el);
+        viewer.addOverlay({ element: el, location: pxRect(c) });
+      });
+      WORDS.forEach(function (c) {
+        var el = makeOvl('ovl-word layer-hidden');
+        wordEls.push(el);
+        viewer.addOverlay({ element: el, location: pxRect(c) });
+      });
+    });
+    $('#zIn').addEventListener('click', function () { viewer.viewport.zoomBy(1.35); viewer.viewport.applyConstraints(); });
+    $('#zOut').addEventListener('click', function () { viewer.viewport.zoomBy(1 / 1.35); viewer.viewport.applyConstraints(); });
+    $('#zFit').addEventListener('click', function () { viewer.viewport.goHome(); });
+  } else {
+    /* offline fallback: plain img + percent-positioned overlays */
+    var osd = $('#osd');
+    osd.style.cssText = 'overflow:auto;display:flex;justify-content:center;padding:12px';
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;height:100%;aspect-ratio:' + IMGW + '/' + IMGH + ';flex:none';
+    wrap.innerHTML = '<img src="assets/pages/E17-page.jpg" style="width:100%;height:100%;display:block" alt="p.1682">';
+    osd.appendChild(wrap);
+    var place = function (el, c) {
+      el.style.cssText += 'position:absolute;left:' + (c[0] / IMGW * 100) + '%;top:' + (c[1] / IMGH * 100) +
+        '%;width:' + (c[2] / IMGW * 100) + '%;height:' + (c[3] / IMGH * 100) + '%';
+      wrap.appendChild(el);
+    };
+    Object.keys(REG).forEach(function (r) { var el = makeOvl('ovl', r); ovlEls[r] = el; place(el, REG[r]); });
+    LINES.forEach(function (c) { var el = makeOvl('ovl-line layer-hidden'); lineEls.push(el); place(el, c); });
+    WORDS.forEach(function (c) { var el = makeOvl('ovl-word layer-hidden'); wordEls.push(el); place(el, c); });
+  }
+
+  function pxRect(c) {
+    return new OpenSeadragon.Rect(c[0] / IMGW, c[1] / IMGW, c[2] / IMGW, c[3] / IMGW);
+  }
+
+  /* ---------- bidirectional hover / select ---------- */
+  var sel = null;
+  function pairFor(r) { return document.querySelector('.pair[data-r="' + r + '"]'); }
+  function setHot(r, on) {
+    var p = pairFor(r), o = ovlEls[r];
+    if (p) p.classList.toggle('hot', on);
+    if (o) o.classList.toggle('hot', on);
+  }
+  function setSel(r) {
+    if (sel) {
+      var pp = pairFor(sel); if (pp) pp.classList.remove('sel');
+      if (ovlEls[sel]) ovlEls[sel].classList.remove('sel');
+    }
+    sel = r;
+    if (r) {
+      var p = pairFor(r); if (p) p.classList.add('sel');
+      if (ovlEls[r]) ovlEls[r].classList.add('sel');
+      if (viewer && body.dataset.rmode === 'facsimile') {
+        var c = REG[r], m = 60;
+        viewer.viewport.fitBounds(new OpenSeadragon.Rect((c[0] - m) / IMGW, (c[1] - m) / IMGW, (c[2] + 2 * m) / IMGW, (c[3] + 2 * m) / IMGW));
+      }
+    }
+  }
+  $$('.pair[data-r]').forEach(function (p) {
+    var r = p.dataset.r;
+    p.addEventListener('mouseenter', function () { setHot(r, true); });
+    p.addEventListener('mouseleave', function () { setHot(r, false); });
+    p.addEventListener('click', function (e) {
+      if (e.target.closest('.ent')) return;
+      e.stopPropagation();
+      setSel(sel === r ? null : r);
+    });
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { setSel(null); $('#layerPop').hidden = true; } });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.pair') && !e.target.closest('.ovl') && !e.target.closest('.pop') && !e.target.closest('#layersBtn')) setSel(null);
+  });
+
+  /* ---------- layer popover ---------- */
+  $('#layersBtn').addEventListener('click', function (e) {
+    e.stopPropagation();
+    $('#layerPop').hidden = !$('#layerPop').hidden;
+  });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.pop') && !e.target.closest('#layersBtn')) $('#layerPop').hidden = true;
+  });
+  function toggleLayer(els, on) { els.forEach(function (el) { el.classList.toggle('layer-hidden', !on); }); }
+  $('#ckRegions').addEventListener('change', function () { toggleLayer(Object.keys(ovlEls).map(function (k) { return ovlEls[k]; }), this.checked); });
+  $('#ckLines').addEventListener('change', function () { toggleLayer(lineEls, this.checked); });
+  $('#ckWords').addEventListener('change', function () { toggleLayer(wordEls, this.checked); });
+  $('#ckEnts').addEventListener('change', function () { $('#reading').classList.toggle('ents-off', !this.checked); });
+
+  /* ---------- streaming simulation ---------- */
+  /* five data layers: tiles, source, parallel, associations, entities */
+  var layers = [
+    { n: 'tiles', s: 'ok' }, { n: 'source', s: 'ok' }, { n: 'parallel', s: 'ok' },
+    { n: 'associations', s: 'fetch' }, { n: 'entities', s: 'idle' }
+  ];
+  function renderDots() {
+    var host = $('#ldots');
+    host.innerHTML = '';
+    var n = 0;
+    layers.forEach(function (l) {
+      if (l.s === 'ok') n++;
+      var d = document.createElement('span');
+      d.className = 'dot ' + (l.s === 'ok' ? '' : l.s);
+      d.title = l.n + ' — ' + (l.s === 'ok' ? 'loaded' : l.s === 'fetch' ? 'fetching' : 'queued');
+      host.appendChild(d);
+    });
+    $('#nLoaded').textContent = n;
+  }
+  function arrive(i) {
+    layers[i].s = 'ok';
+    if (i + 1 < layers.length && layers[i + 1].s === 'idle') layers[i + 1].s = 'fetch';
+    renderDots();
+    var pi = $('#pageind');
+    pi.classList.remove('tick'); void pi.offsetWidth; pi.classList.add('tick');
+  }
+  renderDots();
+  setTimeout(function () {
+    arrive(3);
+    /* word boxes ride in with the associations bundle */
+    $('#dWords').classList.remove('fetch');
+    $('#sWords').textContent = 'loaded';
+    $('#ckWords').disabled = false;
+    $('#rowWords').classList.remove('off');
+  }, 5000);
+  setTimeout(function () { arrive(4); }, 9000);
+
+  /* ---------- sidebar tabs ---------- */
+  var tabs = { contents: 'tab-contents', page: 'tab-page', article: 'tab-article', appearance: 'tab-appearance' };
+  function setTab(t) {
+    $$('#sbTabs button').forEach(function (b) { b.classList.toggle('active', b.dataset.t === t); });
+    Object.keys(tabs).forEach(function (k) { document.getElementById(tabs[k]).hidden = (k !== t); });
+  }
+  $$('#sbTabs button').forEach(function (b) { b.addEventListener('click', function () { setTab(b.dataset.t); }); });
+
+  /* entity click -> sidebar card */
+  function pulse(id) {
+    setTab('page');
+    var c = document.getElementById(id);
+    c.classList.remove('pulse'); void c.offsetWidth; c.classList.add('pulse');
+    c.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  $$('.ent').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (el.classList.contains('plant')) pulse('card-plant');
+      else if (el.classList.contains('substance')) pulse('card-substance');
+      else if (el.classList.contains('cite')) { pulse('card-cite'); openExc(true); }
+    });
+  });
+
+  /* citation excerpt collapse + actions */
+  function openExc(on) {
+    $('#exc').hidden = !on;
+    $('#excCaret').innerHTML = on ? '&#9652;' : '&#9662;';
+    $('#excBtn').setAttribute('aria-expanded', on ? 'true' : 'false');
+  }
+  $('#excBtn').addEventListener('click', function () { openExc($('#exc').hidden); });
+  $('#addList').addEventListener('click', function () {
+    this.textContent = 'Added to reading list';
+    this.disabled = true;
+  });
+
+  /* reading size */
+  $$('#apSize button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      $$('#apSize button').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active');
+      root.style.setProperty('--readsize', b.dataset.v);
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WHL Next — Explore mode (Yale MS 49)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+html { scroll-behavior: smooth; }
+body { overflow-x: hidden; }
+.sc { font: 600 10.5px var(--font-chrome); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); }
+
+/* ---------- stage (full-bleed viewer) ---------- */
+.stage { position: relative; height: 100dvh; min-height: 560px; overflow: hidden; background: var(--bg-sunk); }
+#osd { position: absolute; inset: 0; }
+#osd .openseadragon-canvas { outline: none; }
+
+/* floating translucent topbar */
+.topbar.float {
+  position: absolute; top: 12px; left: 12px; right: 12px; z-index: 40;
+  border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-raise) 78%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+  transition: opacity .4s ease, transform .4s ease;
+}
+.topbar.float.gone { opacity: 0; transform: translateY(-10px); pointer-events: none; }
+.tb-title { display: flex; align-items: baseline; gap: 9px; min-width: 0; }
+.tb-title strong { font: 600 15.5px var(--font-display); white-space: nowrap; }
+.tb-title .tb-sub { font-size: 12px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mode-seg { display: flex; border: 1px solid var(--line-2); border-radius: 99px; overflow: hidden; font-size: 12px; flex: none; }
+.mode-seg a, .mode-seg span { padding: 4px 13px; color: var(--ink-2); text-decoration: none; }
+.mode-seg a:hover { text-decoration: none; color: var(--ink); background: var(--tint-region); }
+.mode-seg .on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.mode-seg .dim { opacity: .45; cursor: not-allowed; }
+#detailBtn { min-width: 86px; justify-content: center; }
+@media (max-width: 900px) { .tb-title .tb-sub, #detailBtn { display: none; } }
+
+/* illustration / entry regions (OSD overlays) */
+.ill-region {
+  border: 1.5px solid transparent; border-radius: 3px; cursor: pointer;
+  transition: border-color .25s, background .25s; pointer-events: auto;
+}
+.ill-region:hover { border-color: color-mix(in srgb, var(--accent) 65%, transparent); background: var(--tint-region); }
+.region-tag {
+  position: absolute; top: -22px; left: -2px; white-space: nowrap;
+  font: 600 10px var(--font-chrome); letter-spacing: .07em; text-transform: uppercase;
+  color: var(--accent); background: color-mix(in srgb, var(--bg-raise) 86%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  padding: 1px 7px; border-radius: 3px; opacity: 0; transition: opacity .25s;
+}
+html[data-detail="advanced"] .ill-region { border-color: color-mix(in srgb, var(--accent) 38%, transparent); border-style: dashed; }
+html[data-detail="advanced"] .ill-region:hover { border-style: solid; border-color: color-mix(in srgb, var(--accent) 70%, transparent); }
+html[data-detail="advanced"] .region-tag { opacity: 1; }
+
+/* lens card */
+.lens {
+  position: fixed; z-index: 70; width: 350px; max-width: calc(100vw - 24px);
+  padding: 14px 16px 12px;
+  background: color-mix(in srgb, var(--bg-raise) 94%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+}
+.lens .l-close { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--ink-3);
+  font: 16px/1 var(--font-chrome); cursor: pointer; padding: 4px; }
+.lens .l-close:hover { color: var(--ink); }
+.lens h3 { font-size: 19px; margin: 0 0 1px; }
+.lens .l-latin { font: italic 12.5px var(--font-chrome); color: var(--ink-3); margin-bottom: 10px; }
+.lens .l-block { margin: 0 0 9px; }
+.lens .l-block .sc { display: block; margin-bottom: 2px; }
+.lens .l-it { font: italic 15.5px/1.5 var(--font-display); }
+.lens .l-en { font: 14px/1.5 var(--font-read); color: var(--ink-2); }
+.lens .l-foot { display: flex; align-items: center; gap: 8px; margin-top: 11px; padding-top: 9px;
+  border-top: 1px solid var(--line); }
+.lens .l-foot .chip { margin-left: auto; }
+.unc { color: var(--ink-3); border-bottom: 1px dotted var(--line-2); }
+
+/* pinned stack, right edge */
+.pinstack {
+  position: absolute; right: 12px; top: 74px; z-index: 30; width: 252px;
+  display: flex; flex-direction: column; gap: 8px;
+  max-height: calc(100% - 200px); overflow-y: auto;
+}
+.pinstack[hidden] { display: none; }
+.pinstack .ps-label { text-align: right; padding-right: 2px; }
+.pin-card {
+  background: color-mix(in srgb, var(--bg-raise) 88%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--line); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow); padding: 9px 12px 10px;
+}
+.pin-card .p-head { display: flex; align-items: baseline; gap: 7px; }
+.pin-card .p-head b { font: 600 14.5px var(--font-display); }
+.pin-card .p-head i { font-size: 11px; color: var(--ink-3); font-style: italic; }
+.pin-card .p-x { margin-left: auto; border: 0; background: none; color: var(--ink-3); cursor: pointer; font-size: 13px; padding: 0 2px; }
+.pin-card .p-x:hover { color: var(--ink); }
+.pin-card .p-en { font: 12.5px/1.45 var(--font-read); color: var(--ink-2); margin: 3px 0 6px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pin-card .p-act { display: flex; gap: 10px; font-size: 11.5px; }
+.pin-card .p-act a { cursor: pointer; }
+@media (max-width: 760px) { .pinstack { width: 200px; } }
+
+/* bottom translation strip */
+.strip {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: 12px; z-index: 32;
+  width: min(720px, calc(100vw - 24px));
+  background: color-mix(in srgb, var(--bg-raise) 82%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow);
+}
+.strip-line { display: flex; align-items: center; gap: 10px; padding: 8px 14px; cursor: pointer; }
+.strip-line .sc { flex: none; }
+#stripText { font: italic 13.5px/1.4 var(--font-read); color: var(--ink-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.strip-caret { flex: none; border: 0; background: none; color: var(--ink-3); cursor: pointer;
+  font: 13px/1 var(--font-chrome); transition: transform .3s; padding: 2px 4px; }
+.strip.open .strip-caret { transform: rotate(180deg); }
+.strip-body { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+.strip.open .strip-body { max-height: 300px; overflow-y: auto; }
+.strip-body-in { padding: 4px 16px 12px; border-top: 1px solid var(--line); }
+.strip-body-in .sb-entry { margin: 10px 0 0; }
+.strip-body-in .sb-entry .sc { display: block; margin-bottom: 2px; }
+.strip-body-in .sb-entry p { margin: 0; font: 14.5px/1.55 var(--font-read); }
+.strip-body-in .sb-note { margin-top: 12px; font-size: 11.5px; color: var(--ink-3); }
+.layerdots { display: none; gap: 5px; align-items: center; flex: none; }
+html[data-detail="advanced"] .layerdots { display: inline-flex; }
+.layerdots i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+.layerdots i.pend { background: var(--ink-3); opacity: .5; }
+
+/* mock note (lifted above the docked translation strip) */
+.mock-note { bottom: 68px; }
+.mock-note .mn-x { float: right; border: 0; background: none; color: var(--ink-3); cursor: pointer; margin: -2px -4px 0 6px; font-size: 13px; }
+
+/* ---------- embed variants section ---------- */
+.embeds { max-width: 1160px; margin: 0 auto; padding: 72px 24px 100px; }
+.embeds > .kicker { margin-bottom: 6px; }
+.embeds > h2 { font-size: 30px; margin-bottom: 6px; }
+.embeds > .lede { max-width: 62ch; color: var(--ink-2); margin: 0 0 40px; }
+.embeds code { font: 11.5px ui-monospace, Consolas, monospace; background: var(--bg-sunk);
+  border: 1px solid var(--line); border-radius: 3px; padding: 1px 6px; color: var(--ink-2); }
+.embed-grid { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
+.embed-demo { margin: 0; flex: 1 1 480px; max-width: 720px; min-width: 0; }
+.embed-demo.narrow { flex: 0 1 352px; }
+.embed-demo .frame {
+  border: 1px dashed var(--line-2); border-radius: var(--radius-lg);
+  background: var(--bg-sunk); padding: 30px 22px; display: flex; justify-content: center;
+}
+.embed-demo figcaption { margin: 12px 4px 0; font-size: 12.5px; line-height: 1.55; color: var(--ink-2); max-width: 56ch; }
+.embed-demo figcaption .sc { display: block; margin-bottom: 3px; color: var(--accent); }
+
+/* (a) excerpt embed */
+.ex-embed { width: min(560px, 100%); padding: 16px 18px 13px; }
+.ex-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+.ex-head .src { font-size: 12px; color: var(--ink-2); margin-left: auto; text-align: right; }
+.ex-body { display: flex; gap: 16px; align-items: flex-start; }
+.ex-pass { flex: 1; }
+.ex-pass .reading { margin: 0; font-size: 15.5px; }
+.pass-hl { border-bottom: 1px dotted var(--line-2); transition: background .2s; cursor: pointer; }
+.pass-hl.hl-on, .pass-hl:hover { background: var(--tint-select); }
+.ex-crop { flex: none; width: 128px; height: 158px; border: 1px solid var(--line); border-radius: 3px;
+  background: url(assets/pages/E48-page.jpg); background-size: 280%; background-position: 17% 36%;
+  position: relative; overflow: hidden; cursor: pointer; }
+.crop-hl { position: absolute; left: 5%; top: 64%; width: 90%; height: 21%;
+  border: 1.5px solid var(--ent-plant); border-radius: 2px;
+  background: color-mix(in srgb, var(--ent-plant) 13%, transparent);
+  opacity: 0; transition: opacity .25s; }
+.crop-hl.hl-on { opacity: 1; }
+.ex-foot { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid var(--line); font-size: 12.5px; }
+.ex-foot .chip { margin-left: auto; }
+
+/* (b) card embed */
+.bk-embed { width: 300px; overflow: hidden; }
+.bk-embed img { display: block; width: 100%; height: 210px; object-fit: cover; object-position: top;
+  border-bottom: 1px solid var(--line); }
+.bk-body { padding: 14px 16px 16px; }
+.bk-body h3 { font-size: 19px; margin: 8px 0 2px; }
+.bk-body .by { font-size: 12.5px; color: var(--ink-2); }
+.bk-body .meta { font-size: 11.5px; color: var(--ink-3); margin: 4px 0 13px; }
+.bk-cta { display: flex; gap: 8px; }
+
+/* (c) explore embed */
+.exp-embed { width: min(470px, 100%); }
+.exp-view { height: 292px; border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: url(assets/pages/EB01-col-0046.jpg); background-size: 200%; background-position: 50% 28%;
+  position: relative; overflow: hidden; cursor: grab; box-shadow: var(--shadow); }
+.exp-view .ev-chip { position: absolute; left: 10px; bottom: 10px;
+  background: color-mix(in srgb, var(--bg-raise) 85%, transparent); backdrop-filter: blur(6px);
+  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  border-radius: 3px; padding: 3px 9px; }
+.exp-view .ev-mark { position: absolute; right: 10px; top: 10px;
+  background: color-mix(in srgb, var(--bg-raise) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  border-radius: 3px; padding: 3px 8px; font: 600 10px var(--font-chrome);
+  letter-spacing: .09em; color: var(--ink-2); }
+.exp-view .ev-hint { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  background: color-mix(in srgb, var(--bg-raise) 88%, transparent); backdrop-filter: blur(6px);
+  border: 1px solid var(--line); border-radius: 99px; padding: 5px 14px;
+  font: 500 12px var(--font-chrome); color: var(--ink-2);
+  opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; }
+.exp-view:hover .ev-hint { opacity: 1; }
+
+.foot-nav { max-width: 1160px; margin: 0 auto; padding: 0 24px 60px; font-size: 13px; }
+
+/* fallback (no CDN) */
+.fb-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.fb-inner { position: relative; height: 96%; aspect-ratio: 1205 / 1600; }
+.fb-inner img { width: 100%; height: 100%; display: block; box-shadow: var(--shadow-lg); }
+.fb-inner .ill-region { position: absolute; }
+</style>
+</head>
+<body>
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+
+<div class="stage" id="stage">
+  <div id="osd"></div>
+
+  <header class="topbar float" id="topbar">
+    <a href="index.html">&larr; Mockups</a>
+    <div class="tb-title">
+      <strong>Herbal, anonymous (Italian)</strong>
+      <span class="tb-sub">Yale, Cushing MS 49 &middot; s. XIV&ndash;XV &middot; fol. 12r</span>
+      <span class="chip">E52</span>
+    </div>
+    <nav class="mode-seg" aria-label="Reader mode">
+      <span class="dim" title="Study mode is not offered for this witness">Study</span>
+      <a href="reader-codex.html" title="Two-pane facsimile + text">Facsimile</a>
+      <span class="on">Explore</span>
+    </nav>
+    <button class="btn ghost" id="detailBtn" title="Toggle basic / advanced chrome">basic</button>
+    <a class="btn ghost" href="#embeds" style="flex:none">Embeds &darr;</a>
+    <div class="mock-switch">
+      <select id="schemeSel" class="btn" aria-label="Colour scheme">
+        <option value="archive">Archive</option>
+        <option value="herbarium">Herbarium</option>
+        <option value="oxford">Oxford</option>
+      </select>
+      <button class="btn" id="modeBtn">&#9790; Dark</button>
+    </div>
+  </header>
+
+  <aside class="pinstack" id="pinstack" aria-label="Pinned lenses" hidden>
+    <div class="ps-label sc">pinned</div>
+  </aside>
+
+  <div class="strip" id="strip">
+    <div class="strip-line" id="stripLine">
+      <span class="sc">running translation &middot; fol. 12r</span>
+      <span id="stripText"></span>
+      <span class="layerdots" title="layers: image &middot; source text &middot; parallel &middot; associations &middot; entities">
+        <i></i><i></i><i></i><i></i><i class="pend" title="entities: loading"></i>
+      </span>
+      <button class="strip-caret" id="stripCaret" aria-label="Expand translation">&#9650;</button>
+    </div>
+    <div class="strip-body">
+      <div class="strip-body-in">
+        <div class="sb-entry">
+          <span class="sc">12r &middot; a &middot; entry, rubricated</span>
+          <p>This herb the Greeks call <span class="ent plant">chamaemelon</span>; the Italians name it the sweet&#8209;smelling, for above all other herbs it yields good odour. Gather this herb before the sun rises, the root washed clean; ground with the seed of <span class="ent plant">chamomile</span> it drives off the white film of the eye.</p>
+        </div>
+        <div class="sb-entry">
+          <span class="sc">12r &middot; b &middot; additio, later hand</span>
+          <p>Pills: take <span class="ent substance">aloes</span> two ounces; myrobalans, <span class="ent substance">mastic</span> and red roses of each one ounce; <span class="ent substance">saffron</span> one drachm; make up with juice of <span class="ent plant">fennel</span>.</p>
+        </div>
+        <div class="sb-note">Working translation (WHL) from the diplomatic transcription; uncertain readings marked &#10216;&thinsp;&#8230;&thinsp;&#10217;. The strip follows the visible region as you pan.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- lens card (positioned near click) -->
+<div class="lens" id="lens" hidden>
+  <button class="l-close" id="lensClose" aria-label="Close">&times;</button>
+  <h3 id="lensTitle"></h3>
+  <div class="l-latin" id="lensLatin"></div>
+  <div class="l-block"><span class="sc">transcription</span><div class="l-it" id="lensIt"></div></div>
+  <div class="l-block"><span class="sc">translation</span><div class="l-en" id="lensEn"></div></div>
+  <div class="l-foot">
+    <button class="btn" id="lensPin">Pin</button>
+    <a id="lensOpen" href="reader-codex.html">Open in Facsimile</a>
+    <span class="chip" id="lensChip"></span>
+  </div>
+</div>
+
+<!-- ================= EMBED VARIANTS ================= -->
+<section class="embeds" id="embeds">
+  <div class="kicker sc">reader-next &middot; embedding</div>
+  <h2>Embed variants</h2>
+  <p class="lede">Any passage, work or view can be composed into a parent site via <code>?embed=</code>. Three sizes below are shown at realistic widths inside neutral parent-page frames &mdash; the same streaming layers power all of them, so hover linking and deep links keep working outside the reader.</p>
+
+  <div class="embed-grid">
+
+    <!-- (a) excerpt embed -->
+    <figure class="embed-demo">
+      <div class="frame">
+        <div class="card ex-embed">
+          <div class="ex-head">
+            <span class="sc">WHL &middot; excerpt</span>
+            <span class="src">Banckes&rsquo;s Herbal, London c.&thinsp;1552 &middot; sig. B.ii<sup>v</sup></span>
+          </div>
+          <div class="ex-body">
+            <div class="ex-pass">
+              <p class="reading">&para; Thys is called Detander or detayne [<span class="ent plant">dittany</span>]. The vertue of thys herbe is thus: yf it be dronken it wyll delyuer a woman of a dead chyld. <span class="pass-hl" id="passHl">Also thys herbe wyll draw out a thorne or an yron out of a mans body</span>; it is hote and drye.</p>
+            </div>
+            <div class="ex-crop" id="exCrop" title="sig. B.ii verso &mdash; the quoted lines">
+              <div class="crop-hl" id="cropHl"></div>
+            </div>
+          </div>
+          <div class="ex-foot">
+            <a href="reader-codex.html">Open in reader &rarr;</a>
+            <span class="chip">diplomatic &middot; hover-linked</span>
+          </div>
+        </div>
+      </div>
+      <figcaption><span class="sc">a &middot; excerpt embed &mdash; <code style="text-transform:none">?embed=excerpt</code></span>
+      For essays, course readers and catalogue notes: a quoted passage stays live &mdash; hovering the text lights its facsimile lines (and vice versa), and &ldquo;open in reader&rdquo; lands on the exact passage with layers loaded.</figcaption>
+    </figure>
+
+    <!-- (b) card embed -->
+    <figure class="embed-demo narrow">
+      <div class="frame">
+        <div class="card bk-embed">
+          <img src="assets/thumbs/E54.jpg" alt="Ben cao gang mu, 1888 woodblock edition — cover">
+          <div class="bk-body">
+            <span class="badge-tier landmark">landmark</span>
+            <h3>Ben cao gang mu&ensp;本草綱目</h3>
+            <div class="by"><span class="ent author">Li Shizhen</span> 李時珍</div>
+            <div class="meta">Hongbaozhai woodblock edition, 1888 &middot; Chinese &middot; 52 juan</div>
+            <div class="bk-cta">
+              <a class="btn primary" href="reader-codex.html">Read</a>
+              <a class="btn ghost" href="overview-landmark.html">Overview</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption><span class="sc">b &middot; card embed &mdash; <code style="text-transform:none">?embed=card</code></span>
+      For partner catalogues, syllabi and link-outs: cover, tier badge and a single CTA. Renders from the work manifest alone &mdash; no reader payload is fetched until the click.</figcaption>
+    </figure>
+
+    <!-- (c) explore embed -->
+    <figure class="embed-demo">
+      <div class="frame">
+        <div class="exp-embed">
+          <div class="exp-view" id="expView" title="Open in Explore mode">
+            <span class="ev-mark">WHL</span>
+            <span class="ev-chip sc">Papyrus Ebers &middot; col. XLVI</span>
+            <span class="ev-hint">move to pan &middot; click opens Explore</span>
+          </div>
+        </div>
+      </div>
+      <figcaption><span class="sc">c &middot; explore embed &mdash; <code style="text-transform:none">?embed=explore</code></span>
+      For feature articles and exhibitions: a windowed view into a scroll or plate that pans under the cursor. Clicking through opens full-bleed Explore mode at the same spot (here: the hieratic roll, read right to left).</figcaption>
+    </figure>
+
+  </div>
+</section>
+
+<div class="foot-nav"><a href="index.html">&larr; All mockups</a></div>
+
+<div class="mock-note" id="mockNote">
+  <button class="mn-x" id="mockNoteX" aria-label="Dismiss">&times;</button>
+  <b>Explore mode</b> &mdash; full-bleed OpenSeadragon on Yale MS&nbsp;49 (E52). Interactive: hover / click the two outlined entries (lens cards; pin to the right-edge stack), expandable translation strip follows panning, topbar auto-hides, basic&thinsp;/&thinsp;advanced, scheme &amp; mode. Scroll down for the embed variants.
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0/build/openseadragon/openseadragon.min.js"></script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var root = document.documentElement;
+
+  /* ---------- mock chrome: scheme / mode / detail ---------- */
+  $('#schemeSel').value = root.dataset.scheme;
+  $('#schemeSel').addEventListener('change', function () {
+    root.dataset.scheme = this.value; localStorage.setItem('whlnext-scheme', this.value);
+  });
+  function modeLabel() { $('#modeBtn').textContent = root.dataset.mode === 'dark' ? '☀ Light' : '☾ Dark'; }
+  modeLabel();
+  $('#modeBtn').addEventListener('click', function () {
+    root.dataset.mode = root.dataset.mode === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('whlnext-mode', root.dataset.mode); modeLabel();
+  });
+  root.dataset.detail = localStorage.getItem('whlnext-adv') === '1' ? 'advanced' : 'basic';
+  function detailLabel() { $('#detailBtn').textContent = root.dataset.detail; }
+  detailLabel();
+  $('#detailBtn').addEventListener('click', function () {
+    root.dataset.detail = root.dataset.detail === 'basic' ? 'advanced' : 'basic';
+    localStorage.setItem('whlnext-adv', root.dataset.detail === 'advanced' ? '1' : '0'); detailLabel();
+  });
+  $('#mockNoteX').addEventListener('click', function () { $('#mockNote').remove(); });
+
+  /* ---------- data: two regions on fol. 12r ---------- */
+  var ASPECT = 1600 / 1205;
+  var REG = [
+    {
+      id: 'r-012', tag: 'r-012 · entry',
+      title: 'camamilla', latin: 'Chamaemelum nobile — entry, rubricated incipit',
+      it: 'Questa erba da li greci è dicta <span class="rub">camemeleon</span>; li italiani la dicono bene <span class="unc">olente</span>, però che sopra l&rsquo;altre erbe rende bono odore.',
+      en: 'This herb the Greeks call <span class="ent plant">chamaemelon</span> [chamomile]; the Italians name it the sweet-smelling, for above all other herbs it yields good odour.',
+      strip: '“This herb the Greeks call chamaemelon; the Italians name it the sweet-smelling herb, for above all others it yields good odour…”',
+      x: .083, y: .070, w: .763, h: .450
+    },
+    {
+      id: 'r-013', tag: 'r-013 · additio',
+      title: 'Pillole', latin: 'additio in a later hand — Latin recipe',
+      it: '&#8478; <span class="ent substance">aloes</span> &#8485; ii, mirabolani, <span class="ent substance">masticis</span>, rosarum rubearum ana &#8485; i, <span class="ent substance">croci</span> &#8488; i; confice cum suco <span class="unc">feniculi</span>.',
+      en: 'Take <span class="ent substance">aloes</span> 2 oz.; myrobalans, <span class="ent substance">mastic</span>, red roses, of each 1 oz.; <span class="ent substance">saffron</span> 1 dr.; make up with <span class="ent plant">fennel</span> juice.',
+      strip: '“Pills: take aloes two ounces; myrobalans, mastic and red roses of each one ounce; saffron one drachm…”',
+      x: .141, y: .540, w: .739, h: .175
+    }
+  ];
+  var STRIP_ALL = 'fol. 12r — entry on chamomile (camemeleon) with rubricated synonym list; a later hand adds a pill recipe below.';
+  $('#stripText').textContent = STRIP_ALL;
+
+  /* ---------- topbar auto-hide ---------- */
+  var topbar = $('#topbar'), hideT;
+  function wake() {
+    topbar.classList.remove('gone'); clearTimeout(hideT);
+    hideT = setTimeout(function () {
+      if (topbar.matches(':hover')) { wake(); } else { topbar.classList.add('gone'); }
+    }, 2500);
+  }
+  var stage = $('#stage');
+  stage.addEventListener('mousemove', wake);
+  stage.addEventListener('pointerdown', wake);
+  document.addEventListener('keydown', wake);
+  wake();
+
+  /* ---------- lens ---------- */
+  var lens = $('#lens'), lensOpenTs = 0, curReg = null;
+  function openLens(r, cx, cy) {
+    curReg = r; lensOpenTs = Date.now();
+    $('#lensTitle').innerHTML = '<span class="ent plant">' + r.title + '</span>';
+    $('#lensLatin').textContent = r.latin;
+    $('#lensIt').innerHTML = r.it;
+    $('#lensEn').innerHTML = r.en;
+    $('#lensChip').textContent = root.dataset.detail === 'advanced' ? ('fol. 12r · ' + r.id) : 'fol. 12r';
+    lens.hidden = false;
+    var lw = lens.offsetWidth, lh = lens.offsetHeight;
+    var x = Math.min(Math.max(12, cx + 16), window.innerWidth - lw - 12);
+    var y = Math.min(Math.max(12, cy - 24), window.innerHeight - lh - 12);
+    lens.style.left = x + 'px'; lens.style.top = y + 'px';
+  }
+  function closeLens(force) {
+    if (!force && Date.now() - lensOpenTs < 300) return;
+    lens.hidden = true; curReg = null;
+  }
+  $('#lensClose').addEventListener('click', function () { closeLens(true); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLens(true); });
+  window.addEventListener('scroll', function () { closeLens(true); }, { passive: true });
+
+  /* ---------- pin stack ---------- */
+  var pinned = {};
+  $('#lensPin').addEventListener('click', function () {
+    if (!curReg || pinned[curReg.id]) { closeLens(true); return; }
+    var r = curReg; pinned[r.id] = true;
+    var stack = $('#pinstack'); stack.hidden = false;
+    var card = document.createElement('div');
+    card.className = 'pin-card';
+    card.innerHTML =
+      '<div class="p-head"><b>' + r.title + '</b><i>' + r.id + '</i>' +
+      '<button class="p-x" aria-label="Unpin">&times;</button></div>' +
+      '<div class="p-en">' + r.en + '</div>' +
+      '<div class="p-act"><a data-act="loc">locate on page</a><a href="reader-codex.html">open in Facsimile</a></div>';
+    card.querySelector('.p-x').addEventListener('click', function () {
+      delete pinned[r.id]; card.remove();
+      if (!stack.querySelector('.pin-card')) stack.hidden = true;
+    });
+    card.querySelector('[data-act="loc"]').addEventListener('click', function () { locate(r); });
+    stack.appendChild(card);
+    closeLens(true);
+  });
+
+  /* ---------- translation strip ---------- */
+  var strip = $('#strip');
+  function toggleStrip() { strip.classList.toggle('open'); }
+  $('#stripCaret').addEventListener('click', function (e) { e.stopPropagation(); toggleStrip(); });
+  $('#stripLine').addEventListener('click', toggleStrip);
+  function setStrip(txt) {
+    var el = $('#stripText');
+    if (el.textContent !== txt) el.textContent = txt;
+  }
+
+  /* ---------- viewer ---------- */
+  var viewer = null;
+  function regionEl(r) {
+    var el = document.createElement('div');
+    el.className = 'ill-region';
+    el.innerHTML = '<span class="region-tag">' + r.tag + '</span>';
+    return el;
+  }
+  function locate(r) {
+    wake();
+    if (viewer) {
+      viewer.viewport.fitBounds(new OpenSeadragon.Rect(r.x - .04, r.y - .04, r.w + .08, r.h + .08));
+    }
+  }
+
+  if (window.OpenSeadragon) {
+    viewer = OpenSeadragon({
+      id: 'osd',
+      tileSources: { type: 'image', url: 'assets/pages/E52-page.jpg' },
+      showNavigationControl: false,
+      visibilityRatio: 0.85,
+      constrainDuringPan: true,
+      animationTime: 0.9,
+      maxZoomPixelRatio: 2.6,
+      minZoomImageRatio: 0.75,
+      gestureSettingsMouse: { clickToZoom: false, dblClickToZoom: true }
+    });
+    viewer.addHandler('open', function () {
+      /* re-home once layout has settled; guards against a 0-size container at init */
+      requestAnimationFrame(function () { viewer.viewport.goHome(true); });
+      setTimeout(function () { viewer.viewport.goHome(true); }, 250);
+      REG.forEach(function (r) {
+        var el = regionEl(r);
+        viewer.addOverlay({ element: el, location: new OpenSeadragon.Rect(r.x, r.y, r.w, r.h) });
+        new OpenSeadragon.MouseTracker({
+          element: el,
+          clickHandler: function (ev) {
+            var oe = ev.originalEvent, rect = el.getBoundingClientRect();
+            var cx = (oe && oe.clientX != null) ? oe.clientX : rect.left + ev.position.x;
+            var cy = (oe && oe.clientY != null) ? oe.clientY : rect.top + ev.position.y;
+            openLens(r, cx, cy);
+          }
+        });
+      });
+    });
+    viewer.addHandler('canvas-click', function (e) { if (e.quick) closeLens(); });
+    /* if a container resize leaves the viewport outside its zoom limits, snap home */
+    var resizeT;
+    viewer.addHandler('resize', function () {
+      clearTimeout(resizeT);
+      resizeT = setTimeout(function () {
+        var vp = viewer.viewport, z = vp.getZoom();
+        if (z < vp.getMinZoom() * 0.95 || z > vp.getMaxZoom() * 1.05) vp.goHome(true);
+      }, 200);
+    });
+    var rafPend = false;
+    viewer.addHandler('viewport-change', function () {
+      if (rafPend) return; rafPend = true;
+      requestAnimationFrame(function () {
+        rafPend = false;
+        var b = viewer.viewport.getBounds(true);
+        if (b.height > ASPECT * 0.82) { setStrip(STRIP_ALL); return; }
+        var cy = b.y + b.height / 2;
+        setStrip(cy < 0.53 ? REG[0].strip : REG[1].strip);
+      });
+    });
+  } else {
+    /* CDN unavailable: static fallback, regions still clickable */
+    var osd = $('#osd');
+    osd.innerHTML = '<div class="fb-wrap"><div class="fb-inner">' +
+      '<img src="assets/pages/E52-page.jpg" alt="Yale Cushing MS 49, fol. 12r"></div></div>';
+    var inner = osd.querySelector('.fb-inner');
+    REG.forEach(function (r) {
+      var el = regionEl(r);
+      el.style.left = (r.x * 100) + '%';
+      el.style.top = (r.y / ASPECT * 100) + '%';
+      el.style.width = (r.w * 100) + '%';
+      el.style.height = (r.h / ASPECT * 100) + '%';
+      el.addEventListener('click', function (e) { openLens(r, e.clientX, e.clientY); });
+      inner.appendChild(el);
+    });
+  }
+
+  /* ---------- embed (a): bidirectional hover ---------- */
+  var passHl = $('#passHl'), cropHl = $('#cropHl');
+  function exHover(on) {
+    passHl.classList.toggle('hl-on', on);
+    cropHl.classList.toggle('hl-on', on);
+  }
+  [passHl, $('#exCrop')].forEach(function (el) {
+    el.addEventListener('mouseenter', function () { exHover(true); });
+    el.addEventListener('mouseleave', function () { exHover(false); });
+  });
+
+  /* ---------- embed (c): cursor pan ---------- */
+  var ev = $('#expView');
+  ev.addEventListener('mousemove', function (e) {
+    var r = ev.getBoundingClientRect();
+    var px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+    ev.style.transition = 'none';
+    ev.style.backgroundPosition = (15 + px * 70) + '% ' + (8 + py * 60) + '%';
+  });
+  ev.addEventListener('mouseleave', function () {
+    ev.style.transition = 'background-position .6s ease';
+    ev.style.backgroundPosition = '50% 28%';
+  });
+})();
+</script>
+</body>
+</html>
