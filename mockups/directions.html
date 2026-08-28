@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WHL — Art directions (mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+/* This page compares three self-contained art directions. Each [data-dir] block
+   below redefines the token *variables* for everything inside the stage —
+   deliberately independent of the data-scheme system (the scheme select is
+   hidden in the topbar). All colour usage goes through the vars. */
+
+.topbar .whl-scheme { display: none; }
+
+/* ============================================================
+   Shared structure — identical markup, geometry only.
+   Direction blocks change vars + voice, never the DOM.
+   ============================================================ */
+#stage { min-height: 100vh; background: var(--bg); color: var(--ink); }
+#stage, #stage * { transition: background-color .35s ease, color .35s ease,
+  border-color .35s ease, box-shadow .35s ease, transform .18s ease; }
+.inner { max-width: var(--d-maxw, 1180px); margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 48px) 140px; }
+
+/* ---------- product nav ---------- */
+.pnav { display: flex; align-items: center; gap: 22px;
+  padding: var(--d-nav-pad, 18px) 0; border-bottom: var(--d-nav-rule, 1px solid var(--line)); }
+.wordmark { display: flex; align-items: baseline; gap: 12px; color: var(--ink); }
+.wordmark:hover { text-decoration: none; }
+.wordmark b { font: 600 23px/1 var(--d-display, var(--font-display)); letter-spacing: .01em; }
+.wordmark .wm-sub { font: 500 9.5px var(--font-chrome); letter-spacing: .16em;
+  text-transform: uppercase; color: var(--ink-3); }
+.pnav-links { display: flex; gap: 2px; }
+.pnav-links a { font: var(--d-navlink, 500 12.5px) var(--font-chrome); color: var(--ink-2);
+  padding: 6px 11px; letter-spacing: var(--d-navlink-ls, .01em); text-transform: var(--d-navlink-tt, none); }
+.pnav-links a:hover { color: var(--ink); text-decoration: none; }
+.pnav-links a.on { color: var(--accent); font-weight: 600; }
+.pnav-search { margin-left: auto; position: relative; flex: 0 1 250px; min-width: 170px; }
+.pnav-search svg { position: absolute; left: var(--d-search-svg-x, 10px); top: 50%;
+  transform: translateY(-50%); color: var(--ink-3); }
+.pnav-search input { width: 100%; padding: 7px 12px 7px 30px; color: var(--ink);
+  font: 12.5px var(--font-chrome); outline: none;
+  background: var(--d-search-bg, var(--bg-raise));
+  border: var(--d-search-bd, 1px solid var(--line-2));
+  border-radius: var(--d-search-r, 99px); }
+.pnav-search input::placeholder { color: var(--ink-3); }
+.pnav-search input:focus { border-color: var(--accent); }
+
+/* ---------- hero ---------- */
+.hero { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(30px, 5vw, 76px); align-items: center;
+  padding: var(--d-hero-pad, clamp(44px, 8vh, 84px)) 0 clamp(38px, 6vh, 64px); }
+.kicker { font: 600 var(--d-kick-size, 10.5px) var(--font-chrome);
+  letter-spacing: var(--d-kick-ls, .17em); text-transform: uppercase;
+  color: var(--d-kick-ink, var(--ink-3)); }
+.hero h1 { font-family: var(--d-display, var(--font-display));
+  font-size: var(--d-h1, clamp(44px, 5.5vw, 60px)); font-weight: var(--d-h1-w, 600);
+  letter-spacing: var(--d-h1-ls, 0); line-height: 1.02; margin: 12px 0 18px; }
+.lede { font-family: var(--d-body, var(--font-read)); font-size: var(--d-lede-size, 17px);
+  line-height: 1.62; color: var(--ink-2); max-width: 54ch; margin: 0 0 26px; }
+.hero-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 30px; }
+.cta { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px;
+  font: 600 13px var(--font-chrome); letter-spacing: .02em; cursor: pointer;
+  border-radius: var(--d-cta-r, 4px);
+  background: var(--d-cta-bg, var(--accent)); color: var(--d-cta-ink, var(--accent-ink));
+  border: var(--d-cta-bd, 1px solid transparent); }
+.cta:hover { text-decoration: none; filter: brightness(1.06); }
+.cta.ghost { background: transparent; color: var(--ink);
+  border: var(--d-ctag-bd, 1px solid var(--line-2)); }
+.cta.ghost:hover { border-color: var(--accent); color: var(--accent); }
+.hero-facts { display: flex; gap: clamp(22px, 3vw, 40px); }
+.hero-facts .fact { font: 11px var(--font-chrome); color: var(--ink-3);
+  letter-spacing: .06em; text-transform: uppercase; }
+.hero-facts .fact b { display: block; font: 600 21px/1.3 var(--d-display, var(--font-display));
+  letter-spacing: 0; text-transform: none; color: var(--ink); }
+.hero-fig { margin: 0; justify-self: center; text-align: center; }
+.hero-fig img { display: block; width: min(100%, 330px); aspect-ratio: 3 / 4.4;
+  object-fit: cover;
+  border-radius: var(--d-img-r, 4px); border: var(--d-img-bd, 1px solid var(--line-2));
+  box-shadow: var(--d-glow, var(--shadow)); }
+.hero-fig figcaption { margin-top: 14px; font: 10.5px var(--font-chrome);
+  letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+
+/* ---------- section heads ---------- */
+.sechead { display: flex; align-items: baseline; gap: 16px;
+  margin: var(--d-sec-gap, clamp(44px, 7vh, 70px)) 0 var(--d-sec-below, 24px); }
+.sec-n { font: 600 11px var(--font-chrome); letter-spacing: .1em; color: var(--accent); }
+.sechead h2 { font: var(--d-h2, 600 25px) var(--d-h2-font, var(--d-display, var(--font-display)));
+  letter-spacing: var(--d-h2-ls, 0); text-transform: var(--d-h2-tt, none);
+  color: var(--d-h2-ink, var(--ink)); margin: 0; }
+.sechead .rule { flex: 1; align-self: center; border-top: 1px solid var(--line); }
+.seemore { font: 600 10.5px var(--font-chrome); letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent); white-space: nowrap; }
+
+/* ---------- landmark row ---------- */
+.lm-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--d-lm-gap, 20px); }
+.lm { display: flex; gap: 16px; color: inherit; min-width: 0;
+  padding: var(--d-card-pad, 18px);
+  background: var(--d-card-bg, var(--bg-raise));
+  border: var(--d-card-bd, 1px solid var(--line));
+  border-radius: var(--d-r, 8px);
+  box-shadow: var(--d-card-sh, var(--shadow)); }
+.lm:hover { text-decoration: none; }
+.lm-thumb { flex: none; }
+.lm-thumb img { display: block; width: 88px; aspect-ratio: 3 / 4.3; object-fit: cover;
+  border-radius: var(--d-img-r, 4px);
+  border: var(--d-img-bd, 1px solid var(--line-2)); box-shadow: var(--d-glow-sm, var(--shadow)); }
+.lm-body { min-width: 0; }
+.lm-era { display: block; font: 600 9.5px var(--font-chrome); letter-spacing: .14em;
+  text-transform: uppercase; color: var(--d-kick-ink, var(--ink-3)); margin-bottom: 7px; }
+.lm h3 { font-family: var(--d-display, var(--font-display));
+  font-size: var(--d-h3, 19px); font-weight: 600; margin: 0 0 3px; }
+.lm p { font-family: var(--d-body, var(--font-read)); font-size: 12.5px; line-height: 1.5;
+  color: var(--ink-2); margin: 0; }
+.lm:hover h3 { color: var(--accent); }
+
+/* ---------- works grid ---------- */
+.wgrid { display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: var(--d-w-gap, 20px);
+  background: var(--d-wgrid-bg, transparent); border: var(--d-wgrid-bd, 0); }
+.wk { display: flex; flex-direction: column; color: inherit; min-width: 0;
+  padding: var(--d-wk-pad, 0); overflow: hidden;
+  background: var(--d-card-bg, var(--bg-raise));
+  border: var(--d-card-bd, 1px solid var(--line));
+  border-radius: var(--d-r, 8px);
+  box-shadow: var(--d-card-sh, var(--shadow)); }
+.wk:hover { text-decoration: none; }
+.wk-thumb { display: block; }
+.wk-thumb img { display: block; width: 100%; aspect-ratio: 3 / 3.8; object-fit: cover;
+  border-radius: var(--d-wimg-r, 0);
+  border: var(--d-wimg-bd, 0); border-bottom: var(--d-wimg-bb, 1px solid var(--line));
+  box-shadow: var(--d-glow-sm, none); }
+.wk-body { display: flex; flex-direction: column; gap: 4px; flex: 1;
+  padding: var(--d-wbody-pad, 13px 15px 15px); }
+.wk-tier { font: 600 9px var(--font-chrome); letter-spacing: .16em; text-transform: uppercase;
+  color: var(--d-tier-ink, var(--ink-3)); }
+.wk h3 { font-family: var(--d-display, var(--font-display)); font-size: 16px;
+  font-weight: 600; line-height: 1.28; margin: 1px 0 0; }
+.wk h3 em { font-style: italic; font-weight: 400; }
+.wk-meta { font: 11.5px var(--font-chrome); color: var(--ink-2); margin: 2px 0 0; line-height: 1.45; }
+.wk:hover h3 { color: var(--accent); }
+
+.pfoot { margin-top: clamp(48px, 8vh, 80px); padding-top: 16px;
+  border-top: 1px solid var(--line); font: 11px var(--font-chrome);
+  letter-spacing: .04em; color: var(--ink-3); }
+
+/* ============================================================
+   DIRECTION A — "Archive"
+   The current warm parchment voice, refined. EB Garamond display,
+   raised cards, soft shadows, quiet small-caps chrome.
+   ============================================================ */
+#stage[data-dir="a"] {
+  --bg: #f6f1e7; --bg-raise: #fdfaf3; --bg-sunk: #ede5d4;
+  --ink: #26211a; --ink-2: #5c5347; --ink-3: #8a7f6e;
+  --line: #ddd3bf; --line-2: #c4b79c;
+  --accent: #7a5230; --accent-ink: #fdfaf3;
+
+  --d-display: var(--font-display);
+  --d-body: var(--font-read);
+  --d-h1: clamp(46px, 5.6vw, 62px); --d-h1-w: 600;
+  --d-glow: 0 2px 6px rgb(58 45 25 / .14), 0 14px 44px rgb(58 45 25 / .16);
+  --d-glow-sm: 0 1px 3px rgb(58 45 25 / .12), 0 4px 14px rgb(58 45 25 / .10);
+  --d-card-sh: 0 1px 3px rgb(58 45 25 / .07), 0 4px 16px rgb(58 45 25 / .06);
+}
+#stage[data-dir="a"] .sec-n { display: none; }
+#stage[data-dir="a"] .lm:hover,
+#stage[data-dir="a"] .wk:hover { transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgb(58 45 25 / .14), 0 14px 40px rgb(58 45 25 / .13); }
+#stage[data-dir="a"] .kicker::before { content: "❧  "; color: var(--accent);
+  letter-spacing: 0; }
+#stage[data-dir="a"] .hero-fig img { outline: 5px solid var(--bg-raise);
+  outline-offset: -6px; }
+
+/* ============================================================
+   DIRECTION B — "Museum"
+   Dark, facsimile-forward. Near-black warm ground, large EB
+   Garamond display, images glow, gallery-label typography,
+   generous space, gilt hairlines.
+   ============================================================ */
+#stage[data-dir="b"] {
+  --bg: #12100d; --bg-raise: #191612; --bg-sunk: #0b0a08;
+  --ink: #ece3d1; --ink-2: #b4a88f; --ink-3: #7e745f;
+  --line: #2b261e; --line-2: #443c2e;
+  --accent: #c8a468; --accent-ink: #12100d;
+
+  --d-maxw: 1240px;
+  --d-display: var(--font-display);
+  --d-body: var(--font-display);
+  --d-h1: clamp(62px, 8vw, 100px); --d-h1-w: 400; --d-h1-ls: .005em;
+  --d-lede-size: 18.5px;
+  --d-kick-ink: var(--accent); --d-kick-ls: .26em; --d-kick-size: 10px;
+  --d-h2: 600 12.5px; --d-h2-font: var(--font-chrome); --d-h2-ls: .26em;
+  --d-h2-tt: uppercase; --d-h2-ink: var(--ink-2);
+  --d-h3: 20px;
+  --d-nav-pad: 22px; --d-navlink: 500 11px; --d-navlink-ls: .14em; --d-navlink-tt: uppercase;
+  --d-search-bg: transparent; --d-search-bd: 0; --d-search-r: 0;
+  --d-hero-pad: clamp(60px, 11vh, 120px);
+  --d-sec-gap: clamp(64px, 11vh, 110px); --d-sec-below: 34px;
+  --d-r: 2px; --d-img-r: 2px; --d-img-bd: 1px solid var(--line-2);
+  --d-card-bg: transparent; --d-card-bd: 0; --d-card-sh: none; --d-card-pad: 0;
+  --d-lm-gap: clamp(30px, 3.5vw, 48px);
+  --d-w-gap: clamp(34px, 4vw, 52px) clamp(28px, 3vw, 40px);
+  --d-wk-pad: 0; --d-wbody-pad: 15px 2px 0; --d-wimg-bb: 0;
+  --d-wimg-r: 2px; --d-wimg-bd: 1px solid var(--line-2);
+  --d-cta-bg: transparent; --d-cta-ink: var(--accent);
+  --d-cta-bd: 1px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  --d-cta-r: 0; --d-ctag-bd: 1px solid var(--line-2);
+  --d-tier-ink: var(--accent);
+  --d-glow: 0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent),
+            0 22px 70px color-mix(in srgb, var(--bg-sunk) 85%, transparent),
+            0 0 110px color-mix(in srgb, var(--accent) 13%, transparent);
+  --d-glow-sm: 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent),
+               0 10px 34px color-mix(in srgb, var(--bg-sunk) 80%, transparent),
+               0 0 46px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+#stage[data-dir="b"] .pnav-search input { border-bottom: 1px solid var(--line-2);
+  padding-left: 26px; }
+#stage[data-dir="b"] .cta:hover { background: var(--accent); color: var(--accent-ink);
+  filter: none; }
+#stage[data-dir="b"] .sechead .rule { border-top-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
+#stage[data-dir="b"] .lm { border-top: 1px solid var(--line); border-radius: 0;
+  padding-top: 24px; }
+#stage[data-dir="b"] .wk:hover img { box-shadow:
+  0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent),
+  0 14px 44px color-mix(in srgb, var(--bg-sunk) 85%, transparent),
+  0 0 70px color-mix(in srgb, var(--accent) 22%, transparent); }
+#stage[data-dir="b"] .wk-meta,
+#stage[data-dir="b"] .lm-era { letter-spacing: .12em; text-transform: uppercase;
+  font-size: 10px; color: var(--ink-3); }
+#stage[data-dir="b"] .lede { color: var(--ink-2); }
+#stage[data-dir="b"] .hero-facts .fact b { font-weight: 400; font-size: 24px; }
+
+/* ============================================================
+   DIRECTION C — "Folio"
+   Bright modern editorial. Crisp white, strong hairline grid,
+   big Source Serif display, one vermilion accent, no ornament.
+   ============================================================ */
+#stage[data-dir="c"] {
+  --bg: #ffffff; --bg-raise: #ffffff; --bg-sunk: #f4f3f0;
+  --ink: #141414; --ink-2: #494845; --ink-3: #8d8c87;
+  --line: #e0dfda; --line-2: #c9c8c2;
+  --accent: #bf3417; --accent-ink: #ffffff;
+
+  --d-display: var(--font-read);
+  --d-body: var(--font-read);
+  --d-h1: clamp(54px, 6.6vw, 80px); --d-h1-w: 600; --d-h1-ls: -.018em;
+  --d-kick-ink: var(--accent); --d-kick-ls: .2em;
+  --d-h2: 600 29px; --d-h2-ls: -.01em;
+  --d-h3: 19px;
+  --d-nav-rule: 1px solid var(--ink); --d-nav-pad: 16px;
+  --d-navlink: 600 11px; --d-navlink-ls: .12em; --d-navlink-tt: uppercase;
+  --d-search-bg: var(--bg); --d-search-bd: 1px solid var(--line-2); --d-search-r: 0;
+  --d-hero-pad: clamp(48px, 8vh, 88px);
+  --d-sec-gap: clamp(52px, 8vh, 84px);
+  --d-r: 0; --d-img-r: 0; --d-img-bd: 1px solid var(--line-2);
+  --d-card-bg: transparent; --d-card-bd: 0; --d-card-sh: none;
+  --d-glow: none; --d-glow-sm: none;
+  --d-card-pad: 0 0 0 20px;
+  --d-lm-gap: clamp(24px, 3vw, 40px);
+  --d-wgrid-bg: var(--line); --d-wgrid-bd: 1px solid var(--line);
+  --d-w-gap: 1px;
+  --d-wk-pad: 16px 16px 18px; --d-wbody-pad: 13px 0 0;
+  --d-wimg-bd: 1px solid var(--line); --d-wimg-bb: 1px solid var(--line);
+  --d-cta-bg: var(--ink); --d-cta-ink: var(--bg); --d-cta-r: 0;
+  --d-ctag-bd: 1px solid var(--ink);
+  --d-tier-ink: var(--accent);
+}
+#stage[data-dir="c"]::before { content: ""; display: block; height: 3px;
+  background: var(--ink); }
+#stage[data-dir="c"] .wordmark b { font-weight: 600; letter-spacing: -.01em; }
+#stage[data-dir="c"] .sec-n { font-size: 13px; color: var(--accent); }
+#stage[data-dir="c"] .sechead .rule { border-top-color: var(--line); }
+#stage[data-dir="c"] .hero { border-bottom: 1px solid var(--line); }
+#stage[data-dir="c"] .lm { border-left: 1px solid var(--line); border-radius: 0; }
+#stage[data-dir="c"] .lm:first-child { border-left: 0; padding-left: 0; }
+#stage[data-dir="c"] .wk { background: var(--bg); }
+#stage[data-dir="c"] .wk:hover { background: var(--bg-sunk); }
+#stage[data-dir="c"] .wk:hover h3 { color: var(--accent); text-decoration: underline;
+  text-decoration-thickness: 1px; text-underline-offset: 3px; }
+#stage[data-dir="c"] .hero-facts .fact b { font-size: 23px; letter-spacing: -.01em; }
+#stage[data-dir="c"] .pfoot { border-top: 1px solid var(--ink); }
+
+/* ============================================================
+   Direction switcher — inverted pill, legible in all three.
+   ============================================================ */
+.dirbar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+  z-index: 80; display: flex; align-items: center; gap: 3px; padding: 5px;
+  border-radius: 999px; background: var(--ink); color: var(--bg);
+  box-shadow: 0 6px 30px color-mix(in srgb, var(--ink) 35%, transparent); }
+.dirbar button { display: inline-flex; align-items: center; gap: 8px;
+  border: 0; background: transparent; color: var(--bg); cursor: pointer;
+  padding: 7px 16px; border-radius: 999px; font: 600 12px var(--font-chrome);
+  letter-spacing: .03em; opacity: .72; }
+.dirbar button:hover { opacity: 1; }
+.dirbar button.on { background: var(--bg); color: var(--ink); opacity: 1; }
+.dirbar kbd { font: 600 9.5px var(--font-chrome); border: 1px solid currentColor;
+  border-radius: 3px; padding: 1px 4.5px; opacity: .65; }
+.dirbar .dir-desc { font: 11px var(--font-chrome); color: var(--bg); opacity: .6;
+  padding: 0 14px 0 10px; white-space: nowrap; border-left: 1px solid
+  color-mix(in srgb, var(--bg) 30%, transparent); margin-left: 5px; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 980px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-fig { justify-self: start; }
+  .lm-row { grid-template-columns: 1fr; }
+  #stage[data-dir="c"] .lm { border-left: 0; border-top: 1px solid var(--line);
+    padding: 16px 0 0; }
+  #stage[data-dir="c"] .lm:first-child { border-top: 0; }
+  .wgrid { grid-template-columns: repeat(2, 1fr); }
+  .pnav-links { display: none; }
+}
+@media (max-width: 640px) {
+  .dirbar .dir-desc { display: none; }
+  .pnav-search { display: none; }
+}
+</style>
+</head>
+<body>
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+
+<div id="stage" data-dir="a">
+  <div class="inner">
+
+    <!-- product nav -->
+    <nav class="pnav" aria-label="Product navigation (mock)">
+      <a class="wordmark" href="library.html"><b>WHL</b>
+        <span class="wm-sub">Historical Herbal &amp; Materia-Medica Library</span></a>
+      <div class="pnav-links">
+        <a class="on" href="library.html">Library</a>
+        <a href="overview-landmark.html">Landmarks</a>
+        <a href="#">Reading lists</a>
+        <a href="#">About</a>
+      </div>
+      <div class="pnav-search">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg>
+        <input type="text" placeholder="Search betony, 蛇床子, myrrh&hellip;" aria-label="Search the library (mock)">
+      </div>
+    </nav>
+
+    <!-- hero: the Ebers feature -->
+    <header class="hero">
+      <div class="hero-copy">
+        <div class="kicker">Landmark work &middot; c.&thinsp;1550 BC &middot; Thebes</div>
+        <h1>Papyrus Ebers</h1>
+        <p class="lede">The oldest substantially complete pharmacological text: 110 columns
+          of hieratic prescriptions &mdash; myrrh plasters, remedies of the eye, the physician&rsquo;s
+          incantations &mdash; streamed column by column beside Joachim&rsquo;s 1890 German translation.</p>
+        <div class="hero-cta">
+          <a class="cta" href="reader-scroll.html">Open the papyrus</a>
+          <a class="cta ghost" href="library.html">Browse all works</a>
+        </div>
+        <div class="hero-facts">
+          <span class="fact"><b>110</b> columns</span>
+          <span class="fact"><b>2</b> witnesses</span>
+          <span class="fact"><b>&#x2190;</b> read right to left</span>
+        </div>
+      </div>
+      <figure class="hero-fig">
+        <img src="assets/thumbs/EB01.jpg" alt="Papyrus Ebers, a column of hieratic script">
+        <figcaption>Hieratic roll &middot; Leipzig University Library</figcaption>
+      </figure>
+    </header>
+
+    <!-- landmark row -->
+    <section aria-label="Landmark works">
+      <div class="sechead">
+        <span class="sec-n">01</span><h2>Landmarks</h2>
+        <span class="rule"></span>
+        <a class="seemore" href="library.html">All landmarks</a>
+      </div>
+      <div class="lm-row">
+        <a class="lm" href="overview-landmark.html">
+          <span class="lm-thumb"><img src="assets/thumbs/EB01.jpg" alt="Papyrus Ebers, hieratic column"></span>
+          <span class="lm-body">
+            <span class="lm-era">c.&thinsp;1550 BC &middot; Thebes</span>
+            <h3>Papyrus Ebers</h3>
+            <p>Hieratic roll, Leipzig &mdash; with Joachim&rsquo;s German translation (1890).</p>
+          </span>
+        </a>
+        <a class="lm" href="overview-landmark.html">
+          <span class="lm-thumb"><img src="assets/thumbs/E54.jpg" alt="Ben Cao Gang Mu, 1888 woodblock edition"></span>
+          <span class="lm-body">
+            <span class="lm-era">1578 &middot; China</span>
+            <h3>Ben Cao Gang Mu <span lang="zh">本草綱目</span></h3>
+            <p>Li Shizhen&rsquo;s great synthesis &mdash; Hongbaozhai woodblock ed., 1888.</p>
+          </span>
+        </a>
+        <a class="lm" href="work-dioscorides.html">
+          <span class="lm-thumb"><img src="assets/thumbs/E49.jpg" alt="Dioscorides in Italian translation, Florence 1547"></span>
+          <span class="lm-body">
+            <span class="lm-era">1st c. AD &middot; Anatolia</span>
+            <h3>Dioscorides, De materia medica</h3>
+            <p>The spine of Western pharmacy, read through its Renaissance translators.</p>
+          </span>
+        </a>
+      </div>
+    </section>
+
+    <!-- works grid sample -->
+    <section aria-label="From the shelves">
+      <div class="sechead">
+        <span class="sec-n">02</span><h2>From the shelves</h2>
+        <span class="rule"></span>
+        <a class="seemore" href="library.html">All 13 works</a>
+      </div>
+      <div class="wgrid">
+
+        <a class="wk" href="overview-standard.html">
+          <span class="wk-thumb"><img src="assets/thumbs/E52.jpg" alt="Anonymous Italian herbal, Yale Cushing MS 49"></span>
+          <span class="wk-body">
+            <span class="wk-tier">Notable</span>
+            <h3>Herbal, anonymous <em>(Yale, Cushing MS&nbsp;49)</em></h3>
+            <p class="wk-meta">Northern Italy, 14th&ndash;15th c. &middot; Italian &middot; 3 witnesses</p>
+          </span>
+        </a>
+
+        <a class="wk" href="overview-standard.html">
+          <span class="wk-thumb"><img src="assets/thumbs/E01.jpg" alt="Hortus Sanitatis, incunable"></span>
+          <span class="wk-body">
+            <span class="wk-tier">Notable</span>
+            <h3>Hortus Sanitatis</h3>
+            <p class="wk-meta">Strasbourg, not after 1497 &middot; Latin &middot; incunable</p>
+          </span>
+        </a>
+
+        <a class="wk" href="overview-standard.html">
+          <span class="wk-thumb"><img src="assets/thumbs/E48.jpg" alt="Banckes's Herbal, blackletter"></span>
+          <span class="wk-body">
+            <span class="wk-tier">Notable</span>
+            <h3>Banckes&rsquo;s Herbal</h3>
+            <p class="wk-meta">London, c.&thinsp;1552 &middot; English &middot; blackletter</p>
+          </span>
+        </a>
+
+        <a class="wk" href="overview-standard.html">
+          <span class="wk-thumb"><img src="assets/thumbs/E28.jpg" alt="Culpeper, The English Physitian"></span>
+          <span class="wk-body">
+            <span class="wk-tier">Notable</span>
+            <h3>The English Physitian</h3>
+            <p class="wk-meta">Nicholas Culpeper &middot; London, 1652</p>
+          </span>
+        </a>
+
+        <a class="wk" href="overview-standard.html">
+          <span class="wk-thumb"><img src="assets/thumbs/E45.jpg" alt="Le grant herbier en francoys"></span>
+          <span class="wk-body">
+            <span class="wk-tier">Standard</span>
+            <h3>Le grant herbier en francoys</h3>
+            <p class="wk-meta">Paris, c.&thinsp;1525&ndash;30 &middot; French &middot; 2 copies</p>
+          </span>
+        </a>
+
+        <a class="wk" href="overview-standard.html">
+          <span class="wk-thumb"><img src="assets/thumbs/E17.jpg" alt="Zhongyao da cidian, vol. 2"></span>
+          <span class="wk-body">
+            <span class="wk-tier">Notable</span>
+            <h3>Zhongyao da cidian <span lang="zh">中药大辞典</span>, vol.&nbsp;2</h3>
+            <p class="wk-meta">Jiangsu New Medical College &middot; Shanghai, 1977</p>
+          </span>
+        </a>
+
+      </div>
+    </section>
+
+    <footer class="pfoot">WHL Reader Next &mdash; art-direction study. One composition, three voices;
+      markup identical across directions, CSS only.</footer>
+  </div>
+
+  <!-- direction switcher (inside #stage so it inherits the active palette) -->
+  <div class="dirbar" role="tablist" aria-label="Art direction">
+    <button type="button" data-dir="a" role="tab" title="Warm parchment voice, refined"><kbd>1</kbd> Archive</button>
+    <button type="button" data-dir="b" role="tab" title="Dark facsimile gallery"><kbd>2</kbd> Museum</button>
+    <button type="button" data-dir="c" role="tab" title="Bright editorial folio"><kbd>3</kbd> Folio</button>
+    <span class="dir-desc" id="dirDesc"></span>
+  </div>
+</div>
+
+<script type="module">
+import {mountChrome} from './lib/whl-chrome.js';
+
+mountChrome({
+  title: 'Art directions',
+  adv: false,
+  note: '<strong>Three art directions, one composition.</strong> The stage below overrides the ' +
+    'colour-scheme system entirely (its palette is self-contained per direction), so the scheme ' +
+    'picker is hidden and light/dark only affects this topbar. Switch with the control at the ' +
+    'bottom &mdash; or keys <b>1</b>&thinsp;/&thinsp;<b>2</b>&thinsp;/&thinsp;<b>3</b> &mdash; ' +
+    'and pick the voice the product should take.'
+});
+
+const stage = document.getElementById('stage');
+const btns = Array.from(document.querySelectorAll('.dirbar button'));
+const desc = document.getElementById('dirDesc');
+const DESCS = { a: 'warm parchment, refined', b: 'dark facsimile gallery', c: 'bright editorial folio' };
+const LS_DIR = 'whlnext-dir';
+
+function setDir(d) {
+  if (!DESCS[d]) return;
+  stage.dataset.dir = d;
+  btns.forEach(b => {
+    const on = b.dataset.dir === d;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  desc.textContent = DESCS[d];
+  try { localStorage.setItem(LS_DIR, d); } catch {}
+}
+
+btns.forEach(b => b.addEventListener('click', () => setDir(b.dataset.dir)));
+
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.target.closest && e.target.closest('input, select, textarea')) return;
+  const d = { '1': 'a', '2': 'b', '3': 'c' }[e.key];
+  if (d) setDir(d);
+});
+
+let start = 'a';
+try { const s = localStorage.getItem(LS_DIR); if (s === 'b' || s === 'c') start = s; } catch {}
+setDir(start);
+</script>
+</body>
+</html>

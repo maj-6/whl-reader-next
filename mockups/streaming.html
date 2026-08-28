@@ -14,10 +14,15 @@ h1{font-size:34px;margin:26px 0 8px}
 h2{font-size:25px}
 h3{font-size:18px}
 .stand{max-width:72ch;color:var(--ink-2);font-family:var(--font-read);font-size:15.5px;margin:0 0 20px}
-.pgtitle{font:600 13px var(--font-chrome)}
-.crumb{font-size:13px;color:var(--ink-2)}
-.dim{color:var(--ink-3)}
 .mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace}
+
+/* ---------- implemented banner ---------- */
+.implbanner{display:flex;align-items:center;gap:14px;padding:13px 18px;margin:20px 0 6px;
+  border:1px solid var(--accent);background:var(--tint-select)}
+.ib-badge{flex:none;font:700 10.5px var(--font-chrome);letter-spacing:.1em;text-transform:uppercase;
+  background:var(--accent);color:var(--accent-ink);border-radius:99px;padding:4px 12px}
+.ib-txt{margin:0;font-size:14px;line-height:1.5;color:var(--ink);min-width:0}
+.ib-txt a{font-weight:600}
 
 /* ---------- architecture diagram (SVG) ---------- */
 .arch{width:100%;height:auto;display:block;min-width:760px}
@@ -94,14 +99,14 @@ h3{font-size:18px}
 .skels .skel{height:13px;margin:9px 0}
 #simzone.has-src .lay-src .content{display:block}
 #simzone.has-src .lay-src .skels{display:none}
-#simzone.has-par .lay-par .content{display:block}
-#simzone.has-par .lay-par .skels{display:none}
+#simzone.has-src .lay-par .content{display:block}
+#simzone.has-src .lay-par .skels{display:none}
 .srctext{font-family:var(--font-read);font-size:16.5px;line-height:2.0}
 .partext{background:var(--tint-translation);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-family:var(--font-read);font-size:14.5px;line-height:1.72}
 span[data-g]{transition:background .15s;border-radius:2px}
-#simzone.has-par span.g-hov{background:var(--tint-select)}
-#simzone:not(.has-par) [data-g]{cursor:text}
-#simzone.has-par [data-g]{cursor:pointer}
+#simzone.has-asc span.g-hov{background:var(--tint-select)}
+#simzone:not(.has-asc) [data-g]{cursor:text}
+#simzone.has-asc [data-g]{cursor:pointer}
 #simzone:not(.has-ent) .ent{color:inherit;text-decoration:none;cursor:inherit}
 .hoverstate{font-size:11px;color:var(--ink-3);margin-top:2px}
 .hoverstate b{color:var(--ok);font-weight:600}
@@ -126,25 +131,18 @@ span[data-g]{transition:background .15s;border-radius:2px}
 <body>
 <script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
 
-<div class="topbar">
-  <a class="crumb" href="index.html">&larr; Mockups</a>
-  <span class="pgtitle">Streaming architecture &amp; progressive hydration</span>
-  <div class="mock-switch">
-    <select class="btn" id="schemeSel" aria-label="scheme">
-      <option value="archive">Archive</option>
-      <option value="herbarium">Herbarium</option>
-      <option value="oxford">Oxford</option>
-    </select>
-    <button class="btn" id="modeTog">mode</button>
-  </div>
-</div>
-
-<div class="mock-note"><button class="mn-x" aria-label="Dismiss">×</button>Shows the object-store delivery architecture (static, top) and a live simulation of per-page layer streaming (bottom). Interactive: Play / Replay, Slow&nbsp;3G, warm-cache toggle; once the parallel layer lands, hover the aligned text.</div>
-
 <div class="wrap">
 
 <h1>Streaming, not shipping</h1>
 <p class="stand">The current reader hydrates a whole book before the first word is readable. The redesign treats every page as a small set of independently fetched, content-hashed objects: the page becomes usable the moment its first layer arrives, and each further layer only enriches it.</p>
+
+<div class="implbanner card">
+  <span class="ib-badge">Implemented</span>
+  <p class="ib-txt">The delivery model below is now implemented as a working module &mdash; see
+    <a href="lib/components.html#sec-store">lib/components.html (whl-store)</a> and the rebuilt readers
+    (<a href="reader-codex.html">codex</a> &middot; <a href="reader-scroll.html">scroll</a> &middot;
+    <a href="reader-explore.html">explore</a>). This page remains the design rationale; the module is the contract.</p>
+</div>
 
 <!-- ============ 01 · ARCHITECTURE ============ -->
 <section>
@@ -175,26 +173,23 @@ span[data-g]{transition:background .15s;border-radius:2px}
     <line x1="125" y1="162" x2="125" y2="182" class="cn"/>
 
     <rect x="36" y="186" width="340" height="128" rx="8" class="subframe"/>
-    <text x="48" y="205" class="cap">PER-PAGE BUNDLE &middot; P.1682</text>
+    <text x="48" y="205" class="cap">PER-PAGE BUNDLE &middot; P.1856</text>
     <text x="252" y="205" class="d">content-hashed objects</text>
 
-    <rect x="48" y="216" width="96" height="36" rx="4" class="chipbox"/>
+    <rect x="48" y="216" width="98" height="36" rx="4" class="chipbox"/>
     <text x="56" y="231" class="t">source.json</text>
     <text x="56" y="245" class="h">o/57d0c4&#8230;</text>
-    <rect x="152" y="216" width="86" height="36" rx="4" class="chipbox"/>
-    <text x="160" y="231" class="t">map.json</text>
-    <text x="160" y="245" class="h">o/b21e77&#8230;</text>
-    <rect x="246" y="216" width="112" height="36" rx="4" class="chipbox"/>
-    <text x="254" y="231" class="t">parallel.json</text>
-    <text x="254" y="245" class="h">o/8ea4f0&#8230;</text>
-    <rect x="48" y="262" width="96" height="36" rx="4" class="chipbox"/>
-    <text x="56" y="277" class="t">assoc.json</text>
-    <text x="56" y="291" class="h">o/44c9d1&#8230;</text>
-    <rect x="152" y="262" width="110" height="36" rx="4" class="chipbox"/>
-    <text x="160" y="277" class="t">entities.json</text>
-    <text x="160" y="291" class="h">o/d17b8e&#8230;</text>
-    <text x="274" y="284" class="d">one fetch per layer,</text>
-    <text x="274" y="296" class="d">each cancelable</text>
+    <rect x="154" y="216" width="96" height="36" rx="4" class="chipbox"/>
+    <text x="162" y="231" class="t">words.json</text>
+    <text x="162" y="245" class="h">o/b21e77&#8230;</text>
+    <rect x="258" y="216" width="96" height="36" rx="4" class="chipbox"/>
+    <text x="266" y="231" class="t">associations.json</text>
+    <text x="266" y="245" class="h">o/44c9d1&#8230;</text>
+    <rect x="48" y="262" width="110" height="36" rx="4" class="chipbox"/>
+    <text x="56" y="277" class="t">entities.json</text>
+    <text x="56" y="291" class="h">o/d17b8e&#8230;</text>
+    <text x="172" y="278" class="d">translation ships inside source &middot;</text>
+    <text x="172" y="290" class="d">one fetch per layer, each cancelable</text>
 
     <line x1="125" y1="314" x2="125" y2="336" class="cn"/>
     <text x="48" y="352" class="cap">IMAGE.DZI &middot; TILE PYRAMID</text>
@@ -228,9 +223,9 @@ span[data-g]{transition:background .15s;border-radius:2px}
     <circle cx="788" cy="110" r="8" class="numc"/><text x="788" y="113" class="numt" text-anchor="middle">1</text>
     <text x="804" y="114" class="an">image tiles</text>
     <circle cx="788" cy="132" r="8" class="numc"/><text x="788" y="135" class="numt" text-anchor="middle">2</text>
-    <text x="804" y="136" class="an">source text</text>
+    <text x="804" y="136" class="an">source text + translation</text>
     <circle cx="788" cy="154" r="8" class="numc"/><text x="788" y="157" class="numt" text-anchor="middle">3</text>
-    <text x="804" y="158" class="an">parallel</text>
+    <text x="804" y="158" class="an">words | glyphs</text>
     <circle cx="788" cy="176" r="8" class="numc"/><text x="788" y="179" class="numt" text-anchor="middle">4</text>
     <text x="804" y="180" class="an">associations</text>
     <circle cx="788" cy="198" r="8" class="numc"/><text x="788" y="201" class="numt" text-anchor="middle">5</text>
@@ -302,17 +297,17 @@ span[data-g]{transition:background .15s;border-radius:2px}
 <section>
   <p class="kick">02 &middot; Streaming UX</p>
   <h2>A page enters the viewport</h2>
-  <p class="stand">The simulation below replays the exact layer order from the design brief &mdash; image tiles, source text, parallel, associations, entities &mdash; against E17, <i>Zhongyao da cidian</i> vol.&nbsp;2 (1977), at the entry for <i>Cnidium monnieri</i>. The page is usable at every stage; each arrival only adds capability.</p>
+  <p class="stand">The simulation below replays the library's canonical layer order &mdash; image tiles, then <span class="mono">source &rarr; words &rarr; associations &rarr; entities</span>, exactly as <span class="mono">whl-store</span> fetches them (translation ships inside the source layer) &mdash; against E17, <i>Zhongyao da cidian</i> vol.&nbsp;2 (1977), at the entries for iron-derived drugs (&#38081;&#33853;, hammer-scale, and its neighbours &mdash; the same p.&nbsp;1856 the codex reader streams). The page is usable at every stage; each arrival only adds capability.</p>
 
   <div class="card simwrap" id="simzone">
     <div class="simbar">
       <button class="btn primary" id="playBtn">&#9654;&nbsp; Play &mdash; page enters viewport</button>
       <label class="tog"><input type="checkbox" id="slowTog"> Slow 3G</label>
       <label class="tog"><input type="checkbox" id="warmTog"> Warm cache (second visit)</label>
-      <div class="dots">
-        <span class="dotw"><span class="dot" id="d-img"></span>image</span>
+      <div class="dots adv-only">
+        <span class="dotw"><span class="dot" id="d-img"></span>tiles</span>
         <span class="dotw"><span class="dot" id="d-src"></span>source</span>
-        <span class="dotw"><span class="dot" id="d-par"></span>parallel</span>
+        <span class="dotw"><span class="dot" id="d-wrd"></span>words</span>
         <span class="dotw"><span class="dot" id="d-asc"></span>assoc</span>
         <span class="dotw"><span class="dot" id="d-ent"></span>entities</span>
       </div>
@@ -321,7 +316,7 @@ span[data-g]{transition:background .15s;border-radius:2px}
     <div class="simgrid">
       <!-- facsimile card -->
       <div>
-        <div class="pchead">Facsimile &middot; E17 &middot; p.&nbsp;1682</div>
+        <div class="pchead">Facsimile &middot; E17 &middot; p.&nbsp;1856</div>
         <div class="imgwrap">
           <div class="skel imgskel"></div>
           <img id="simimg" src="assets/pages/E17-page.jpg" alt="Zhongyao da cidian, printed page">
@@ -338,7 +333,7 @@ span[data-g]{transition:background .15s;border-radius:2px}
       <div>
         <div class="enthead">
           <span class="hw">&#12304;&#34503;&#24202;&#23376;&#12305;</span>
-          <span class="chip">entry 3242 of 5767</span>
+          <span class="chip">entries 3812&ndash;3815 &middot; &#38081;</span>
           <span class="badge-tier notable">notable</span>
         </div>
 
@@ -346,15 +341,15 @@ span[data-g]{transition:background .15s;border-radius:2px}
           <div class="laycap">Source &middot; Chinese</div>
           <div class="skels"><div class="skel" style="width:96%"></div><div class="skel" style="width:88%"></div><div class="skel" style="width:92%"></div><div class="skel" style="width:64%"></div></div>
           <div class="content srctext">
-            <span class="ent plant" data-g="g1">&#34503;&#24202;&#23376;</span>&#12290;&#20026;&#20254;&#24418;&#31185;&#26893;&#29289;&#34503;&#24202; <span class="ent plant">Cnidium monnieri</span> (L.) Cusson &#30340;&#26524;&#23454;&#12290;<span data-g="g2">&#24615;&#28201;&#65292;&#21619;&#36763;&#33510;</span>&#12290;<span data-g="g5">&#28201;&#32958;&#22766;&#38451;&#65292;&#29157;&#28287;&#65292;&#26432;&#34411;</span>&#12290;&#27835;&#38451;&#30207;&#65292;&#23467;&#20919;&#65292;&#28287;&#30129;&#33136;&#30171;&#65307;&#22806;&#29992;&#37197;<span class="ent substance" data-g="g4">&#30333;&#30718;</span>&#29006;&#27748;&#29071;&#27927;&#65292;&#27835;&#38452;&#30162;&#28287;&#30126;&#12290;<span class="ent cite" data-g="g3">&#12298;&#26412;&#33609;&#32434;&#30446;&#12299;</span>&#65306;&#19981;&#29420;&#21161;&#30007;&#23376;&#22766;&#28779;&#65292;&#20134;&#33021;&#25955;&#22919;&#20154;&#37057;&#27668;&#12290;
+            【各家论述】　<span class="ent cite" data-g="g3">《本草经疏》</span>：“<span class="ent substance" data-g="g1">铁落</span>，本出于铁，不离金象，<span data-g="g2">体重而降</span>，故<span class="ent cite" data-g="g4">《素问》</span>有生铁落饮，以疗病狂怒者，云生铁落，下气疾也。<span data-g="g5">又怒狂属肝气暴升，故取金气以制之也。</span>”
           </div>
         </div>
 
         <div class="lay lay-par">
-          <div class="laycap">Parallel &middot; English (working translation)</div>
+          <div class="laycap">Translation &middot; English &middot; ships inside the source layer</div>
           <div class="skels"><div class="skel" style="width:92%"></div><div class="skel" style="width:96%"></div><div class="skel" style="width:70%"></div></div>
           <div class="content partext">
-            <span class="ent plant" data-g="g1">Shechuangzi</span> &mdash; the fruit of <span class="ent plant">Cnidium monnieri</span> (L.) Cusson, Umbelliferae. <span data-g="g2">Nature warm; flavour acrid, bitter.</span> <span data-g="g5">Warms the kidney and strengthens yang; dries damp; kills parasites.</span> For impotence, cold womb, and damp pain of the loins; externally, decocted with <span class="ent substance" data-g="g4">alum</span> as a fumigating wash. <span class="ent author">Li Shizhen</span>, <span class="ent cite" data-g="g3">Ben cao gang mu</span>: &ldquo;it does not only fortify the male fire, but also disperses stagnant qi in women.&rdquo;
+            [Commentaries of the various authors] <span class="ent cite" data-g="g3">Commentary on the Classic of Materia Medica</span>: &ldquo;<span class="ent substance" data-g="g1">Iron flakes, tie luo</span>, come originally from iron and do not depart from the image of metal; <span data-g="g2">their body is heavy and descends</span> &mdash; hence the <span class="ent cite" data-g="g4">Basic Questions</span> has the Raw Iron-flake Drink to treat mania and rage, saying raw tie luo sends the qi-illness downward. <span data-g="g5">Raging mania belongs to a violent rising of liver qi, so the qi of metal is taken to check it.</span>&rdquo;
           </div>
         </div>
 
@@ -364,33 +359,29 @@ span[data-g]{transition:background .15s;border-radius:2px}
       <!-- network log -->
       <div class="netlog">
         <div class="pchead">Network &middot; simulated</div>
-        <div id="log"><div class="logempty">&#9654; press Play to stream p.&nbsp;1682</div></div>
+        <div id="log"><div class="logempty">&#9654; press Play to stream p.&nbsp;1856</div></div>
       </div>
     </div>
 
-    <div class="simfoot">Failure mode by design: a layer that 404s or times out is skipped &mdash; the page stays readable with whatever layers it has. Layer status dots are advanced-mode chrome; basic mode shows none of this.</div>
+    <div class="simfoot">Failure mode by design: a layer that 404s or times out is skipped &mdash; the page stays readable with whatever layers it has. Layer status dots are advanced-mode chrome &mdash; flip Basic/Advanced in the topbar; basic mode shows none of this.</div>
   </div>
 </section>
 
 </div><!-- /wrap -->
 
-<script>
-/* ---- mockup chrome: scheme + mode ---- */
-(function(){
-  var sel=document.getElementById('schemeSel');sel.value=document.documentElement.dataset.scheme;
-  sel.addEventListener('change',function(e){document.documentElement.dataset.scheme=e.target.value;localStorage.setItem('whlnext-scheme',e.target.value);});
-  var mt=document.getElementById('modeTog');
-  function sync(){mt.textContent=document.documentElement.dataset.mode==='dark'?'☀ Light':'☾ Dark';}
-  mt.addEventListener('click',function(){var m=document.documentElement.dataset.mode==='dark'?'light':'dark';document.documentElement.dataset.mode=m;localStorage.setItem('whlnext-mode',m);sync();});
-  sync();
-  document.querySelector('.mock-note .mn-x').addEventListener('click',function(e){e.currentTarget.closest('.mock-note').remove();});
-})();
+<script type="module">
+import {mountChrome} from './lib/whl-chrome.js';
+
+mountChrome({
+  title: 'Streaming architecture',
+  note: 'Shows the object-store delivery architecture (static, top) and a live simulation of per-page layer streaming (bottom). Interactive: Play / Replay, Slow&nbsp;3G, warm-cache toggle; once associations land, hover the aligned text. Layer status dots appear in Advanced mode.'
+});
 
 /* ---- streaming simulation ---- */
 (function(){
   var $=function(id){return document.getElementById(id);};
   var zone=$('simzone'),log=$('log');
-  var dots={img:$('d-img'),src:$('d-src'),par:$('d-par'),asc:$('d-asc'),ent:$('d-ent')};
+  var dots={img:$('d-img'),src:$('d-src'),wrd:$('d-wrd'),asc:$('d-asc'),ent:$('d-ent')};
   var timers=[],running=false;
 
   function row(html,cls){var d=document.createElement('div');d.className='lg '+(cls||'');d.innerHTML=html;log.appendChild(d);log.scrollTop=log.scrollHeight;}
@@ -398,7 +389,7 @@ span[data-g]{transition:background .15s;border-radius:2px}
 
   function reset(){
     timers.forEach(clearTimeout);timers=[];
-    ['has-img','has-src','has-par','has-asc','has-ent','rgn-flash'].forEach(function(c){zone.classList.remove(c);});
+    ['has-img','has-src','has-asc','has-ent','rgn-flash'].forEach(function(c){zone.classList.remove(c);});
     Object.keys(dots).forEach(function(k){dot(k,'');});
     log.innerHTML='';
     $('hoverstate').textContent='hover: —';
@@ -415,27 +406,25 @@ span[data-g]{transition:background .15s;border-radius:2px}
     var T=function(x){return Math.round(x*M);};
     var ts=function(x){return 't+'+(T(x)/1000).toFixed(2)+'s';};
     var ev=function(at,fn){timers.push(setTimeout(fn,T(at)));};
-    var st=warm?'HIT':'MISS', sc=warm?'hit':'mis';
-    var net=warm?'· Cache API':'';
+    var st=warm?'HIT':'MISS';
     var f=function(at,path,size,state,cls,note){
       ev(at,function(){row('<span class="lt">'+ts(at)+'</span><span class="lp">GET '+path+(note?' <i>'+note+'</i>':'')+'</span><span class="ls">'+size+'</span><span class="lc '+(state==='HIT'?'hit':'mis')+'">'+state+'</span>',cls||'');});
     };
 
-    ev(0,function(){row('<span class="lt">'+ts(0)+'</span><span class="lp">viewport: p.1682 enters (distance 0) — queue: image → source → parallel → assoc → entities</span>','info');});
+    ev(0,function(){row('<span class="lt">'+ts(0)+'</span><span class="lp">viewport: p.1856 enters (distance 0) — queue: tiles → source → words → associations → entities</span>','info');});
     f(50,'E17/manifest.json','38.7 KB','HIT','', warm?'(Cache API)':'(memory · book open)');
     f(110,'o/9f31c2…/image.dzi','1.1 KB',st);
     ev(110,function(){dot('img','run');});
     f(200,'o/9f31c2…/tiles/10/0_0.jpg','148.2 KB',st);
     ev(200,function(){zone.classList.add('has-img');dot('img','done');});
     f(270,'o/9f31c2…/tiles/10/0_1.jpg','71.3 KB',st);
-    f(300,'o/57d0c4…/source.json','14.2 KB',st);
+    f(300,'o/57d0c4…/source.json','14.2 KB',st,'','(regions · text + translation)');
     ev(300,function(){dot('src','run');});
     ev(350,function(){zone.classList.add('has-src');dot('src','done');});
-    f(520,'o/b21e77…/map.json','48.9 KB',st,'','(regions · lines · words)');
-    f(560,'o/8ea4f0…/parallel.json','11.6 KB',st);
-    ev(560,function(){dot('par','run');});
-    ev(600,function(){zone.classList.add('has-par');dot('par','done');$('hoverstate').innerHTML='hover: <b>enabled</b> — text ↔ translation';});
-    f(840,'o/44c9d1…/assoc.json','22.3 KB',st,'','(atomic groups)');
+    f(520,'o/b21e77…/words.json','48.9 KB',st,'','(page word boxes · image ↔ text refs)');
+    ev(520,function(){dot('wrd','run');});
+    ev(580,function(){dot('wrd','done');});
+    f(840,'o/44c9d1…/associations.json','121 KB',st,'','(atomic groups)');
     ev(840,function(){dot('asc','run');});
     ev(900,function(){zone.classList.add('has-asc');dot('asc','done');$('hoverstate').innerHTML='hover: <b>enabled</b> — text ↔ translation ↔ facsimile regions';
       zone.classList.add('rgn-flash');timers.push(setTimeout(function(){zone.classList.remove('rgn-flash');},1300));});
@@ -448,16 +437,16 @@ span[data-g]{transition:background .15s;border-radius:2px}
     ev(1800,function(){
       var sum = warm
         ? 'interactive at '+ts(1200)+' · 0 KB over the network — every object from Cache API (immutable paths)'
-        : 'readable at '+ts(200)+' · interactive at '+ts(1200)+' · 324 KB over the wire — vs ~20 MB monolithic';
+        : 'readable at '+ts(200)+' · interactive at '+ts(1200)+' · 313 KB over the wire — vs ~20 MB monolithic';
       row(sum,'sum');
       running=false;
       $('playBtn').disabled=false;$('slowTog').disabled=false;$('warmTog').disabled=false;
-      $('playBtn').innerHTML='↻  Replay';
+      $('playBtn').innerHTML='↻  Replay';
     });
   }
   $('playBtn').addEventListener('click',play);
 
-  /* aligned hover: parallel pairs + facsimile regions (post-assoc) */
+  /* aligned hover: parallel pairs + facsimile regions (post-assoc, as in whl-linker) */
   function mark(g,on){
     var els=zone.querySelectorAll('[data-g="'+g+'"]');
     for(var i=0;i<els.length;i++){els[i].classList.toggle('g-hov',on);}
@@ -465,7 +454,7 @@ span[data-g]{transition:background .15s;border-radius:2px}
   var gs=zone.querySelectorAll('span[data-g]');
   for(var i=0;i<gs.length;i++){
     (function(el){
-      el.addEventListener('mouseenter',function(){if(zone.classList.contains('has-par'))mark(el.getAttribute('data-g'),true);});
+      el.addEventListener('mouseenter',function(){if(zone.classList.contains('has-asc'))mark(el.getAttribute('data-g'),true);});
       el.addEventListener('mouseleave',function(){mark(el.getAttribute('data-g'),false);});
     })(gs[i]);
   }

@@ -7,66 +7,75 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/tokens.css">
 <style>
-/* ---------- page scaffold ---------- */
+/* ---------- page scaffold (8px rhythm) ---------- */
 .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px 80px; }
 .kicker { font: 600 11px var(--font-chrome); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
-.pagehead { padding: 44px 0 8px; }
-.pagehead h1 { font-size: 36px; margin: 6px 0 4px; }
+.pagehead { padding: 48px 0 8px; }
+.pagehead h1 { font-size: 36px; margin: 8px 0 4px; }
 .pagehead .sub { font-family: var(--font-read); font-size: 15.5px; color: var(--ink-2); max-width: 620px; margin: 0; }
-.sechead { display: flex; align-items: baseline; gap: 14px; margin: 38px 0 16px; }
+.sechead { display: flex; align-items: baseline; gap: 16px; margin: 40px 0 16px; }
 .sechead h2 { font-size: 21px; margin: 0; }
 .sechead .rule { flex: 1; height: 1px; background: var(--line); align-self: center; }
 .sechead .count { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
 
 /* ---------- landmark hero row ---------- */
-.landmarks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-.lm { display: flex; gap: 16px; padding: 18px; text-decoration: none; color: inherit;
-  transition: transform .16s ease, box-shadow .16s ease; }
-.lm:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); text-decoration: none; }
-.lm .lthumb { flex: 0 0 104px; }
-.lm .lthumb img { width: 104px; aspect-ratio: 3 / 4.2; object-fit: cover; display: block;
+.landmarks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.lm { position: relative; overflow: hidden; display: flex; gap: 16px; padding: 16px;
+  text-decoration: none; color: inherit;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
+.lm:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: var(--line-2); text-decoration: none; }
+/* faint facsimile strip bleeding in from the right edge; per-card image via --strip */
+.lm::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 46%;
+  background: var(--strip) right center / cover no-repeat; opacity: .06; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to left, #000 25%, transparent);
+  mask-image: linear-gradient(to left, #000 25%, transparent); }
+[data-mode="dark"] .lm::after { opacity: .09; }
+.lm .lthumb { flex: 0 0 112px; position: relative; z-index: 1; }
+.lm .lthumb img { width: 112px; aspect-ratio: 3 / 4.2; object-fit: cover; display: block;
   border-radius: var(--radius); border: 1px solid var(--line-2); box-shadow: var(--shadow); }
-.lm .lbody { min-width: 0; display: flex; flex-direction: column; }
+.lm .lbody { min-width: 0; display: flex; flex-direction: column; position: relative; z-index: 1; }
 .lm .era { font: 600 10.5px var(--font-chrome); letter-spacing: .12em; text-transform: uppercase;
-  color: var(--ink-3); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.lm h3 { font-size: 20px; margin: 0 0 2px; }
+  color: var(--ink-3); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lm h3 { font-size: 20px; margin: 0 0 4px; }
 .lm .lmeta { font-size: 12.5px; color: var(--ink-2); margin: 0 0 8px; }
-.lm .sig { font-family: var(--font-read); font-size: 13.5px; line-height: 1.5; color: var(--ink-2); margin: 0 0 10px; }
-.lm .lnote { margin-top: auto; }
+.lm .sig { font-family: var(--font-read); font-size: 13.5px; line-height: 1.5; color: var(--ink-2); margin: 0 0 8px; }
+.lm .lnote { margin-top: auto; padding-top: 8px; }
 .lm .lnote .chip { font-size: 11px; }
 
 /* ---------- filter bar ---------- */
-.filterbar { margin: 34px 0 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.filterbar { margin: 32px 0 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 .search { position: relative; flex: 0 1 330px; min-width: 240px; }
 .search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--ink-3); }
 .search input { width: 100%; padding: 8px 12px 8px 32px; border: 1px solid var(--line-2); border-radius: 99px;
   background: var(--bg-raise); color: var(--ink); font: 13px var(--font-chrome); outline: none; }
 .search input::placeholder { color: var(--ink-3); }
-.search input:focus { border-color: var(--accent); }
+.search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--tint-region); }
 .fgroup { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .fgroup .flabel { font: 600 10.5px var(--font-chrome); letter-spacing: .12em; text-transform: uppercase;
   color: var(--ink-3); margin-right: 2px; }
-.fchip { cursor: pointer; user-select: none; transition: border-color .12s; font-family: var(--font-chrome); }
+.fchip { cursor: pointer; user-select: none; font-family: var(--font-chrome);
+  transition: border-color .12s, background .12s, color .12s; }
 .fchip:hover { border-color: var(--accent); }
-.fchip.active { background: var(--tint-select); color: var(--ink); border-color: var(--accent); }
+.fchip.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.fchip.active:hover { border-color: var(--accent); }
 
 /* ---------- works grid ---------- */
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 18px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 16px; }
 .work { display: flex; flex-direction: column; text-decoration: none; color: inherit; overflow: hidden;
-  transition: transform .16s ease, box-shadow .16s ease; }
-.work:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); text-decoration: none; }
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
+.work:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: var(--line-2); text-decoration: none; }
 .wthumb { position: relative; aspect-ratio: 3 / 4; background: var(--bg-sunk); border-bottom: 1px solid var(--line); overflow: hidden; }
 .wthumb > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .wthumb .copies { position: absolute; top: 8px; right: 8px; background: var(--bg-raise); box-shadow: var(--shadow);
   font-weight: 600; font-size: 10.5px; letter-spacing: .04em; }
-.stack img.b1 { transform: rotate(2.4deg) translate(7px, -4px) scale(.985); }
-.stack img.b2 { transform: rotate(-2deg) translate(-7px, -2px) scale(.985); }
-.stack img.top { transform: none; border-left: 1px solid var(--line-2); }
-.wbody { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.stack img.b1 { transform: rotate(1.8deg) translate(6px, -3px) scale(.982); filter: brightness(.94); }
+.stack img.b2 { transform: rotate(-1.5deg) translate(-6px, -2px) scale(.982); filter: brightness(.94); }
+.stack img.top { transform: none; filter: none; border-left: 1px solid var(--line-2); }
+.wbody { padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
 .wbody h3 { font-size: 16.5px; margin: 0; line-height: 1.25; }
-.wmeta { font-size: 12px; color: var(--ink-2); margin: 0; }
-.wtags { margin-top: auto; padding-top: 10px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.empty { display: none; padding: 42px 0; text-align: center; color: var(--ink-3);
+.wmeta { font-size: 12px; line-height: 1.4; color: var(--ink-2); margin: 0; }
+.wtags { margin-top: auto; padding-top: 8px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.empty { display: none; padding: 48px 0; text-align: center; color: var(--ink-3);
   font-family: var(--font-read); font-size: 15px; }
 .empty a { cursor: pointer; }
 .grid.is-empty + .empty { display: block; }
@@ -83,19 +92,6 @@ footer { margin-top: 64px; border-top: 1px solid var(--line); padding-top: 16px;
 <body>
 <script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
 
-<div class="topbar">
-  <a href="index.html">&larr; Mockups</a>
-  <strong style="font-family:var(--font-display);font-size:16px;">Library</strong>
-  <div class="mock-switch">
-    <select id="schemeSel" class="btn" aria-label="Colour scheme">
-      <option value="archive">Archive</option>
-      <option value="herbarium">Herbarium</option>
-      <option value="oxford">Oxford</option>
-    </select>
-    <button id="modeBtn" class="btn" aria-label="Toggle light/dark"></button>
-  </div>
-</div>
-
 <div class="wrap">
 
   <header class="pagehead">
@@ -109,7 +105,7 @@ footer { margin-top: 64px; border-top: 1px solid var(--line); padding-top: 16px;
     <div class="sechead"><h2>Landmarks</h2><div class="rule"></div></div>
     <div class="landmarks">
 
-      <a class="lm card" href="overview-landmark.html">
+      <a class="lm card" href="overview-landmark.html" style="--strip:url('assets/thumbs/EB01.jpg')">
         <div class="lthumb"><img src="assets/thumbs/EB01.jpg" alt="Papyrus Ebers, hieratic column"></div>
         <div class="lbody">
           <div class="era"><span class="badge-tier landmark">Landmark</span> c.&thinsp;1550 BC &middot; Thebes</div>
@@ -120,7 +116,7 @@ footer { margin-top: 64px; border-top: 1px solid var(--line); padding-top: 16px;
         </div>
       </a>
 
-      <a class="lm card" href="overview-landmark.html">
+      <a class="lm card" href="overview-landmark.html" style="--strip:url('assets/thumbs/E54.jpg')">
         <div class="lthumb"><img src="assets/thumbs/E54.jpg" alt="Ben Cao Gang Mu, 1888 edition"></div>
         <div class="lbody">
           <div class="era"><span class="badge-tier landmark">Landmark</span> 1578 &middot; China</div>
@@ -131,7 +127,7 @@ footer { margin-top: 64px; border-top: 1px solid var(--line); padding-top: 16px;
         </div>
       </a>
 
-      <a class="lm card" href="work-dioscorides.html">
+      <a class="lm card" href="work-dioscorides.html" style="--strip:url('assets/thumbs/E49.jpg')">
         <div class="lthumb"><img src="assets/thumbs/E49.jpg" alt="Dioscorides, Italian translation, Florence 1547"></div>
         <div class="lbody">
           <div class="era"><span class="badge-tier landmark">Landmark</span> 1st c. AD &middot; Anatolia</div>
@@ -300,70 +296,51 @@ footer { margin-top: 64px; border-top: 1px solid var(--line); padding-top: 16px;
   <footer>WHL Reader Next &mdash; static design mockup. Thumbnails from corpus scans; landmark works also appear in the hero row and are not filtered.</footer>
 </div>
 
-<div class="mock-note"><button class="mn-x" aria-label="Dismiss">×</button><strong>Library home.</strong> Landmark hero row, faceted works grid with tier badges and multi-copy clusters. Interactive: filter chips really filter the grid; scheme/mode switcher top right; cards hover-raise and link to overview mockups. Search is styled but inert.</div>
+<script type="module">
+import { mountChrome } from './lib/whl-chrome.js';
 
-<script>
-(function () {
-  // scheme / mode switcher
-  var root = document.documentElement;
-  var sel = document.getElementById('schemeSel');
-  var btn = document.getElementById('modeBtn');
-  sel.value = root.dataset.scheme;
-  sel.addEventListener('change', function () {
-    root.dataset.scheme = sel.value;
-    localStorage.setItem('whlnext-scheme', sel.value);
+mountChrome({
+  title: 'Library',
+  back: 'index.html',
+  adv: false,
+  note: '<strong>Library home.</strong> Landmark hero row, faceted works grid with tier badges and multi-copy clusters. Interactive: filter chips really filter the grid; scheme/mode switcher top right; cards hover-raise and link to overview mockups. Search is styled but inert.'
+});
+
+// faceted filtering (single-select per group, AND across groups)
+const active = { lang: null, century: null, subject: null };
+const cards = Array.from(document.querySelectorAll('#workGrid .work'));
+const grid = document.getElementById('workGrid');
+const countEl = document.getElementById('workCount');
+const chips = Array.from(document.querySelectorAll('.fchip'));
+
+function apply() {
+  let shown = 0;
+  cards.forEach(card => {
+    const ok = Object.keys(active).every(g =>
+      !active[g] || (card.dataset[g] || '').split(' ').includes(active[g]));
+    card.style.display = ok ? '' : 'none';
+    if (ok) shown++;
   });
-  function paintBtn() { btn.textContent = root.dataset.mode === 'dark' ? '☀ Light' : '☾ Dark'; }
-  btn.addEventListener('click', function () {
-    root.dataset.mode = root.dataset.mode === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('whlnext-mode', root.dataset.mode);
-    paintBtn();
-  });
-  paintBtn();
+  countEl.textContent = shown + ' of ' + cards.length + ' works';
+  grid.classList.toggle('is-empty', shown === 0);
+}
 
-  // dismissible mock-note
-  document.querySelector('.mock-note .mn-x').addEventListener('click', function () {
-    this.parentElement.remove();
-  });
-
-  // faceted filtering (single-select per group, AND across groups)
-  var active = { lang: null, century: null, subject: null };
-  var cards = Array.prototype.slice.call(document.querySelectorAll('#workGrid .work'));
-  var grid = document.getElementById('workGrid');
-  var countEl = document.getElementById('workCount');
-  var chips = Array.prototype.slice.call(document.querySelectorAll('.fchip'));
-
-  function apply() {
-    var shown = 0;
-    cards.forEach(function (card) {
-      var ok = Object.keys(active).every(function (g) {
-        if (!active[g]) return true;
-        return (card.dataset[g] || '').split(' ').indexOf(active[g]) !== -1;
-      });
-      card.style.display = ok ? '' : 'none';
-      if (ok) shown++;
+chips.forEach(chip => {
+  chip.addEventListener('click', () => {
+    const group = chip.parentElement.dataset.group, val = chip.dataset.val;
+    active[group] = (active[group] === val) ? null : val;
+    chip.parentElement.querySelectorAll('.fchip').forEach(c => {
+      c.classList.toggle('active', c.dataset.val === active[group]);
     });
-    countEl.textContent = shown + ' of ' + cards.length + ' works';
-    grid.classList.toggle('is-empty', shown === 0);
-  }
-
-  chips.forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      var group = chip.parentElement.dataset.group, val = chip.dataset.val;
-      active[group] = (active[group] === val) ? null : val;
-      chip.parentElement.querySelectorAll('.fchip').forEach(function (c) {
-        c.classList.toggle('active', c.dataset.val === active[group]);
-      });
-      apply();
-    });
-  });
-  document.getElementById('clearFilters').addEventListener('click', function () {
-    active = { lang: null, century: null, subject: null };
-    chips.forEach(function (c) { c.classList.remove('active'); });
     apply();
   });
+});
+document.getElementById('clearFilters').addEventListener('click', () => {
+  active.lang = active.century = active.subject = null;
+  chips.forEach(c => c.classList.remove('active'));
   apply();
-})();
+});
+apply();
 </script>
 </body>
 </html>

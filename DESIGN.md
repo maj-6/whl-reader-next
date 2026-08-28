@@ -49,6 +49,10 @@ Skeletons per arriving layer; page usable at each stage (image alone → +text �
 
 `?embed=` variants: `full` (chrome-less reader, not demoed in mockups), `excerpt` (single passage card w/ hover, "open in reader" link), `card` (cover + title + Read CTA), `explore` (visual-first). Parent site composes these.
 
+## Component library (iteration 2)
+
+The reader machinery is packaged as vanilla ES modules in `mockups/lib/` with a written contract ([lib/API.md](mockups/lib/API.md)) so mockups compose instead of reimplementing: `whl-bus` (events), `whl-chrome` (topbar + persistence), `whl-store` (layer fetching, priority order, simulated latency), `whl-viewer` (OSD plane: single & scroll-h RTL profiles, overlays, fallbacks), `whl-text` (reading pane: atomic spans, entities), `whl-linker` (hover/select → weighted highlights), `whl-sidebar` (contents / this page / article / appearance). Live playground + API cheat-sheets: `mockups/lib/components.html`. The readers run on **real extracted corpus data** (`lib/data/`): E17 page-0382, EB01 cols 0044–0048, E52 page-0014. These modules are mockup-grade seeds of the production reader, not throwaway.
+
 ## Mockup set (this phase)
 
 | File | Shows |

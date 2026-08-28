@@ -24,37 +24,56 @@
   .stat span { font: 500 10.5px var(--font-chrome); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
 
   section { margin-bottom: 64px; }
-  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+  .sec-head { display: flex; align-items: center; gap: 16px; margin-bottom: 6px; flex-wrap: wrap; }
   .sec-head h2 { font-size: 26px; margin: 0; }
   .sec-sub { font-size: 13px; color: var(--ink-3); margin: 0 0 22px; max-width: 620px; }
 
   /* ── version cards ─────────────────────────── */
   .vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(430px, 1fr)); gap: 18px; }
-  .vcard { display: flex; gap: 16px; padding: 16px; }
-  .vcard .thumb { flex: 0 0 96px; }
+  .vcard { display: flex; padding: 0; overflow: hidden; transition: box-shadow .15s ease, border-color .15s ease; }
+  .vcard:hover { box-shadow: var(--shadow-lg); border-color: var(--line-2); }
+  .vcard .thumb { position: relative; flex: 0 0 118px; min-height: 196px;
+    background: var(--bg-sunk); border-right: 1px solid var(--line); }
   .vcard .thumb img, .vcard .thumb .ph {
-    width: 96px; height: 138px; object-fit: cover; border-radius: var(--radius);
-    border: 1px solid var(--line-2); display: block; background: var(--bg-sunk); }
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center top; display: block; }
   .vcard .thumb .ph { display: flex; align-items: center; justify-content: center;
-    font: 400 42px var(--font-display); color: var(--ink-3); }
-  .vmeta { min-width: 0; display: flex; flex-direction: column; }
+    font: 400 46px var(--font-display); color: var(--ink-3); }
+  .vmeta { min-width: 0; flex: 1; display: flex; flex-direction: column; padding: 16px 18px 14px; }
   .vmeta h3 { font-size: 19px; margin: 2px 0 2px; }
   .vmeta .imprint { font-size: 13px; color: var(--ink-2); margin-bottom: 8px; }
-  .vmeta .blurb { font-family: var(--font-read); font-size: 13.5px; line-height: 1.5; color: var(--ink-2); margin: 0 0 10px; }
+  .vmeta .blurb { font-family: var(--font-read); font-size: 13.5px; line-height: 1.5; color: var(--ink-2); margin: 0 0 12px; }
   .vmeta .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; align-items: center; }
+  .vmeta .chips .btn.ghost { margin-left: auto; padding-right: 4px; }
   .vcard.planned { border-style: dashed; box-shadow: none; opacity: .72; }
-  .vcard.planned .thumb .ph { border-style: dashed; }
+  .vcard.planned:hover { box-shadow: none; }
+  .vcard.planned .thumb { border-right-style: dashed; }
   .chip.todo { border: 1px dashed var(--line-2); background: transparent; color: var(--ink-3);
     letter-spacing: .07em; font-size: 10px; text-transform: uppercase; font-weight: 600; }
   .vkind { font: 600 10.5px var(--font-chrome); letter-spacing: .09em; text-transform: uppercase; color: var(--accent); margin-bottom: 2px; }
 
   /* ── compare ─────────────────────────── */
+  .anchor-pill { display: inline-flex; align-items: center; gap: 10px;
+    padding: 5px 16px 5px 6px; border: 1px solid var(--accent); background: var(--tint-select);
+    border-radius: 99px; cursor: default; }
+  .anchor-pill .a-id { font: 700 12.5px var(--font-chrome); letter-spacing: .04em;
+    background: var(--accent); color: var(--accent-ink); border-radius: 99px; padding: 4px 11px; }
+  .anchor-pill .a-grk { font-family: var(--font-display); font-style: italic; font-size: 16.5px; color: var(--ink); }
+  .anchor-pill .a-en { font: 500 10.5px var(--font-chrome); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-2); }
+
   .cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
   @media (max-width: 880px) { .cmp-grid { grid-template-columns: 1fr; } .vgrid { grid-template-columns: 1fr; } }
-  .cmp-col { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
-  .cmp-head { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+  .cmp-col { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .cmp-head { display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--bg-sunk); }
+  .wbadge { flex: none; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--accent); color: var(--accent-ink);
+    font: 700 13px/26px var(--font-chrome); text-align: center; }
+  .cmp-head .lbl { flex: none; }
   .cmp-head select { font: 13px var(--font-chrome); color: var(--ink); background: var(--bg-raise);
-    border: 1px solid var(--line-2); border-radius: var(--radius); padding: 5px 8px; max-width: 70%; }
+    border: 1px solid var(--line-2); border-radius: var(--radius); padding: 5px 8px;
+    margin-left: auto; min-width: 0; max-width: 62%; }
+  .cmp-body { display: flex; flex-direction: column; gap: 12px; padding: 14px; flex: 1; }
   .facs { position: relative; overflow: hidden; aspect-ratio: 7 / 5; border-radius: var(--radius);
     border: 1px solid var(--line-2); background: var(--bg-sunk); }
   .facs img { position: absolute; display: block; }
@@ -63,7 +82,7 @@
     background: var(--bg-raise); opacity: .92; border-top: 1px solid var(--line); }
   .excerpt { font-size: 15.5px; line-height: 1.6; min-height: 96px; }
   .excerpt .inc { font-family: var(--font-display); }
-  .src-line { font-size: 11.5px; color: var(--ink-3); border-top: 1px solid var(--line); padding-top: 8px; }
+  .src-line { font-size: 11.5px; color: var(--ink-3); border-top: 1px solid var(--line); padding-top: 8px; margin-top: auto; }
 
   .trans { background: var(--tint-translation); padding: 18px 20px 16px; }
   .trans-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -82,25 +101,10 @@
   .dnote code { font-size: 12.5px; background: var(--bg-sunk); border: 1px solid var(--line);
     border-radius: 3px; padding: 1px 5px; color: var(--ink); }
   .dnote ul { margin: 0; padding-left: 18px; font-size: 14px; color: var(--ink-2); line-height: 1.6; }
-
-  .topbar .pgtitle { font: 600 13.5px var(--font-chrome); color: var(--ink-2); }
 </style>
 </head>
 <body>
 <script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
-
-<div class="topbar">
-  <a href="index.html">&larr; Mockups</a>
-  <span class="pgtitle">Work hub &middot; De materia medica</span>
-  <div class="mock-switch">
-    <select class="btn" id="schemeSel" aria-label="Colour scheme">
-      <option value="archive">Archive</option>
-      <option value="herbarium">Herbarium</option>
-      <option value="oxford">Oxford</option>
-    </select>
-    <button class="btn" id="modeBtn">☾ Dark</button>
-  </div>
-</div>
 
 <div class="wrap">
 
@@ -186,26 +190,33 @@
   <section>
     <div class="sec-head">
       <h2>Compare</h2>
-      <span class="chip accent" title="Work-level passage anchor">I.64 &middot; σμύρνα</span>
-      <span class="lbl">aligned passage &mdash; myrrh</span>
+      <span class="anchor-pill" title="Work-level passage anchor — stays fixed while the witnesses change">
+        <span class="a-id">I.64</span>
+        <span class="a-grk">σμύρνα</span>
+        <span class="a-en">myrrh &middot; aligned passage</span>
+      </span>
     </div>
     <p class="sec-sub">The same passage of the work, shown in any two held versions side by side. Pick a version in
       either column; the anchor stays fixed while the witness changes.</p>
 
     <div class="cmp-grid">
       <div class="cmp-col card" data-col="a">
-        <div class="cmp-head"><span class="lbl">Witness A</span>
+        <div class="cmp-head"><span class="wbadge">A</span><span class="lbl">Witness A</span>
           <select class="pick" aria-label="Witness A version"></select></div>
-        <div class="facs"><img alt="Facsimile detail"><div class="facs-cap"></div></div>
-        <div class="excerpt reading"></div>
-        <div class="src-line"></div>
+        <div class="cmp-body">
+          <div class="facs"><img alt="Facsimile detail"><div class="facs-cap"></div></div>
+          <div class="excerpt reading"></div>
+          <div class="src-line"></div>
+        </div>
       </div>
       <div class="cmp-col card" data-col="b">
-        <div class="cmp-head"><span class="lbl">Witness B</span>
+        <div class="cmp-head"><span class="wbadge">B</span><span class="lbl">Witness B</span>
           <select class="pick" aria-label="Witness B version"></select></div>
-        <div class="facs"><img alt="Facsimile detail"><div class="facs-cap"></div></div>
-        <div class="excerpt reading"></div>
-        <div class="src-line"></div>
+        <div class="cmp-body">
+          <div class="facs"><img alt="Facsimile detail"><div class="facs-cap"></div></div>
+          <div class="excerpt reading"></div>
+          <div class="src-line"></div>
+        </div>
       </div>
     </div>
 
@@ -242,92 +253,80 @@
 
 </div>
 
-<div class="mock-note"><button class="mn-x" aria-label="Dismiss">×</button><b>Mockup — work hub.</b> One work, many versions, with a passage-anchored compare view.
-Interactive: scheme/mode switcher, both version pickers, translation tabs. Facsimile details are stand-in crops
-from other books in the corpus.</div>
+<script type="module">
+import {mountChrome} from './lib/whl-chrome.js';
 
-<script>
-(function () {
-  // ── mockup chrome: scheme + mode ──
-  var root = document.documentElement;
-  var schemeSel = document.getElementById('schemeSel'), modeBtn = document.getElementById('modeBtn');
-  schemeSel.value = root.dataset.scheme;
-  function paintMode() { modeBtn.textContent = root.dataset.mode === 'light' ? '☾ Dark' : '☀ Light'; }
-  schemeSel.addEventListener('change', function () {
-    root.dataset.scheme = schemeSel.value; localStorage.setItem('whlnext-scheme', schemeSel.value);
-  });
-  modeBtn.addEventListener('click', function () {
-    root.dataset.mode = root.dataset.mode === 'light' ? 'dark' : 'light';
-    localStorage.setItem('whlnext-mode', root.dataset.mode); paintMode();
-  });
-  paintMode();
+mountChrome({
+  title: 'Work hub',
+  book: { label: 'Work · 2 of 4 versions ingested', title: 'De materia medica', thumb: 'assets/thumbs/E49.jpg' },
+  adv: false,
+  note: '<b>Mockup — work hub.</b> One work, many versions, with a passage-anchored compare view. ' +
+    'Interactive: scheme/mode switcher, both version pickers, translation tabs. Facsimile details are stand-in crops ' +
+    'from other books in the corpus.'
+});
 
-  var noteX = document.querySelector('.mock-note .mn-x');
-  if (noteX) noteX.addEventListener('click', function () { noteX.parentNode.remove(); });
-
-  // ── mock data: one passage (I.64 σμύρνα) in each held version ──
-  var VERSIONS = {
-    E49: {
-      label: 'E49 · Montigiano 1547 (Italian)',
-      img: 'assets/pages/E01-page.jpg', w: '190%', left: '-28%', top: '-34%',
-      cap: 'E49 · fol. 58v · stand-in crop',
-      src: 'Il Dioscoride, trans. M. Montigiano — Florence, 1547, fol. 58v, chapter LXIIII',
-      excerpt: '<span class="rub inc">Della Mirra. Cap. LXIIII.</span> La <span class="ent substance">mirra</span> è lagrima d’uno albero che nasce in Arabia, simile alla <span class="ent plant">spina egittiaca</span>: dal quale, ferita la scorza, stilla il liquore sopra le stuoie distese. La migliore è detta troglodita; verdiccia, mordace, trasparente.'
-    },
-    E46: {
-      label: 'E46 · Amatus Lusitanus 1557 (Latin, copy 1)',
-      img: 'assets/pages/E52-page.jpg', w: '200%', left: '-38%', top: '-46%',
-      cap: 'E46 · p. 71 · stand-in crop',
-      src: 'Amatus Lusitanus, In Dioscoridis enarrationes — Venice, 1557, p. 71, enarratio LXIIII',
-      excerpt: '<span class="rub inc">Myrrha. Enarratio LXIIII.</span> <span class="ent substance">Myrrha</span> arboris Arabicae lachryma est, <span class="ent plant">spinae Aegyptiae</span> non absimilis; probatur troglodytica, subviridis, mordax, pellucida. Quod <span class="ent author">Dioscorides</span> de Sabaeis tradit, hodie a Lusitanis navigationibus confirmatur.'
-    },
-    E47: {
-      label: 'E47 · Amatus Lusitanus 1557 (Latin, copy 2, annotated)',
-      img: 'assets/pages/E52-page.jpg', w: '205%', left: '-42%', top: '-56%',
-      cap: 'E47 · p. 71 · stand-in crop · marginal hand',
-      src: 'Amatus Lusitanus, In Dioscoridis enarrationes — Venice, 1557, second copy; early modern marginal hand at this chapter',
-      excerpt: '<span class="rub inc">Myrrha. Enarratio LXIIII.</span> <span class="ent substance">Myrrha</span> arboris Arabicae lachryma est, <span class="ent plant">spinae Aegyptiae</span> non absimilis; probatur troglodytica, subviridis, mordax, pellucida. <span class="lbl" style="letter-spacing:.05em">[margin: “vide Matthiolum”]</span>'
-    }
-  };
-
-  var TRANS = {
-    mont: '<span class="rub">Della Mirra.</span> La <span class="ent substance">mirra</span> è lagrima d’uno albero che nasce in Arabia, simile alla <span class="ent plant">spina egittiaca</span>; dal quale, ferita la scorza, stilla il liquore sopra le stuoie. La migliore è la troglodita: verdiccia, mordace et trasparente. Scalda, salda le ferite fresche, et vale contro la tosse antica.',
-    eng: '<span class="rub">On myrrh.</span> <span class="ent substance">Myrrh</span> is the tear of a tree growing in Arabia, resembling the <span class="ent plant">Egyptian thorn</span>; the bark is cut and the gum drips onto mats spread beneath. Best is the kind called Troglodytic — greenish, biting on the tongue, translucent. It warms, closes fresh wounds, and is given against chronic cough and hoarseness.'
-  };
-
-  // ── compare columns ──
-  var cols = document.querySelectorAll('.cmp-col');
-  function fillPicker(sel) {
-    Object.keys(VERSIONS).forEach(function (id) {
-      var o = document.createElement('option'); o.value = id; o.textContent = VERSIONS[id].label; sel.appendChild(o);
-    });
+// ── mock data: one passage (I.64 σμύρνα) in each held version ──
+var VERSIONS = {
+  E49: {
+    label: 'E49 · Montigiano 1547 (Italian)',
+    img: 'assets/pages/E01-page.jpg', w: '190%', left: '-28%', top: '-34%',
+    cap: 'E49 · fol. 58v · stand-in crop',
+    src: 'Il Dioscoride, trans. M. Montigiano — Florence, 1547, fol. 58v, chapter LXIIII',
+    excerpt: '<span class="rub inc">Della Mirra. Cap. LXIIII.</span> La <span class="ent substance">mirra</span> è lagrima d’uno albero che nasce in Arabia, simile alla <span class="ent plant">spina egittiaca</span>: dal quale, ferita la scorza, stilla il liquore sopra le stuoie distese. La migliore è detta troglodita; verdiccia, mordace, trasparente.'
+  },
+  E46: {
+    label: 'E46 · Amatus Lusitanus 1557 (Latin, copy 1)',
+    img: 'assets/pages/E52-page.jpg', w: '200%', left: '-38%', top: '-46%',
+    cap: 'E46 · p. 71 · stand-in crop',
+    src: 'Amatus Lusitanus, In Dioscoridis enarrationes — Venice, 1557, p. 71, enarratio LXIIII',
+    excerpt: '<span class="rub inc">Myrrha. Enarratio LXIIII.</span> <span class="ent substance">Myrrha</span> arboris Arabicae lachryma est, <span class="ent plant">spinae Aegyptiae</span> non absimilis; probatur troglodytica, subviridis, mordax, pellucida. Quod <span class="ent author">Dioscorides</span> de Sabaeis tradit, hodie a Lusitanis navigationibus confirmatur.'
+  },
+  E47: {
+    label: 'E47 · Amatus Lusitanus 1557 (Latin, copy 2, annotated)',
+    img: 'assets/pages/E52-page.jpg', w: '205%', left: '-42%', top: '-56%',
+    cap: 'E47 · p. 71 · stand-in crop · marginal hand',
+    src: 'Amatus Lusitanus, In Dioscoridis enarrationes — Venice, 1557, second copy; early modern marginal hand at this chapter',
+    excerpt: '<span class="rub inc">Myrrha. Enarratio LXIIII.</span> <span class="ent substance">Myrrha</span> arboris Arabicae lachryma est, <span class="ent plant">spinae Aegyptiae</span> non absimilis; probatur troglodytica, subviridis, mordax, pellucida. <span class="lbl" style="letter-spacing:.05em">[margin: “vide Matthiolum”]</span>'
   }
-  function renderCol(col, id) {
-    var v = VERSIONS[id];
-    var img = col.querySelector('.facs img');
-    img.src = v.img; img.style.width = v.w; img.style.left = v.left; img.style.top = v.top;
-    col.querySelector('.facs-cap').textContent = v.cap;
-    col.querySelector('.excerpt').innerHTML = v.excerpt;
-    col.querySelector('.src-line').textContent = v.src;
-  }
-  cols.forEach(function (col) {
-    var sel = col.querySelector('.pick');
-    fillPicker(sel);
-    sel.value = col.dataset.col === 'a' ? 'E49' : 'E46';
-    renderCol(col, sel.value);
-    sel.addEventListener('change', function () { renderCol(col, sel.value); });
-  });
+};
 
-  // ── translation tabs ──
-  var body = document.getElementById('transBody');
-  var tabs = document.querySelectorAll('.tabs button');
-  function showTrans(t) {
-    body.innerHTML = TRANS[t];
-    tabs.forEach(function (b) { b.classList.toggle('active', b.dataset.t === t); });
-  }
-  tabs.forEach(function (b) { b.addEventListener('click', function () { showTrans(b.dataset.t); }); });
-  showTrans('mont');
-})();
+var TRANS = {
+  mont: '<span class="rub">Della Mirra.</span> La <span class="ent substance">mirra</span> è lagrima d’uno albero che nasce in Arabia, simile alla <span class="ent plant">spina egittiaca</span>; dal quale, ferita la scorza, stilla il liquore sopra le stuoie. La migliore è la troglodita: verdiccia, mordace et trasparente. Scalda, salda le ferite fresche, et vale contro la tosse antica.',
+  eng: '<span class="rub">On myrrh.</span> <span class="ent substance">Myrrh</span> is the tear of a tree growing in Arabia, resembling the <span class="ent plant">Egyptian thorn</span>; the bark is cut and the gum drips onto mats spread beneath. Best is the kind called Troglodytic — greenish, biting on the tongue, translucent. It warms, closes fresh wounds, and is given against chronic cough and hoarseness.'
+};
+
+// ── compare columns ──
+var cols = document.querySelectorAll('.cmp-col');
+function fillPicker(sel) {
+  Object.keys(VERSIONS).forEach(function (id) {
+    var o = document.createElement('option'); o.value = id; o.textContent = VERSIONS[id].label; sel.appendChild(o);
+  });
+}
+function renderCol(col, id) {
+  var v = VERSIONS[id];
+  var img = col.querySelector('.facs img');
+  img.src = v.img; img.style.width = v.w; img.style.left = v.left; img.style.top = v.top;
+  col.querySelector('.facs-cap').textContent = v.cap;
+  col.querySelector('.excerpt').innerHTML = v.excerpt;
+  col.querySelector('.src-line').textContent = v.src;
+}
+cols.forEach(function (col) {
+  var sel = col.querySelector('.pick');
+  fillPicker(sel);
+  sel.value = col.dataset.col === 'a' ? 'E49' : 'E46';
+  renderCol(col, sel.value);
+  sel.addEventListener('change', function () { renderCol(col, sel.value); });
+});
+
+// ── translation tabs ──
+var body = document.getElementById('transBody');
+var tabs = document.querySelectorAll('.tabs button');
+function showTrans(t) {
+  body.innerHTML = TRANS[t];
+  tabs.forEach(function (b) { b.classList.toggle('active', b.dataset.t === t); });
+}
+tabs.forEach(function (b) { b.addEventListener('click', function () { showTrans(b.dataset.t); }); });
+showTrans('mont');
 </script>
 </body>
 </html>

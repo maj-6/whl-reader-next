@@ -9,11 +9,14 @@
 <style>
   .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px 80px; }
 
+  /* the hub is index.html — hide chrome's self-referential back link */
+  .topbar .tb-back, .topbar .tb-back + .tb-sep { display: none; }
+
   /* hero */
-  .hero { padding: 56px 0 40px; }
+  .hero { padding: 52px 0 36px; }
   .kicker { font: 600 11px var(--font-chrome); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; }
   .hero h1 { font-size: 42px; font-weight: 600; letter-spacing: -.01em; margin-bottom: 14px; }
-  .hero .lede { font-family: var(--font-read); font-size: 17.5px; line-height: 1.62; color: var(--ink-2); max-width: 62ch; margin: 0 0 22px; }
+  .hero .lede { font-family: var(--font-read); font-size: 17.5px; line-height: 1.62; color: var(--ink-2); max-width: 64ch; margin: 0 0 22px; }
   .ia { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
   .ia .step { font: 600 11px var(--font-chrome); letter-spacing: .1em; text-transform: uppercase;
     padding: 5px 12px; border: 1px solid var(--line-2); border-radius: 99px; color: var(--ink-2); background: var(--bg-raise); }
@@ -25,10 +28,11 @@
   .sec-h { display: flex; align-items: baseline; gap: 14px; margin: 44px 0 6px; }
   .sec-h h2 { font-size: 26px; margin: 0; }
   .sec-h .rule { flex: 1; height: 1px; background: var(--line); align-self: center; }
-  .sec-sub { font-size: 13px; color: var(--ink-3); margin: 0 0 22px; }
+  .sec-sub { font-size: 13px; color: var(--ink-3); margin: 0 0 22px; max-width: 78ch; }
 
   /* mockup grid */
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+  .grid.two { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
   .mcard { display: flex; flex-direction: column; overflow: hidden; color: var(--ink);
     transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
   .mcard:hover { text-decoration: none; transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: var(--line-2); }
@@ -47,10 +51,38 @@
 
   .mbody { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
   .mkick { font: 600 10.5px var(--font-chrome); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; }
+  .mcard.featured .mkick { color: var(--accent); }
   .mbody h3 { font-size: 19.5px; margin-bottom: 6px; transition: color .16s ease; }
   .mbody .desc { font-size: 13.5px; line-height: 1.6; color: var(--ink-2); margin: 0 0 12px; flex: 1; }
   .try { font-size: 12.5px; line-height: 1.55; color: var(--ink-2); margin: 0; padding-top: 10px; border-top: 1px solid var(--line); }
   .try b { font: 600 10px var(--font-chrome); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-right: 6px; }
+
+  /* start-here card thumbs: three art-direction panels */
+  .mthumb.dirs { gap: 12px; padding: 18px 22px; align-items: stretch; }
+  .dpanel { flex: 1; max-width: 118px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raise);
+    box-shadow: var(--shadow); padding: 10px 11px 9px; display: flex; flex-direction: column; gap: 6px; }
+  .dpanel .dl { font-size: 26px; line-height: 1.1; color: var(--accent); }
+  .dpanel:nth-child(1) .dl { font-family: var(--font-display); }
+  .dpanel:nth-child(2) .dl { font-family: var(--font-chrome); font-weight: 600; letter-spacing: .02em; }
+  .dpanel:nth-child(3) .dl { font-family: var(--font-read); font-style: italic; }
+  .dpanel .drule { height: 2px; border-radius: 99px; margin-bottom: 2px; }
+  .dpanel:nth-child(1) .drule { background: var(--accent); }
+  .dpanel:nth-child(2) .drule { background: var(--ent-plant); }
+  .dpanel:nth-child(3) .drule { background: var(--rubric); }
+  .dline { height: 4px; border-radius: 99px; background: var(--bg-sunk); }
+  .dline.w1 { width: 88%; } .dline.w2 { width: 70%; } .dline.w3 { width: 92%; }
+  .dline.tint { background: var(--tint-translation); }
+
+  /* start-here card thumbs: module wiring */
+  .mthumb.wire { flex-direction: column; gap: 9px; padding: 18px; }
+  .wrow { display: flex; gap: 8px; justify-content: center; position: relative; z-index: 1; }
+  .mchip { font: 500 10.5px ui-monospace, Consolas, monospace; padding: 4px 10px; border: 1px solid var(--line-2);
+    border-radius: 99px; background: var(--bg-raise); color: var(--ink-2); white-space: nowrap; }
+  .mchip.hub { background: var(--tint-select); border-color: var(--accent); color: var(--ink); font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px; }
+  .mchip.hub .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); animation: pulse 1.6s infinite ease-in-out; }
+  @keyframes pulse { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+  .wire::before { content: ''; position: absolute; top: 24px; bottom: 24px; width: 1px; background: var(--line-2); left: 50%; }
 
   /* streaming card diagram */
   .mthumb.layers { flex-direction: column; align-items: stretch; justify-content: center; gap: 9px; padding: 18px 26px; }
@@ -68,6 +100,9 @@
   .qs li:first-child { border-top: 0; }
   .qs li::before { content: counter(q); position: absolute; left: 4px; top: 16px;
     font: 400 32px var(--font-display); color: var(--accent); opacity: .85; font-feature-settings: "onum"; }
+  .qs li.new::after { content: 'New'; position: absolute; left: 0; top: 56px;
+    font: 600 9px var(--font-chrome); letter-spacing: .1em; text-transform: uppercase;
+    color: var(--accent); border: 1px solid var(--line-2); border-radius: 99px; padding: 2px 7px; background: var(--bg-raise); }
   .qs h3 { font-size: 18.5px; margin-bottom: 5px; }
   .qs .q-body { font-size: 14px; line-height: 1.62; color: var(--ink-2); margin: 0 0 10px; }
   .qs .q-ref { margin: 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
@@ -77,36 +112,22 @@
   footer.colophon { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line);
     font-size: 12px; color: var(--ink-3); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
-  .topbar .tb-title { font: 600 13.5px var(--font-chrome); }
-  .topbar .tb-dim { color: var(--ink-3); font-weight: 400; }
-
   @media (max-width: 720px) {
     .hero h1 { font-size: 32px; }
     .qs li { padding-left: 48px; }
+    .grid.two { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 <script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
 
-<div class="topbar">
-  <span class="tb-title">WHL Reader Next <span class="tb-dim">· design mockups</span></span>
-  <div class="mock-switch">
-    <select id="schemeSel" class="btn" aria-label="Colour scheme">
-      <option value="archive">Archive</option>
-      <option value="herbarium">Herbarium</option>
-      <option value="oxford">Oxford</option>
-    </select>
-    <button id="modeBtn" class="btn" aria-label="Toggle light or dark mode">☾ Dark</button>
-  </div>
-</div>
-
 <main class="wrap">
 
   <section class="hero">
-    <div class="kicker">Design review · before implementation</div>
+    <div class="kicker">Design review · iteration 2</div>
     <h1>The next WHL reader</h1>
-    <p class="lede">Eight static mockups for the redesign of the historical herbal library’s reader — remote-streamed pages, an OpenSeadragon facsimile plane, and work-centred overviews. Nothing here is wired to a backend; every page is a self-contained sketch meant to be argued with. Imagery is the real corpus, from the Papyrus Ebers (c.&nbsp;1550&nbsp;BC) to <em>Standardized Plant Names</em> (1942).</p>
+    <p class="lede">Mockups for the redesign of the historical herbal library’s reader — now in a second round. The three readers are no longer pictures: they compose a small shared component library and fetch real extracted layer data — regions, word boxes, source–translation associations, entities — with staged network latency, so the behaviour can be argued with, not just the look. The library, overviews, and work hub remain static sketches. Imagery is the real corpus, from the Papyrus Ebers (c.&nbsp;1550&nbsp;BC) to <em>Standardized Plant Names</em> (1942).</p>
     <div class="ia" aria-label="Information architecture">
       <span class="step">Library</span><span class="arr">→</span>
       <span class="step">Work</span><span class="arr">→</span>
@@ -121,8 +142,82 @@
       and <span class="rub">rubrics in red</span>.</p>
   </section>
 
-  <div class="sec-h"><h2>The mockups</h2><div class="rule"></div></div>
-  <p class="sec-sub">Each card names what to try. Roughly in review order: library, overviews, readers, then the machinery underneath.</p>
+  <div class="sec-h"><h2>Start here</h2><div class="rule"></div></div>
+  <p class="sec-sub">Two framing pages before the mockups themselves: the visual voice this product should have, and the component library everything now runs on.</p>
+
+  <section class="grid two">
+
+    <a class="mcard card featured" href="directions.html">
+      <div class="mthumb dirs" aria-hidden="true">
+        <div class="dpanel"><span class="dl">Aa</span><span class="drule"></span><span class="dline w1"></span><span class="dline w2"></span><span class="dline tint w3"></span></div>
+        <div class="dpanel"><span class="dl">Aa</span><span class="drule"></span><span class="dline w3"></span><span class="dline w1"></span><span class="dline tint w2"></span></div>
+        <div class="dpanel"><span class="dl">Aa</span><span class="drule"></span><span class="dline w2"></span><span class="dline tint w3"></span><span class="dline w1"></span></div>
+      </div>
+      <div class="mbody">
+        <div class="mkick">Start here · art direction</div>
+        <h3>Three visual directions</h3>
+        <p class="desc">Before implementation hardens: the product’s visual voice. Three fully drawn directions — A, B, C — same corpus material, three temperaments. The tokens system means the winner becomes a palette and type ramp, not a rebuild.</p>
+        <p class="try"><b>Decide</b>Pick one, or say what to steal from the others — question 8 below.</p>
+      </div>
+    </a>
+
+    <a class="mcard card featured" href="lib/components.html">
+      <div class="mthumb wire" aria-hidden="true">
+        <div class="wrow"><span class="mchip hub"><span class="pulse"></span>whl-bus</span></div>
+        <div class="wrow"><span class="mchip">chrome</span><span class="mchip">store</span><span class="mchip">viewer</span></div>
+        <div class="wrow"><span class="mchip">text</span><span class="mchip">linker</span><span class="mchip">sidebar</span></div>
+      </div>
+      <div class="mbody">
+        <div class="mkick">Start here · the machinery</div>
+        <h3>Component library playground</h3>
+        <p class="desc">Every reader module mounted live with its API alongside: the event bus, the store’s priority-ordered layer loading, viewer overlays, the text pane’s atomic spans, the linker, the sidebar. All sections share one bus.</p>
+        <p class="try"><b>Try</b>Hover in one section and watch the shared bus light the others; <code>API.md</code> is the contract.</p>
+      </div>
+    </a>
+
+  </section>
+
+  <div class="sec-h"><h2>Readers</h2><div class="rule"></div></div>
+  <p class="sec-sub">Now on real corpus data and the component library: three reading profiles, each a live composition of the same modules over extracted layers — regions, words, associations, entities — arriving in stages as they would over a network.</p>
+
+  <section class="grid">
+
+    <a class="mcard card" href="reader-codex.html">
+      <div class="mthumb page"><img src="assets/pages/E17-page.jpg" alt=""></div>
+      <div class="mbody">
+        <div class="mkick">Reader · codex</div>
+        <h3>Facsimile &amp; Study modes</h3>
+        <p class="desc">The default two-pane reader on E17, the <em>Zhongyao da cidian</em> vol.&nbsp;2 (1977). One dense dictionary page, fully extracted: 51 regions, 42 entities, 1,400 linked source–translation groups, 1,716 word boxes under the OpenSeadragon plane.</p>
+        <p class="try"><b>Try</b>Hover any translated line to light its exact glyphs on the scan (1,400 real atomic groups); flip Basic → Advanced; switch Facsimile ↔ Study.</p>
+      </div>
+    </a>
+
+    <a class="mcard card" href="reader-scroll.html">
+      <div class="mthumb strip">
+        <img src="assets/pages/EB01-col-0046.jpg" alt=""><img src="assets/pages/EB01-col-0045.jpg" alt=""><img src="assets/pages/EB01-col-0044.jpg" alt="">
+      </div>
+      <div class="mbody">
+        <div class="mkick">Reader · scroll</div>
+        <h3>The Ebers roll, right to left</h3>
+        <p class="desc">EB01 as it physically is: columns 44–48 edge to edge in one horizontal right-to-left world, case rubrics and glyph boxes from the real extraction, transliteration and English translation in parallel. Column 47 has an image but no data yet — watch it degrade gracefully.</p>
+        <p class="try"><b>Try</b>Traverse the roll; watch the layer dots as each column streams in; land on col. 47 image-only.</p>
+      </div>
+    </a>
+
+    <a class="mcard card" href="reader-explore.html">
+      <div class="mthumb page"><img src="assets/pages/E52-page.jpg" alt=""></div>
+      <div class="mbody">
+        <div class="mkick">Reader · explore</div>
+        <h3>Explore mode &amp; embeds</h3>
+        <p class="desc">Full-bleed facsimile-first reading for the Yale Cushing MS 49 Italian herbal — the painted Q initial and the chamomile paragraphs, entities at region level (this book has no word-alignment layer) — plus the <code>?embed=</code> variants a parent site composes.</p>
+        <p class="try"><b>Try</b>Summon the text lens over the chamomile passage; note hover works region-wide, not word-wide.</p>
+      </div>
+    </a>
+
+  </section>
+
+  <div class="sec-h"><h2>Structure</h2><div class="rule"></div></div>
+  <p class="sec-sub">The information architecture around the readers — library, overviews at every tier, and the work hub. Static sketches with real corpus imagery.</p>
 
   <section class="grid">
 
@@ -172,50 +267,25 @@
       </div>
     </a>
 
-    <a class="mcard card" href="reader-codex.html">
-      <div class="mthumb page"><img src="assets/pages/E17-page.jpg" alt=""></div>
-      <div class="mbody">
-        <div class="mkick">Reader · codex</div>
-        <h3>Facsimile &amp; Study modes</h3>
-        <p class="desc">The default two-pane reader on E17, the <em>Zhongyao da cidian</em> vol.&nbsp;2 (1977), a Chinese materia-medica dictionary: a live OpenSeadragon pane against structured entry text, the tabbed sidebar, and the basic / advanced toggle.</p>
-        <p class="try"><b>Try</b>Hover the 蛇床子 entry to light its region; flip basic → advanced; switch Facsimile ↔ Study.</p>
-      </div>
-    </a>
+  </section>
 
-    <a class="mcard card" href="reader-scroll.html">
-      <div class="mthumb strip">
-        <img src="assets/pages/EB01-col-0047.jpg" alt=""><img src="assets/pages/EB01-col-0045.jpg" alt=""><img src="assets/pages/EB01-col-0044.jpg" alt="">
-      </div>
-      <div class="mbody">
-        <div class="mkick">Reader · scroll</div>
-        <h3>The Ebers roll, right to left</h3>
-        <p class="desc">EB01 as it physically is: a continuous horizontal roll read right-to-left, columns edge to edge in OpenSeadragon, column navigation, and Joachim’s German running in parallel.</p>
-        <p class="try"><b>Try</b>Traverse the roll; jump by column number; toggle the hieroglyphic transcription.</p>
-      </div>
-    </a>
+  <div class="sec-h"><h2>Machinery</h2><div class="rule"></div></div>
+  <p class="sec-sub">The loading model underneath every reader — the same staging the store now simulates on real layer files.</p>
 
-    <a class="mcard card" href="reader-explore.html">
-      <div class="mthumb page"><img src="assets/pages/E52-page.jpg" alt=""></div>
-      <div class="mbody">
-        <div class="mkick">Reader · explore</div>
-        <h3>Explore mode &amp; embeds</h3>
-        <p class="desc">Full-bleed facsimile-first reading for the Yale Cushing MS 49 Italian herbal — a floating text lens instead of a pane — plus the <code>?embed=</code> variants a parent site composes: excerpt, card, explore.</p>
-        <p class="try"><b>Try</b>Summon the lens over a painted plant; preview each embed variant at the foot of the page.</p>
-      </div>
-    </a>
+  <section class="grid">
 
     <a class="mcard card" href="streaming.html">
       <div class="mthumb layers" aria-hidden="true">
         <div class="lrow"><span class="ldot on"></span><span class="lname">image tiles</span><span class="lbar solid"></span></div>
         <div class="lrow"><span class="ldot on"></span><span class="lname">source text</span><span class="lbar solid" style="max-width:78%"></span></div>
-        <div class="lrow"><span class="ldot on"></span><span class="lname">parallel</span><span class="lbar solid" style="max-width:55%"></span></div>
+        <div class="lrow"><span class="ldot on"></span><span class="lname">words</span><span class="lbar solid" style="max-width:55%"></span></div>
         <div class="lrow"><span class="ldot"></span><span class="lname">associations</span><span class="lbar skel"></span></div>
         <div class="lrow"><span class="ldot"></span><span class="lname">entities</span><span class="lbar skel"></span></div>
       </div>
       <div class="mbody">
         <div class="mkick">Architecture</div>
         <h3>Streaming &amp; progressive load</h3>
-        <p class="desc">Per-page layer bundles from object storage, priority-ordered — tiles, text, parallel, associations, entities — with a simulation of a page becoming usable at each stage. EB02’s 236 pages are the stress case.</p>
+        <p class="desc">Per-page layer bundles from object storage, priority-ordered — tiles, source, words, associations, entities — with a simulation of a page becoming usable at each stage. EB02’s 236 pages are the stress case.</p>
         <p class="try"><b>Try</b>Run the loading simulation; throttle the network and watch layers degrade without blocking reading.</p>
       </div>
     </a>
@@ -223,7 +293,7 @@
   </section>
 
   <div class="sec-h"><h2>Open design questions</h2><div class="rule"></div></div>
-  <p class="sec-sub">Decisions this review should settle. Please cite questions by number in feedback.</p>
+  <p class="sec-sub">Decisions this review should settle — please cite questions by number. 1–7 stand from round one; 8 and 9 are new. The readers now run on real data, so argue with the behaviour, not just the pictures.</p>
 
   <ol class="qs">
     <li>
@@ -261,28 +331,32 @@
       <p class="q-body">The Dioscorides hub compares two copies of one edition (E46 vs E47) page by page. Does the same view stretch to cross-version alignment — EB01’s hieratic against EB02’s German — or is that a different tool? And does compare live on the work hub, inside the reader, or both?</p>
       <p class="q-ref"><span class="lbl">See</span><a class="chip" href="work-dioscorides.html">work-dioscorides</a><a class="chip" href="overview-landmark.html">overview-landmark</a></p>
     </li>
+    <li class="new">
+      <h3>Which art direction — A, B, or C?</h3>
+      <p class="q-body">The directions page draws three complete visual temperaments over the same corpus material. Which becomes the product? May elements cross-pollinate — one direction’s facsimile chrome with another’s reading typography — or does mixing dilute the voice? Because every mockup already runs on tokens, the winner lands as a palette and type ramp, not a rebuild.</p>
+      <p class="q-ref"><span class="lbl">See</span><a class="chip" href="directions.html">directions</a></p>
+    </li>
+    <li class="new">
+      <h3>Module API: are the seams right?</h3>
+      <p class="q-body">The readers now compose seven small modules behind a documented contract — bus event vocabulary, the store’s layer priority, viewer profiles, the linker’s highlight weights, chrome’s ownership of appearance. Before implementation hardens: is anything in the wrong module, did any page have to hack around a seam, and are these the event names we want to be stable?</p>
+      <p class="q-ref"><span class="lbl">See</span><a class="chip" href="lib/API.md">lib/API.md</a><a class="chip" href="lib/components.html">components</a></p>
+    </li>
   </ol>
 
   <footer class="colophon">
-    <span>WHL reader-next · static mockups, no backend</span>
+    <span>WHL reader-next · mockups, iteration 2 · readers live on <code>lib/</code> + real extracted layers, no backend</span>
     <span>Imagery from the corpus: Papyrus Ebers, c.&nbsp;1550&nbsp;BC — <em>Standardized Plant Names</em>, 1942</span>
   </footer>
 
 </main>
 
-<div class="mock-note"><button class="mn-x" aria-label="Dismiss">×</button><strong>Hub.</strong> Front door of the mockup set: every card links to a page; the scheme and mode switcher (top right) is live and persists across all mockups.</div>
-
-<script>
-  const sel = document.getElementById('schemeSel'), mbtn = document.getElementById('modeBtn'), root = document.documentElement;
-  sel.value = root.dataset.scheme;
-  function syncMode() { mbtn.textContent = root.dataset.mode === 'dark' ? '☀ Light' : '☾ Dark'; }
-  sel.addEventListener('change', () => { root.dataset.scheme = sel.value; localStorage.setItem('whlnext-scheme', sel.value); });
-  mbtn.addEventListener('click', () => {
-    root.dataset.mode = root.dataset.mode === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('whlnext-mode', root.dataset.mode); syncMode();
+<script type="module">
+  import { mountChrome } from './lib/whl-chrome.js';
+  mountChrome({
+    title: 'WHL Reader Next · design mockups',
+    adv: false,
+    note: '<strong>Hub.</strong> Front door of the mockup set: every card links to a page; the scheme and mode switcher (top right) is live and persists across all mockups.'
   });
-  syncMode();
-  document.querySelector('.mock-note .mn-x').addEventListener('click', e => e.currentTarget.closest('.mock-note').remove());
 </script>
 </body>
 </html>

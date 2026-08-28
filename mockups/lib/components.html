@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Components · WHL mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+<style>
+/* ---------- page frame ---------- */
+.wrap { max-width: 1120px; margin: 0 auto; padding: 26px 28px 80px; }
+.intro h1 { font-size: 30px; margin-bottom: .25em; }
+.intro p { max-width: 68ch; color: var(--ink-2); }
+.toc { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0 34px; }
+.toc a { font: 600 11.5px var(--font-chrome); letter-spacing: .04em; text-transform: uppercase;
+  padding: 4px 11px; border: 1px solid var(--line-2); border-radius: 99px; color: var(--ink-2); }
+.toc a:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
+
+.mod { margin-bottom: 44px; scroll-margin-top: 64px; }
+.mod > h2 { font-size: 21px; border-bottom: 1px solid var(--line); padding-bottom: 7px; }
+.mod > h2 code { font: 600 15px ui-monospace, Consolas, monospace; color: var(--accent);
+  background: var(--tint-region); padding: 2px 7px; border-radius: var(--radius); }
+.mod .lead { max-width: 74ch; color: var(--ink-2); font-size: 13.5px; margin: 8px 0 14px; }
+
+.demo { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-raise);
+  padding: 14px; margin-bottom: 14px; box-shadow: var(--shadow); }
+.demo-toolbar { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin-bottom: 12px; }
+.demo-toolbar .btn { font-size: 12px; padding: 5px 10px; }
+.demo-toolbar .hint { font-size: 11px; color: var(--ink-3); margin-left: auto; }
+
+pre.api { background: var(--bg-sunk); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 11px 14px; overflow-x: auto; font: 11.5px/1.6 ui-monospace, Consolas, monospace;
+  color: var(--ink-2); margin: 0 0 10px; }
+pre.api b { color: var(--ink); font-weight: 600; }
+.evts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 4px; }
+.evts .lbl { font: 600 10.5px var(--font-chrome); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.evts code { font: 11px ui-monospace, Consolas, monospace; background: var(--bg-sunk);
+  border: 1px solid var(--line); border-radius: 3px; padding: 2px 6px; color: var(--ink-2); }
+
+.log { font: 11px/1.55 ui-monospace, Consolas, monospace; color: var(--ink-2);
+  background: var(--bg-sunk); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 8px 10px; height: 132px; overflow-y: auto; }
+.log .t { color: var(--ink-3); }
+.log .ev { color: var(--accent); font-weight: 600; }
+
+/* store dots */
+.ldots { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; }
+.ld { display: flex; align-items: center; gap: 6px; font: 11.5px var(--font-chrome); color: var(--ink-2); }
+.ld .dot { width: 9px; height: 9px; border-radius: 50%; background: transparent; border: 1px solid var(--line-2); flex: none; }
+.ld[data-st="loading"] .dot { background: var(--warn); border-color: var(--warn); animation: pulse 1.1s infinite; }
+.ld[data-st="ready"] .dot { background: var(--ok); border-color: var(--ok); }
+.ld[data-st="error"] .dot { background: var(--rubric, #a02c1e); border-color: var(--rubric, #a02c1e); }
+.ld small { color: var(--ink-3); }
+@keyframes pulse { 50% { opacity: .3; } }
+
+/* viewer boxes */
+.vbox { height: 430px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.pane-scroll { height: 380px; overflow-y: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); }
+
+/* sidebar demo box */
+.sbox { height: 430px; display: flex; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.sbox .sidebar { border-left: 0; width: 100%; }
+
+/* full composition */
+.comp { display: grid; grid-template-columns: minmax(300px, 2fr) minmax(340px, 3fr) 300px;
+  height: 560px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.comp > .cv { min-width: 0; border-right: 1px solid var(--line); }
+.comp > .ct { min-width: 0; overflow-y: auto; background: var(--bg); }
+.comp > .cs { min-width: 0; }
+.comp .sidebar { width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+
+<main class="wrap">
+  <header class="intro">
+    <h1>Components</h1>
+    <p>One live instance of every <code>lib/</code> module, wired to real corpus data — E17 <i>Zhongyao dacidian</i> p.&thinsp;0382 for the text-side modules, EB01 Ebers columns 44–46 for the horizontal-scroll facsimile. All E17 sections share <b>one bus and one store</b>: hover in any pane and every other pane reacts. A debug handle is exposed at <code>window.__whl</code>.</p>
+  </header>
+  <nav class="toc">
+    <a href="#sec-bus">bus</a><a href="#sec-chrome">chrome</a><a href="#sec-store">store</a>
+    <a href="#sec-viewer">viewer</a><a href="#sec-text">text</a><a href="#sec-linker">linker</a>
+    <a href="#sec-sidebar">sidebar</a><a href="#sec-comp">composition</a>
+  </nav>
+
+  <!-- ==================== bus ==================== -->
+  <section class="mod" id="sec-bus">
+    <h2><code>whl-bus.js</code> — event hub</h2>
+    <p class="lead">The monitor below is subscribed to every documented event type on the page's main bus. The buttons emit synthetic events into the same bus — the linker, both text panes, the E17 viewer and the sidebars downstream all react.</p>
+    <div class="demo">
+      <div class="demo-toolbar">
+        <button type="button" class="btn" id="bus-hov">emit hover (group g0001)</button>
+        <button type="button" class="btn" id="bus-sel">emit select (region 7)</button>
+        <button type="button" class="btn ghost" id="bus-clr">emit clears</button>
+        <span class="hint">last 40 events, newest first</span>
+      </div>
+      <div class="log" id="bus-log" aria-label="bus event log"></div>
+    </div>
+    <pre class="api"><b>import</b> {createBus} <b>from</b> './whl-bus.js';
+<b>const</b> bus = createBus();
+<b>const</b> off = bus.on('hover', p =&gt; …);   <i>// returns unsubscribe</i>
+bus.emit('hover', {src:'text', page:'page-0382', group:'E17-p0382-g0001'});
+off();  <i>// or</i> bus.off('hover', fn)</pre>
+    <div class="evts"><span class="lbl">events</span><code>hover</code><code>hover:clear</code><code>select</code><code>select:clear</code><code>highlight</code><code>view</code><code>layer</code><code>mode</code><code>adv</code><code>nav</code></div>
+  </section>
+
+  <!-- ==================== chrome ==================== -->
+  <section class="mod" id="sec-chrome">
+    <h2><code>whl-chrome.js</code> — topbar &amp; persistence</h2>
+    <p class="lead">The topbar at the top of this page <i>is</i> the live demo — mounted once, prepended to <code>&lt;body&gt;</code>. It owns scheme/mode/adv persistence (<code>whlnext-*</code> localStorage keys, <code>data-*</code> on <code>&lt;html&gt;</code>) and, because we passed <code>bus</code>, its <code>mode</code>/<code>adv</code> events also appear on the bus monitor above. The chip below carries class <code>adv-only</code> — flip the Basic/Advanced switch to see chrome's injected gating rule work.</p>
+    <div class="demo">
+      <div class="demo-toolbar">
+        <button type="button" class="btn" data-setmode="study">set('mode','study')</button>
+        <button type="button" class="btn" data-setmode="facsimile">set('mode','facsimile')</button>
+        <button type="button" class="btn" data-setmode="explore">set('mode','explore')</button>
+        <button type="button" class="btn ghost" id="chrome-adv">toggle adv</button>
+        <span class="chip accent adv-only">visible in Advanced only</span>
+      </div>
+      <div class="log" id="chrome-log" aria-label="chrome event log" style="height:84px"></div>
+    </div>
+    <pre class="api"><b>import</b> {mountChrome} <b>from</b> './whl-chrome.js';
+<b>const</b> chrome = mountChrome({title:'Components', back:'../index.html', bus,
+  book:{label:'reader-next', title:'Component library', thumb:'…'},
+  modes:['study','facsimile','explore'], note:'…'});   <i>// topbar → body.prepend</i>
+chrome.on('mode', ({mode}) =&gt; …);  chrome.set('adv', true);
+<i>// appearance delegation: document CustomEvent 'whl-appearance' {scheme?, mode?}</i></pre>
+    <div class="evts"><span class="lbl">events</span><code>mode {mode}</code><code>adv {on}</code><span class="lbl">&nbsp;also on bus when bus passed</span></div>
+  </section>
+
+  <!-- ==================== store ==================== -->
+  <section class="mod" id="sec-store">
+    <h2><code>whl-store.js</code> — layer fetching</h2>
+    <p class="lead">Loads E17 <code>page-0382</code> with <code>latency:'3g'</code> so the streaming order is watchable: <code>source → words → associations → entities</code>, plus the synthetic <code>tiles</code> status. Reload the page to watch the dots progress again. Every downstream section renders from this one store.</p>
+    <div class="demo">
+      <div class="ldots" id="store-dots">
+        <span class="ld" data-l="tiles"><span class="dot"></span>tiles <small>(synthetic)</small></span>
+        <span class="ld" data-l="source"><span class="dot"></span>source</span>
+        <span class="ld" data-l="words"><span class="dot"></span>words</span>
+        <span class="ld" data-l="associations"><span class="dot"></span>associations</span>
+        <span class="ld" data-l="entities"><span class="dot"></span>entities</span>
+      </div>
+      <div class="demo-toolbar">
+        <button type="button" class="btn ghost" id="store-status">dump status('page-0382')</button>
+        <span class="hint">layer events with ms since page load</span>
+      </div>
+      <div class="log" id="store-log" aria-label="store layer log"></div>
+    </div>
+    <pre class="api"><b>import</b> {createStore} <b>from</b> './whl-store.js';
+<b>const</b> store = createStore({base:'data', book:'E17', bus, pages:['page-0382'], latency:'3g'});
+<b>await</b> store.load('page-0382');   <i>// resolves when text layers settle (tiles may trail)</i>
+store.get('page-0382');           <i>// {source, words|glyphs, associations, entities, index, …}</i>
+store.status('page-0382');        <i>// {tiles:'ready', source:'ready', …}</i>
+store.prefetch('page-0383');
+<i>// EB01 → glyphs.json instead of words.json (hardcoded); layers:{pageKey:[…]} overrides</i></pre>
+    <div class="evts"><span class="lbl">events</span><code>layer {page, name, status: pending|loading|ready|error}</code></div>
+  </section>
+
+  <!-- ==================== viewer ==================== -->
+  <section class="mod" id="sec-viewer">
+    <h2><code>whl-viewer.js</code> — facsimile plane</h2>
+    <p class="lead">EB01 columns 44–46 in a <code>scroll-h</code> world with <code>direction:'rtl'</code> — the hieratic scroll reads right-to-left, so col&thinsp;0044 sits rightmost and <code>next()</code> pans left. Region overlays are switched visible here; hover one and the viewer emits <code>hover</code> on its own bus (log below), a local linker echoes the highlight straight back. Without OpenSeadragon this degrades to a static strip with identical events.</p>
+    <div class="demo">
+      <div class="demo-toolbar">
+        <button type="button" class="btn" id="eb-prev">&larr; prev()</button>
+        <button type="button" class="btn" id="eb-next">next() &rarr;</button>
+        <button type="button" class="btn ghost" data-goto="col-0044">goto col-0044</button>
+        <button type="button" class="btn ghost" data-goto="col-0045">goto col-0045</button>
+        <button type="button" class="btn ghost" data-goto="col-0046">goto col-0046</button>
+        <label class="hint" style="display:flex;gap:5px;align-items:center;cursor:pointer">
+          <input type="checkbox" id="eb-regions" checked> region overlays</label>
+      </div>
+      <div class="vbox" id="viewer-eb"></div>
+      <div class="log" id="eb-log" style="height:84px;margin-top:10px" aria-label="EB01 viewer event log"></div>
+    </div>
+    <pre class="api"><b>import</b> {createViewer} <b>from</b> './whl-viewer.js';
+<b>const</b> viewer = createViewer({el, bus, store, book:'EB01',
+  profile:{layout:'scroll-h', direction:'rtl'},
+  pages:[{key:'col-0044', url:'../assets/pages/EB01-col-0044.jpg', w:834, h:1600}, …],
+  start:'col-0045'});
+viewer.goto('col-0046'); viewer.next(); viewer.prev(); viewer.current();
+viewer.select(page, region);            <i>// zooms + emits select</i>
+viewer.applyHighlight(h); viewer.setRegionsVisible(true);
+viewer.addOverlayEl(page, box, el); viewer.destroy();</pre>
+    <div class="evts"><span class="lbl">emits</span><code>hover {src:'viewer', page, region, word?}</code><code>hover:clear</code><code>select {page, region}</code><code>view {page}</code><span class="lbl">listens</span><code>layer</code><code>nav</code></div>
+  </section>
+
+  <!-- ==================== text ==================== -->
+  <section class="mod" id="sec-text">
+    <h2><code>whl-text.js</code> — reading pane</h2>
+    <p class="lead">E17 p.0382 regions with transcription + tinted translation, association spans (<code>[data-g]</code>) and colour-coded entity anchors. Hover a span: the linker lights its counterparts here, in the composition demo below, and on the facsimile. Click to select (persists).</p>
+    <div class="demo">
+      <div class="demo-toolbar">
+        <button type="button" class="btn" data-layout="pair">pair</button>
+        <button type="button" class="btn" data-layout="stacked">stacked</button>
+        <button type="button" class="btn" data-layout="strip">strip</button>
+        <button type="button" class="btn ghost" id="text-goto">scrollTo(region 7)</button>
+      </div>
+      <div class="pane-scroll"><div id="text-demo"></div></div>
+    </div>
+    <pre class="api"><b>import</b> {createTextPane} <b>from</b> './whl-text.js';
+<b>const</b> text = createTextPane({el, bus, store, book:'E17', page:'page-0382', layout:'pair'});
+text.applyHighlight(h);      <i>// paint weight classes hlC &lt; hlR &lt; sel</i>
+text.scrollTo(7, {block:'center'});
+text.setLayout('strip');     <i>// single-region running line</i>
+text.destroy();</pre>
+    <div class="evts"><span class="lbl">emits</span><code>hover {src:'text', page, region, group, groups}</code><code>hover:clear</code><code>select {page, region, group?}</code><span class="lbl">listens</span><code>layer</code><code>nav</code><code>select</code></div>
+  </section>
+
+  <!-- ==================== linker ==================== -->
+  <section class="mod" id="sec-linker">
+    <h2><code>whl-linker.js</code> — hover/selection brain</h2>
+    <p class="lead">Headless. Listens for <code>hover</code>/<code>select</code>, resolves association groups through the store's indexes, and emits one rAF-debounced <code>highlight</code> event carrying weight maps that every pane applies. The readout shows the last <code>highlight</code> payload on the main bus.</p>
+    <div class="demo">
+      <div class="demo-toolbar">
+        <button type="button" class="btn" id="lk-hov">synthetic hover g0001</button>
+        <button type="button" class="btn" id="lk-hov2">synthetic hover word [0,10]</button>
+        <button type="button" class="btn" id="lk-sel">synthetic select region 7</button>
+        <button type="button" class="btn ghost" id="lk-clr">clear both</button>
+      </div>
+      <div class="log" id="linker-out" style="height:110px" aria-label="last highlight payload"></div>
+    </div>
+    <pre class="api"><b>import</b> {createLinker} <b>from</b> './whl-linker.js';
+<b>const</b> linker = createLinker({bus, store});   <i>// wire once per page</i>
+bus.on('highlight', h =&gt; { viewer.applyHighlight(h); text.applyHighlight(h); });
+<i>// h = {regions:Map&lt;'page/idx',w&gt;, words:Map&lt;'page/r:i',w&gt;, groups:Map&lt;gid,w&gt;}</i>
+linker.destroy();</pre>
+    <div class="evts"><span class="lbl">listens</span><code>hover</code><code>hover:clear</code><code>select</code><code>select:clear</code><code>layer</code><span class="lbl">emits</span><code>highlight {regions, words, groups}</code></div>
+  </section>
+
+  <!-- ==================== sidebar ==================== -->
+  <section class="mod" id="sec-sidebar">
+    <h2><code>whl-sidebar.js</code> — tabbed sidebar</h2>
+    <p class="lead">Contents tree (click a node → <code>nav</code> on the bus → panes scroll/zoom), "This page" entity cards built from the loaded entities layer (softly ringed while their entity's region is highlighted), and the appearance tab — which delegates scheme/mode persistence to chrome via the <code>whl-appearance</code> document event; watch the topbar controls follow.</p>
+    <div class="demo">
+      <div class="sbox"><div id="side-demo"></div></div>
+    </div>
+    <pre class="api"><b>import</b> {createSidebar} <b>from</b> './whl-sidebar.js';
+<b>const</b> side = createSidebar({el, bus, tabs:{
+  contents:{tree:[{id, title, sub?, target:{page, region?}, importance?, children?}, …]},
+  thispage:{items:[]}, article:{html:'…'}, appearance:true}});
+side.setThisPage([{kind:'entity'|'citation'|'note', entity, relevance?, body?}, …]);
+side.setContents(tree); side.open('appearance');</pre>
+    <div class="evts"><span class="lbl">emits</span><code>nav {page, region?}</code><span class="lbl">listens</span><code>view</code><code>highlight</code><span class="lbl">document</span><code>whl-appearance {scheme?|mode?}</code></div>
+  </section>
+
+  <!-- ==================== composition ==================== -->
+  <section class="mod" id="sec-comp">
+    <h2>Full composition — viewer + text + linker + store + sidebar</h2>
+    <p class="lead">The composition sketch from API.md, live: E17 p.0382 facsimile (single layout), reading pane, and sidebar on the shared bus/store/linker. Hover a region on the image → the text region tints; hover a span in the text → the matching word boxes light on the facsimile. Click either side to select; contents clicks zoom the viewer and scroll the text.</p>
+    <div class="demo">
+      <div class="demo-toolbar">
+        <label class="hint" style="display:flex;gap:5px;align-items:center;cursor:pointer;margin-left:0">
+          <input type="checkbox" id="comp-regions"> region overlays</label>
+        <button type="button" class="btn ghost" id="comp-sel-clear">select:clear</button>
+      </div>
+      <div class="comp">
+        <div class="cv" id="comp-osd"></div>
+        <div class="ct"><div id="comp-text"></div></div>
+        <div class="cs"><div id="comp-side"></div></div>
+      </div>
+    </div>
+    <pre class="api"><b>const</b> bus = createBus();
+<b>const</b> chrome = mountChrome({title:'…', bus, modes:['study','facsimile'], note:'…'});
+<b>const</b> store  = createStore({base:'data', book:'E17', bus, pages:['page-0382'], latency:'3g'});
+<b>const</b> viewer = createViewer({el, bus, store, book:'E17', profile:{layout:'single'},
+  pages:[{key:'page-0382', url:'../assets/pages/E17-page.jpg', w:1100, h:1600}]});
+<b>const</b> text   = createTextPane({el, bus, store, book:'E17', page:'page-0382'});
+<b>const</b> side   = createSidebar({el, bus, tabs:{…}});
+createLinker({bus, store});
+bus.on('highlight', h =&gt; { viewer.applyHighlight(h); text.applyHighlight(h); });
+store.load('page-0382').then(pd =&gt; side.setThisPage(itemsFrom(pd.entities)));</pre>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0/build/openseadragon/openseadragon.min.js"></script>
+<script type="module">
+import {createBus} from './whl-bus.js';
+import {mountChrome} from './whl-chrome.js';
+import {createStore} from './whl-store.js';
+import {createViewer} from './whl-viewer.js';
+import {createTextPane} from './whl-text.js';
+import {createLinker} from './whl-linker.js';
+import {createSidebar} from './whl-sidebar.js';
+
+const $ = s => document.querySelector(s);
+const T0 = performance.now();
+const ms = () => String(Math.round(performance.now() - T0)).padStart(5, ' ');
+
+function log(el, html, cap = 40) {
+  const d = document.createElement('div');
+  d.innerHTML = `<span class="t">${ms()}</span> ${html}`;
+  el.prepend(d);
+  while (el.childNodes.length > cap) el.removeChild(el.lastChild);
+}
+const mapPeek = (m, n = 3) => [...m.entries()].slice(0, n).map(([k, w]) => `${k}=${w}`).join(' ');
+
+/* ---------- main bus + monitor ---------- */
+const bus = createBus();
+const EVTS = ['hover', 'hover:clear', 'select', 'select:clear', 'highlight', 'view', 'layer', 'mode', 'adv', 'nav'];
+const busLog = $('#bus-log');
+const fmt = (t, p) => {
+  if (t === 'highlight') return `regions:${p.regions.size} words:${p.words.size} groups:${p.groups.size}`;
+  if (t === 'layer') return `${p.page} ${p.name} → ${p.status}`;
+  if (!p || typeof p !== 'object') return '';
+  return Object.entries(p).map(([k, v]) => `${k}:${Array.isArray(v) ? '[' + v.join(',') + ']' : v}`).join(' ');
+};
+for (const t of EVTS) bus.on(t, p => log(busLog, `<span class="ev">${t}</span> ${fmt(t, p)}`));
+
+const PAGE = 'page-0382';
+const G1 = 'E17-p0382-g0001';
+$('#bus-hov').onclick = () => bus.emit('hover', { src: 'demo', page: PAGE, region: 0, group: G1, groups: [G1] });
+$('#bus-sel').onclick = () => bus.emit('select', { page: PAGE, region: 7 });
+$('#bus-clr').onclick = () => { bus.emit('hover:clear', {}); bus.emit('select:clear', {}); };
+
+/* ---------- chrome ---------- */
+const chrome = mountChrome({
+  title: 'Components', back: '../index.html', bus,
+  book: { label: 'reader-next lib', title: 'Component library', thumb: '../assets/thumbs/E17.jpg' },
+  modes: ['study', 'facsimile', 'explore'],
+  note: 'Component playground — each section mounts a live instance of one lib/ module against real corpus data (E17 p.0382 · EB01 cols 44–46). Sections share one bus: hover anywhere, watch everywhere.'
+});
+const chromeLog = $('#chrome-log');
+chrome.on('mode', p => log(chromeLog, `<span class="ev">mode</span> ${p.mode}`));
+chrome.on('adv', p => log(chromeLog, `<span class="ev">adv</span> on:${p.on}`));
+document.querySelectorAll('[data-setmode]').forEach(b => b.onclick = () => chrome.set('mode', b.dataset.setmode));
+$('#chrome-adv').onclick = () => chrome.set('adv', document.documentElement.dataset.adv !== '1');
+
+/* ---------- store (E17, shared) ---------- */
+const store = createStore({ base: 'data', book: 'E17', bus, pages: [PAGE], latency: '3g' });
+const storeLog = $('#store-log');
+const layerLog = [];               // {name, status, t} — assertable from tests
+bus.on('layer', p => {
+  if (p.page !== PAGE) return;
+  layerLog.push({ name: p.name, status: p.status, t: performance.now() - T0 });
+  const ld = document.querySelector(`#store-dots .ld[data-l="${p.name}"]`);
+  if (ld) ld.dataset.st = p.status;
+  log(storeLog, `<span class="ev">${p.name}</span> ${p.status}`);
+});
+$('#store-status').onclick = () => log(storeLog, JSON.stringify(store.status(PAGE)));
+
+/* ---------- linker (shared) ---------- */
+const linker = createLinker({ bus, store });
+const linkerOut = $('#linker-out');
+bus.on('highlight', h => {
+  log(linkerOut, `regions[${h.regions.size}] ${mapPeek(h.regions)}<br>&nbsp;&nbsp;words[${h.words.size}] ${mapPeek(h.words)} · groups[${h.groups.size}] ${mapPeek(h.groups, 2)}`, 12);
+});
+$('#lk-hov').onclick = () => bus.emit('hover', { src: 'demo', page: PAGE, region: 0, group: G1, groups: [G1] });
+$('#lk-hov2').onclick = () => bus.emit('hover', { src: 'demo', page: PAGE, region: 0, word: [0, 10] });
+$('#lk-sel').onclick = () => bus.emit('select', { page: PAGE, region: 7 });
+$('#lk-clr').onclick = () => { bus.emit('hover:clear', {}); bus.emit('select:clear', {}); };
+
+/* ---------- text pane (section demo) ---------- */
+const text = createTextPane({ el: $('#text-demo'), bus, store, book: 'E17', page: PAGE, layout: 'pair' });
+document.querySelectorAll('#sec-text [data-layout]').forEach(b => b.onclick = () => text.setLayout(b.dataset.layout));
+$('#text-goto').onclick = () => text.scrollTo(7);
+
+/* ---------- EB01 viewer (own bus/store: separate book) ---------- */
+const busEB = createBus();
+const COLS = [
+  { key: 'col-0044', url: '../assets/pages/EB01-col-0044.jpg', w: 834, h: 1600 },
+  { key: 'col-0045', url: '../assets/pages/EB01-col-0045.jpg', w: 916, h: 1600 },
+  { key: 'col-0046', url: '../assets/pages/EB01-col-0046.jpg', w: 880, h: 1600 },
+];
+const storeEB = createStore({ base: 'data', book: 'EB01', bus: busEB, pages: COLS.map(c => c.key) });
+COLS.forEach(c => storeEB.load(c.key));
+const viewerEB = createViewer({
+  el: $('#viewer-eb'), bus: busEB, store: storeEB, book: 'EB01',
+  profile: { layout: 'scroll-h', direction: 'rtl' }, pages: COLS, start: 'col-0045'
+});
+viewerEB.setRegionsVisible(true);
+const linkerEB = createLinker({ bus: busEB, store: storeEB });
+busEB.on('highlight', h => viewerEB.applyHighlight(h));
+const ebLog = $('#eb-log');
+for (const t of ['hover', 'hover:clear', 'select', 'view']) busEB.on(t, p => log(ebLog, `<span class="ev">${t}</span> ${fmt(t, p)}`, 20));
+$('#eb-prev').onclick = () => viewerEB.prev();
+$('#eb-next').onclick = () => viewerEB.next();
+document.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => viewerEB.goto(b.dataset.goto));
+$('#eb-regions').onchange = e => viewerEB.setRegionsVisible(e.target.checked);
+
+/* ---------- sidebar (section demo) ---------- */
+const TREE = [
+  { id: 'e3812', title: '3812 铁落', sub: 'tiě luò · end of entry', target: { page: PAGE, region: 0 } },
+  { id: 'e3813', title: '3813 铁锈', sub: 'tiě xiù · iron rust', importance: 'primary', target: { page: PAGE, region: 7 }, children: [
+    { id: 'e3813-ym', title: '异名 · other names', target: { page: PAGE, region: 8 } },
+    { id: 'e3813-jy', title: '基原 · origin', target: { page: PAGE, region: 9 } },
+    { id: 'e3813-xw', title: '性味 · nature and flavour', target: { page: PAGE, region: 11 } },
+    { id: 'e3813-gy', title: '功用主治 · uses', target: { page: PAGE, region: 14 } },
+    { id: 'e3813-xf', title: '选方 · selected prescriptions', importance: 'detail', target: { page: PAGE, region: 23 } },
+  ]},
+  { id: 'e3814', title: '3814 铁精', sub: 'tiě jīng · furnace ash', target: { page: PAGE, region: 27 } },
+  { id: 'e3815', title: '3815 铁马豆', sub: 'tiě mǎ dòu', target: { page: PAGE, region: 46 } },
+];
+const side = createSidebar({ el: $('#side-demo'), bus, tabs: {
+  contents: { tree: TREE },
+  thispage: { items: [] },
+  article: { html: '<p>Entries 3812–3815 of the <i>Zhongyao dacidian</i> cover four iron-derived drugs: hammer-scale, rust, furnace ash and the unrelated legume 铁马豆. Rust (铁锈) is prescribed topically for sores and, ground with vinegar, for tinea.</p>' },
+  appearance: true,
+}});
+
+const itemsFrom = ents => {
+  ents = ents || [];
+  // a representative mix: the leading non-citation entities plus a couple of citations
+  const pick = [...ents.filter(e => e.type !== 'citation').slice(0, 6),
+                ...ents.filter(e => e.type === 'citation').slice(0, 2)];
+  return pick.map(en => ({
+    kind: en.type === 'citation' ? 'citation' : 'entity',
+    entity: en,
+    relevance: Math.min(1, ((en.mentions && en.mentions.length) || 0) / 12),
+    body: en.summary,
+  }));
+};
+
+/* ---------- full composition ---------- */
+const compViewer = createViewer({
+  el: $('#comp-osd'), bus, store, book: 'E17',
+  profile: { layout: 'single', zoom: { max: 3.5 } },
+  pages: [{ key: PAGE, url: '../assets/pages/E17-page.jpg', w: 1100, h: 1600 }],
+});
+const compText = createTextPane({ el: $('#comp-text'), bus, store, book: 'E17', page: PAGE, layout: 'stacked' });
+const compSide = createSidebar({ el: $('#comp-side'), bus, tabs: {
+  contents: { tree: TREE }, thispage: { items: [] }, appearance: true,
+}});
+$('#comp-regions').onchange = e => compViewer.setRegionsVisible(e.target.checked);
+$('#comp-sel-clear').onclick = () => bus.emit('select:clear', {});
+
+/* highlight fan-out: linker → every pane */
+bus.on('highlight', h => {
+  compViewer.applyHighlight(h);
+  compText.applyHighlight(h);
+  text.applyHighlight(h);
+});
+
+/* kick off the E17 load; populate entity cards when settled */
+store.load(PAGE).then(pd => {
+  const items = itemsFrom(pd.entities);
+  side.setThisPage(items);
+  compSide.setThisPage(items);
+});
+
+/* debug handle for console + smoke tests */
+window.__whl = { bus, busEB, chrome, store, storeEB, linker, linkerEB,
+  text, compText, viewerEB, compViewer, side, compSide, layerLog };
+</script>
+</body>
+</html>

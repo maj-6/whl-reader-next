@@ -10,47 +10,55 @@
 .wrap{max-width:1120px;margin:0 auto;padding:0 28px}
 
 .kicker{font:600 11px var(--font-chrome);letter-spacing:.15em;text-transform:uppercase;
-  color:var(--ink-3);display:flex;align-items:center;gap:14px;margin:0 0 18px}
+  color:var(--ink-3);display:flex;align-items:center;gap:14px;margin:0 0 20px}
 .kicker::after{content:"";flex:1;border-top:1px solid var(--line)}
 .kicker.plain::after{display:none}
 
 /* ---------- hero ---------- */
-.hero{padding:54px 0 48px}
-.hero-grid{display:grid;grid-template-columns:350px minmax(0,1fr);gap:60px;align-items:center}
-.thumb-stack{position:relative;width:302px;margin:0 auto}
+.hero{padding:64px 0 56px}
+.hero-grid{display:grid;grid-template-columns:350px minmax(0,1fr);gap:64px;align-items:center}
+.thumb-stack{width:302px;margin:0 auto}
+.thumb-stack .t-imgs{position:relative;display:block}
 .thumb-stack .t-main{display:block;width:262px;height:auto;border:1px solid var(--line-2);
   border-radius:var(--radius-lg);box-shadow:var(--shadow-lg)}
 .thumb-stack .t-sub{position:absolute;right:-4px;bottom:-30px;width:138px;height:auto;
   border:1px solid var(--line-2);border-radius:var(--radius);box-shadow:var(--shadow-lg);
   transform:rotate(2.4deg);background:var(--bg-raise)}
-.thumb-cap{margin-top:44px;text-align:center;font-size:11.5px;color:var(--ink-3)}
+.thumb-cap{margin-top:46px;text-align:center;font-size:11.5px;letter-spacing:.02em;color:var(--ink-3)}
 
-.hero-info .eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:12px;
+.hero-info .eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:16px;
   font:600 11px var(--font-chrome);letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3)}
-.hero-info h1{font-size:clamp(34px,4.6vw,49px);margin:0 0 6px;letter-spacing:.005em}
+.hero-info h1{font-size:clamp(44px,5.2vw,52px);line-height:1.06;margin:0 0 10px;
+  letter-spacing:.002em;text-wrap:balance}
 .hero-info .alt{font-family:var(--font-read);font-style:italic;color:var(--ink-2);
-  font-size:17.5px;margin:0 0 20px}
-.meta-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 26px}
+  font-size:18px;margin:0 0 22px}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 28px}
 .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .cta-row .btn{padding:10px 18px;font-size:13.5px}
 .cta-hint{font-size:12px;color:var(--ink-3);margin:0}
 
 /* ---------- roll band ---------- */
 .roll{background:var(--bg-sunk);border-top:1px solid var(--line);border-bottom:1px solid var(--line);
-  padding:22px 0 16px}
-.roll-head{display:flex;align-items:baseline;gap:14px;margin-bottom:14px}
+  padding:24px 0 16px}
+.roll-head{display:flex;align-items:baseline;gap:14px;margin-bottom:16px}
 .roll-head .kicker{flex:1;margin:0}
 .roll-head a{font-size:12.5px;white-space:nowrap}
-.roll-strip{display:flex;direction:rtl;justify-content:center;justify-content:safe center;gap:3px;overflow-x:auto;padding:4px 2px}
-.roll-strip a{flex:0 0 auto;font-size:0;line-height:0}
-.roll-strip img{height:198px;width:auto;border:1px solid var(--line-2);background:var(--bg-raise);
+.roll-strip{display:flex;direction:rtl;justify-content:center;justify-content:safe center;gap:3px;overflow-x:auto;overflow-y:hidden;padding:4px 2px 0}
+.roll-strip a{flex:0 0 auto;display:flex;flex-direction:column;font-size:0;line-height:0}
+.roll-strip img{display:block;height:198px;width:auto;border:1px solid var(--line-2);background:var(--bg-raise);
   transition:box-shadow .15s ease}
 .roll-strip a:hover img{box-shadow:0 0 0 2px var(--accent)}
+/* faint column-number ruler under the strip */
+.roll-strip .rno{direction:ltr;position:relative;margin-top:9px;padding-top:6px;
+  border-top:1px solid var(--line);text-align:center;
+  font:500 9.5px var(--font-chrome);letter-spacing:.16em;color:var(--ink-3);line-height:1;opacity:.85}
+.roll-strip .rno::before{content:"";position:absolute;left:50%;top:0;width:1px;height:4px;background:var(--line-2)}
+.roll-strip a:hover .rno{color:var(--accent);opacity:1}
 .roll-cap{direction:ltr;text-align:center;font-size:11.5px;color:var(--ink-3);margin-top:12px}
 
 /* ---------- main columns ---------- */
-.cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:60px;padding:50px 0 10px}
-section{margin-bottom:50px}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:64px;padding:56px 0 10px}
+section{margin-bottom:54px}
 
 .summary{font-size:17.5px;margin:0}
 details.readmore{margin-top:18px;border-top:1px solid var(--line)}
@@ -63,53 +71,58 @@ details.readmore .more p{margin:.3em 0 1em;font-size:15.5px}
 
 /* witnesses */
 .wit-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.wit{padding:16px;display:flex;gap:15px;align-items:flex-start}
-.wit img{width:76px;height:110px;object-fit:cover;border:1px solid var(--line-2);
-  border-radius:3px;flex:0 0 auto}
-.wit .k{font:600 10.5px var(--font-chrome);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
-.wit h3{font-size:19.5px;margin:3px 0 2px}
-.wit .wmeta{font-size:12px;color:var(--ink-2);margin:0 0 7px}
-.wit .desc{font-size:13px;line-height:1.5;color:var(--ink-2);margin:0 0 11px}
+.card.wit{border-radius:var(--radius);padding:18px;display:flex;gap:16px;align-items:flex-start;
+  transition:border-color .15s ease,box-shadow .15s ease}
+.card.wit:hover{border-color:var(--line-2);box-shadow:var(--shadow-lg)}
+.wit img{width:80px;height:116px;object-fit:cover;border:1px solid var(--line-2);
+  border-radius:2px;flex:0 0 auto;box-shadow:var(--shadow)}
+.wit > div{min-width:0}
+.wit .k{font:600 10px var(--font-chrome);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.wit h3{font-size:21px;margin:5px 0 3px;line-height:1.15}
+.wit .wmeta{font-size:12px;color:var(--ink-2);letter-spacing:.01em;margin:0 0 8px}
+.wit .desc{font-size:13px;line-height:1.5;color:var(--ink-2);margin:0 0 12px}
 .wit .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.compare{margin-top:16px;padding:15px 18px;display:flex;gap:20px;align-items:center;
-  border-left:3px solid var(--accent)}
+.compare{margin-top:16px;padding:16px 18px;display:flex;gap:20px;align-items:center;
+  border-radius:var(--radius);border-left:3px solid var(--accent)}
 .compare p{margin:0;flex:1;font-size:13px;line-height:1.55;color:var(--ink-2)}
 .compare .btn{white-space:nowrap}
 
 /* knowledge articles */
 .art-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-a.art{display:block;padding:18px 20px;color:inherit;transition:border-color .15s ease}
-a.art:hover{text-decoration:none;border-color:var(--accent)}
-a.art .k{font:600 10.5px var(--font-chrome);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
-a.art h3{font-size:20px;margin:7px 0 6px}
+a.art{display:block;padding:19px 20px;color:inherit;border-radius:var(--radius);
+  transition:border-color .15s ease,box-shadow .15s ease}
+a.art:hover{text-decoration:none;border-color:var(--accent);box-shadow:var(--shadow-lg)}
+a.art .k{font:600 10px var(--font-chrome);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+a.art h3{font-size:20px;margin:8px 0 6px;line-height:1.2}
 a.art p{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:var(--ink-2)}
 a.art .go{font:600 12px var(--font-chrome);color:var(--accent)}
 
 /* ---------- right rail ---------- */
-.rail .card{padding:19px 20px;margin-bottom:22px}
+.rail .card{padding:20px;margin-bottom:22px}
 .rail .kicker{margin-bottom:15px}
 dl.cat{margin:0;display:grid;grid-template-columns:94px minmax(0,1fr);row-gap:10px;column-gap:14px}
-dl.cat dt{font:600 10.5px var(--font-chrome);letter-spacing:.08em;text-transform:uppercase;
+dl.cat dt{font:600 10px var(--font-chrome);letter-spacing:.1em;text-transform:uppercase;
   color:var(--ink-3);padding-top:3px}
 dl.cat dd{margin:0;font-family:var(--font-read);font-size:13.5px;line-height:1.45}
-dl.cat dd .sub{display:block;font-size:12px;color:var(--ink-3);font-family:var(--font-chrome);margin-top:1px}
+dl.cat dd .sub{display:block;font-size:11.5px;color:var(--ink-3);font-family:var(--font-chrome);margin-top:2px}
 
 ul.readlist{list-style:none;margin:0;padding:0}
-ul.readlist li{padding:13px 0;border-top:1px solid var(--line)}
+ul.readlist li{padding:12px 0;border-top:1px solid var(--line)}
 ul.readlist li:first-child{padding-top:2px;border-top:0}
-.rtitle{font-family:var(--font-read);font-size:14px;line-height:1.4;margin:0}
+.rtitle{font-family:var(--font-read);font-size:14px;line-height:1.35;margin:0}
 .rtitle i{font-style:italic}
-.rmeta{font-size:11.5px;color:var(--ink-3);margin:2px 0 7px}
-.rnote{font-size:12px;color:var(--ink-2);margin:6px 0 0;line-height:1.5}
+.rrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:5px}
+.rmeta{font-size:11.5px;line-height:1.35;color:var(--ink-3);margin:0;min-width:0}
+.rrow .chip{flex:none}
+.rnote{font-size:12px;color:var(--ink-2);margin:8px 0 0;line-height:1.45}
 
 /* footer */
 .foot{border-top:1px solid var(--line);margin-top:16px;padding:24px 0 96px;font-size:13px;color:var(--ink-2)}
 .foot .wrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
 .foot .spacer{flex:1}
 
-.topbar .ttl{font:600 13px var(--font-chrome);color:var(--ink-2)}
-
 @media (max-width:940px){
+  .hero{padding:48px 0 46px}
   .hero-grid{grid-template-columns:1fr;gap:44px}
   .cols{grid-template-columns:1fr;gap:44px}
   .wit-grid,.art-grid{grid-template-columns:1fr}
@@ -120,25 +133,14 @@ ul.readlist li:first-child{padding-top:2px;border-top:0}
 <body>
 <script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
 
-<nav class="topbar">
-  <a href="index.html">&larr; Mockups</a>
-  <span class="ttl">Work overview &middot; landmark tier</span>
-  <div class="mock-switch">
-    <select class="btn" id="scheme" aria-label="Colour scheme">
-      <option value="archive">Archive</option>
-      <option value="herbarium">Herbarium</option>
-      <option value="oxford">Oxford</option>
-    </select>
-    <button class="btn" id="mode">&#9790; Dark</button>
-  </div>
-</nav>
-
 <!-- ================= HERO ================= -->
 <header class="hero">
   <div class="wrap hero-grid">
     <figure class="thumb-stack" style="margin-block:0">
-      <img class="t-main" src="assets/thumbs/EB01.jpg" alt="Facsimile cover of the Ebers Papyrus (EB01)">
-      <img class="t-sub" src="assets/thumbs/EB02.jpg" alt="Joachim's 1890 German translation (EB02)">
+      <span class="t-imgs">
+        <img class="t-main" src="assets/thumbs/EB01.jpg" alt="Facsimile cover of the Ebers Papyrus (EB01)">
+        <img class="t-sub" src="assets/thumbs/EB02.jpg" alt="Joachim's 1890 German translation (EB02)">
+      </span>
       <figcaption class="thumb-cap">EB01 &middot; the papyrus roll &nbsp;&bull;&nbsp; EB02 &middot; Joachim&rsquo;s translation, 1890</figcaption>
     </figure>
     <div class="hero-info">
@@ -168,11 +170,11 @@ ul.readlist li:first-child{padding-top:2px;border-top:0}
       <a href="reader-scroll.html">Open the scroll reader &rarr;</a>
     </div>
     <div class="roll-strip">
-      <a href="reader-scroll.html" title="Column XLIV"><img src="assets/pages/EB01-col-0044.jpg" alt="Ebers Papyrus, column 44"></a>
-      <a href="reader-scroll.html" title="Column XLV"><img src="assets/pages/EB01-col-0045.jpg" alt="Ebers Papyrus, column 45"></a>
-      <a href="reader-scroll.html" title="Column XLVI"><img src="assets/pages/EB01-col-0046.jpg" alt="Ebers Papyrus, column 46"></a>
-      <a href="reader-scroll.html" title="Column XLVII"><img src="assets/pages/EB01-col-0047.jpg" alt="Ebers Papyrus, column 47"></a>
-      <a href="reader-scroll.html" title="Column XLVIII"><img src="assets/pages/EB01-col-0048.jpg" alt="Ebers Papyrus, column 48"></a>
+      <a href="reader-scroll.html" title="Column XLIV"><img src="assets/pages/EB01-col-0044.jpg" alt="Ebers Papyrus, column 44"><span class="rno">XLIV</span></a>
+      <a href="reader-scroll.html" title="Column XLV"><img src="assets/pages/EB01-col-0045.jpg" alt="Ebers Papyrus, column 45"><span class="rno">XLV</span></a>
+      <a href="reader-scroll.html" title="Column XLVI"><img src="assets/pages/EB01-col-0046.jpg" alt="Ebers Papyrus, column 46"><span class="rno">XLVI</span></a>
+      <a href="reader-scroll.html" title="Column XLVII"><img src="assets/pages/EB01-col-0047.jpg" alt="Ebers Papyrus, column 47"><span class="rno">XLVII</span></a>
+      <a href="reader-scroll.html" title="Column XLVIII"><img src="assets/pages/EB01-col-0048.jpg" alt="Ebers Papyrus, column 48"><span class="rno">XLVIII</span></a>
     </div>
     <p class="roll-cap">Columns XLIV&ndash;XLVIII &middot; the roll reads right to left, edge to edge</p>
   </div>
@@ -267,24 +269,32 @@ ul.readlist li:first-child{padding-top:2px;border-top:0}
       <ul class="readlist">
         <li>
           <p class="rtitle"><span class="ent author">Joachim, H.</span> &mdash; <i lang="de">Papyros Ebers: Das &auml;lteste Buch &uuml;ber Heilkunde</i></p>
-          <p class="rmeta">Berlin: Reimer, 1890 &middot; 236 pp</p>
-          <a class="chip accent" href="reader-codex.html">In library &middot; EB02</a>
+          <div class="rrow">
+            <span class="rmeta">Berlin: Reimer, 1890 &middot; 236 pp</span>
+            <a class="chip accent" href="reader-codex.html">In library &middot; EB02</a>
+          </div>
         </li>
         <li>
           <p class="rtitle">Grapow, von Deines &amp; Westendorf &mdash; <i lang="de">Grundriss der Medizin der alten &Auml;gypter</i></p>
-          <p class="rmeta">9 vols &middot; Berlin, 1954&ndash;1973 &middot; the standard reference lexicon</p>
-          <span class="chip">External &#8599;</span>
+          <div class="rrow">
+            <span class="rmeta">9 vols &middot; Berlin, 1954&ndash;1973 &middot; the standard reference lexicon</span>
+            <span class="chip">External &#8599;</span>
+          </div>
         </li>
         <li>
           <p class="rtitle"><span class="ent author">Li Shizhen</span> &mdash; <i>Ben Cao Gang Mu</i> <span lang="zh">本草綱目</span></p>
-          <p class="rmeta">Hongbaozhai ed., 1888 &middot; another landmark pharmacopoeia</p>
-          <a class="chip accent" href="library.html">In library &middot; E54</a>
+          <div class="rrow">
+            <span class="rmeta">Hongbaozhai ed., 1888 &middot; another landmark pharmacopoeia</span>
+            <a class="chip accent" href="library.html">In library &middot; E54</a>
+          </div>
           <p class="rnote">Compare its mineral and animal drugs with the Ebers materia medica.</p>
         </li>
         <li>
           <p class="rtitle">Westendorf, W. &mdash; <i lang="de">Handbuch der alt&auml;gyptischen Medizin</i></p>
-          <p class="rmeta">Leiden: Brill, 1999</p>
-          <span class="chip">External &#8599;</span>
+          <div class="rrow">
+            <span class="rmeta">Leiden: Brill, 1999</span>
+            <span class="chip">External &#8599;</span>
+          </div>
         </li>
       </ul>
     </div>
@@ -300,17 +310,13 @@ ul.readlist li:first-child{padding-top:2px;border-top:0}
   </div>
 </footer>
 
-<div class="mock-note"><button class="mn-x" aria-label="Dismiss">&times;</button><strong>Mockup:</strong> landmark-tier work overview (Ebers Papyrus). Interactive: scheme/mode switcher, &ldquo;Read more&rdquo; collapsible, roll strip &amp; witness cards link to the reader mockups. &ldquo;Compare witnesses&rdquo; and article links are illustrative. This Ebers page stands in for all landmark-tier overviews (Ben Cao Gang Mu links land here too).</div>
-
-<script>
-const sel=document.getElementById('scheme');
-sel.value=document.documentElement.dataset.scheme;
-sel.addEventListener('change',()=>{document.documentElement.dataset.scheme=sel.value;localStorage.setItem('whlnext-scheme',sel.value);});
-const modeBtn=document.getElementById('mode');
-function paintMode(){modeBtn.innerHTML=document.documentElement.dataset.mode==='dark'?'&#9788; Light':'&#9790; Dark';}
-modeBtn.addEventListener('click',()=>{const m=document.documentElement.dataset.mode==='dark'?'light':'dark';document.documentElement.dataset.mode=m;localStorage.setItem('whlnext-mode',m);paintMode();});
-paintMode();
-document.querySelector('.mn-x').addEventListener('click',e=>e.target.closest('.mock-note').remove());
+<script type="module">
+import {mountChrome} from './lib/whl-chrome.js';
+mountChrome({
+  title: 'Work overview · landmark tier',
+  adv: false,
+  note: '<strong>Mockup:</strong> landmark-tier work overview (Ebers Papyrus). Interactive: scheme/mode switcher, “Read more” collapsible, roll strip &amp; witness cards link to the reader mockups. “Compare witnesses” and article links are illustrative. This Ebers page stands in for all landmark-tier overviews (Ben Cao Gang Mu links land here too).'
+});
 </script>
 </body>
 </html>
