@@ -1,10 +1,19 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Box } from '@mantine/core'
 import type { Reader } from '@/whl/useReader'
-import type { Book } from '@/whl/books'
-import { viewerPagesFor } from '@/whl/books'
+import { viewerPagesFor, type Book } from '@/whl/books'
 import type { ViewerPage } from '@/whl/vanilla'
 
 const H = 76 // drawn world height in px; width follows the world's aspect
+
+type Cell = ViewerPage & {
+  left: number
+  width: number
+  imgLeft: number
+  imgTop: number
+  imgW: number
+  imgH: number
+}
 
 /** Floats over the facsimile rather than sitting in the sidebar. The world is
  *  drawn at a fixed height, so a long roll simply runs wider than the strip and
@@ -13,7 +22,7 @@ export function Minimap({ book, reader, opening }: { book: Book; reader: Reader;
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const worldRef = useRef<HTMLDivElement | null>(null)
   const dragRef = useRef<number | null>(null)
-  const [geom, setGeom] = useState<{ minX: number; k: number; w: number; cells: (ViewerPage & { left: number; width: number; imgLeft: number; imgTop: number; imgW: number; imgH: number })[] } | null>(null)
+  const [geom, setGeom] = useState<{ minX: number; k: number; w: number; cells: Cell[] } | null>(null)
 
   const pages = useMemo(() => viewerPagesFor(book, opening), [book, opening])
 
@@ -26,7 +35,7 @@ export function Minimap({ book, reader, opening }: { book: Book; reader: Reader;
     const maxX = Math.max(...rects.map((r) => r!.x + r!.w))
     const world = maxX - minX || 1
     const k = H
-    const cells = pages.map((p, i) => {
+    const cells: Cell[] = pages.map((p, i) => {
       const r = rects[i]!
       const c = p.clip ?? {}
       const cl = c.left ?? 0
@@ -78,20 +87,36 @@ export function Minimap({ book, reader, opening }: { book: Book; reader: Reader;
 
   if (!geom) return null
   const box = vp
-    ? { left: (vp.x - geom.minX) * geom.k, top: vp.y * geom.k, width: Math.max(3, vp.w * geom.k), height: Math.max(3, vp.h * geom.k) }
+    ? {
+        left: (vp.x - geom.minX) * geom.k,
+        top: vp.y * geom.k,
+        width: Math.max(3, vp.w * geom.k),
+        height: Math.max(3, vp.h * geom.k),
+      }
     : null
 
   return (
-    <div className="panel panel-floating pointer-events-auto absolute bottom-3 left-1/2 z-30 max-w-[min(46rem,calc(100%-2rem))] -translate-x-1/2 overflow-hidden shadow-lg">
-      <div
-        ref={scrollRef}
-        className="overflow-x-auto overflow-y-hidden overscroll-x-contain"
-        style={{ maxWidth: 'min(46rem, 100%)' }}
-      >
-        <div
+    <Box
+      className="panel panel-floating"
+      pos="absolute"
+      bottom={12}
+      left="50%"
+      style={{
+        transform: 'translateX(-50%)',
+        zIndex: 30,
+        overflow: 'hidden',
+        pointerEvents: 'auto',
+        maxWidth: 'min(46rem, calc(100% - 2rem))',
+        boxShadow: 'var(--mantine-shadow-lg)',
+      }}
+    >
+      <Box ref={scrollRef} style={{ overflowX: 'auto', overflowY: 'hidden', overscrollBehaviorX: 'contain', maxWidth: 'min(46rem, 100%)' }}>
+        <Box
           ref={worldRef}
-          className="relative cursor-crosshair touch-none"
-          style={{ width: geom.w, height: H }}
+          pos="relative"
+          w={geom.w}
+          h={H}
+          style={{ cursor: 'crosshair', touchAction: 'none' }}
           onPointerDown={(e) => {
             if (e.button !== 0) return
             dragRef.current = e.pointerId
@@ -110,24 +135,36 @@ export function Minimap({ book, reader, opening }: { book: Book; reader: Reader;
           }}
         >
           {geom.cells.map((c) => (
-            <div key={c.key} className="absolute top-0 overflow-hidden" style={{ left: c.left, width: c.width, height: H }}>
+            <Box key={c.key} pos="absolute" top={0} h={H} style={{ left: c.left, width: c.width, overflow: 'hidden' }}>
               <img
                 src={c.url}
                 alt=""
                 draggable={false}
-                className="absolute max-w-none select-none"
-                style={{ left: c.imgLeft, top: c.imgTop, width: c.imgW, height: c.imgH }}
+                style={{
+                  position: 'absolute',
+                  maxWidth: 'none',
+                  userSelect: 'none',
+                  left: c.imgLeft,
+                  top: c.imgTop,
+                  width: c.imgW,
+                  height: c.imgH,
+                }}
               />
-            </div>
+            </Box>
           ))}
           {box && (
-            <div
-              className="pointer-events-none absolute border-2 border-primary bg-primary/20"
-              style={box}
+            <Box
+              pos="absolute"
+              style={{
+                ...box,
+                pointerEvents: 'none',
+                border: '2px solid var(--accent)',
+                background: 'var(--tint-select)',
+              }}
             />
           )}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   )
 }

@@ -27,8 +27,8 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: app/package-lock.json
-      # explorer.html is a React/Tailwind/shadcn app in app/; the build emits it
-      # into mockups/ beside the static pages, which is what Pages uploads.
+      # explorer.html is a React/Mantine app in app/; the build emits it into
+      # mockups/ beside the static pages, which is what Pages uploads.
       - run: npm ci
         working-directory: app
       - run: npm run build

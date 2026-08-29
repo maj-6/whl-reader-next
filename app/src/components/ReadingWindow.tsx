@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, GripHorizontal } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { ActionIcon, Box, Group, ScrollArea, Text } from '@mantine/core'
+import { IconChevronLeft, IconChevronRight, IconGripHorizontal } from '@tabler/icons-react'
 import { TextPane } from './TextPane'
 import type { Book } from '@/whl/books'
 import type { Reader } from '@/whl/useReader'
@@ -21,7 +20,6 @@ export function ReadingWindow({ book, reader, settings, patch, entryLabel }: Pro
   const { curPage, curRegion, layerTick } = reader
   const regions = reader.regionsOf(curPage)
   const noData = !reader.hasData(curPage)
-  const ref = useRef<HTMLDivElement | null>(null)
   const drag = useRef<{ mode: 'move' | 'size'; dx: number; dy: number; id: number } | null>(null)
   const [geo, setGeo] = useState(settings.win)
 
@@ -63,11 +61,7 @@ export function ReadingWindow({ book, reader, settings, patch, entryLabel }: Pro
     const d = drag.current
     if (!d || d.id !== e.pointerId) return
     setGeo((g) =>
-      clampGeo(
-        d.mode === 'move'
-          ? { ...g, x: e.clientX - d.dx, y: e.clientY - d.dy }
-          : { ...g, w: e.clientX + d.dx, h: e.clientY + d.dy },
-      ),
+      clampGeo(d.mode === 'move' ? { ...g, x: e.clientX - d.dx, y: e.clientY - d.dy } : { ...g, w: e.clientX + d.dx, h: e.clientY + d.dy }),
     )
   }
   const end = () => {
@@ -77,27 +71,46 @@ export function ReadingWindow({ book, reader, settings, patch, entryLabel }: Pro
   }
 
   return (
-    <div
-      ref={ref}
-      className="panel panel-floating fixed z-40 flex flex-col overflow-hidden shadow-lg"
-      style={{ left: geo.x, top: geo.y, width: geo.w, height: geo.h }}
+    <Box
+      className="panel panel-floating"
+      pos="fixed"
+      display="flex"
       aria-label="Reading window"
+      style={{
+        left: geo.x,
+        top: geo.y,
+        width: geo.w,
+        height: geo.h,
+        zIndex: 40,
+        flexDirection: 'column',
+        overflow: 'hidden',
+        boxShadow: 'var(--mantine-shadow-lg)',
+      }}
     >
-      <div
-        className="flex cursor-grab touch-none select-none items-baseline gap-2 border-b border-border px-3 py-2 active:cursor-grabbing"
+      <Group
+        gap={8}
+        px="sm"
+        py={7}
+        wrap="nowrap"
+        align="baseline"
+        style={{ borderBottom: '1px solid var(--panel-border)', cursor: 'grab', touchAction: 'none', userSelect: 'none' }}
         onPointerDown={start('move')}
         onPointerMove={move}
         onPointerUp={end}
         onPointerCancel={end}
       >
-        <GripHorizontal className="size-3.5 shrink-0 self-center text-muted-foreground" />
-        <span className="shrink-0 text-[12.5px] font-semibold">{book.pageLabel(curPage)}</span>
-        <span className="truncate text-[11.5px] text-muted-foreground">{entryLabel && `· ${entryLabel}`}</span>
-      </div>
+        <IconGripHorizontal size={14} style={{ flex: 'none', alignSelf: 'center', color: 'var(--mantine-color-dimmed)' }} />
+        <Text size="12.5px" fw={600} flex="none">
+          {book.pageLabel(curPage)}
+        </Text>
+        <Text size="11.5px" c="dimmed" truncate>
+          {entryLabel && `· ${entryLabel}`}
+        </Text>
+      </Group>
 
-      <ScrollArea className="min-h-0 flex-1">
+      <ScrollArea flex={1} mih={0} type="auto">
         {noData ? (
-          <p className="p-3 text-[13px] text-muted-foreground">—</p>
+          <Text p="sm" size="13px" c="dimmed">—</Text>
         ) : (
           <TextPane
             domId="whlTextWin"
@@ -115,41 +128,51 @@ export function ReadingWindow({ book, reader, settings, patch, entryLabel }: Pro
         )}
       </ScrollArea>
 
-      <div className="flex items-center gap-2 border-t border-border px-2 py-1.5">
-        <Button
-          variant="outline"
-          size="icon"
-          className="size-6"
+      <Group gap="xs" px={8} py={6} style={{ borderTop: '1px solid var(--panel-border)' }}>
+        <ActionIcon
+          size="sm"
+          variant="default"
           disabled={!regions.length || curRegion <= 0}
           onClick={() => reader.step(-1)}
           aria-label="Previous"
         >
-          <ChevronLeft className="size-3.5" />
-        </Button>
-        <span className="min-w-14 text-center text-[11px] tabular-nums text-muted-foreground">
+          <IconChevronLeft size={14} />
+        </ActionIcon>
+        <Text miw={56} ta="center" size="11px" c="dimmed">
           {regions.length ? `${curRegion + 1} / ${regions.length}` : ''}
-        </span>
-        <Button
-          variant="outline"
-          size="icon"
-          className="size-6"
+        </Text>
+        <ActionIcon
+          size="sm"
+          variant="default"
           disabled={!regions.length || curRegion >= regions.length - 1}
           onClick={() => reader.step(1)}
           aria-label="Next"
         >
-          <ChevronRight className="size-3.5" />
-        </Button>
-      </div>
+          <IconChevronRight size={14} />
+        </ActionIcon>
+      </Group>
 
-      <div
-        className="absolute bottom-0 right-0 size-4 cursor-nwse-resize touch-none"
+      <Box
+        pos="absolute"
+        bottom={0}
+        right={0}
+        w={16}
+        h={16}
+        style={{ cursor: 'nwse-resize', touchAction: 'none' }}
         onPointerDown={start('size')}
         onPointerMove={move}
         onPointerUp={end}
         onPointerCancel={end}
       >
-        <span className="absolute bottom-1 right-1 size-1.5 border-b-2 border-r-2 border-muted-foreground/60" />
-      </div>
-    </div>
+        <Box
+          pos="absolute"
+          bottom={4}
+          right={4}
+          w={6}
+          h={6}
+          style={{ borderRight: '2px solid var(--mantine-color-dimmed)', borderBottom: '2px solid var(--mantine-color-dimmed)' }}
+        />
+      </Box>
+    </Box>
   )
 }

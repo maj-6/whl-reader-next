@@ -1,14 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { GripHorizontal, RotateCcw, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { cn } from '@/lib/utils'
+import {
+  ActionIcon,
+  Box,
+  Divider,
+  Group,
+  ScrollArea,
+  SegmentedControl,
+  Select,
+  Slider,
+  Switch,
+  Tabs,
+  Text,
+  UnstyledButton,
+} from '@mantine/core'
+import { IconGripHorizontal, IconRotate, IconX } from '@tabler/icons-react'
 import {
   CORNERS,
   ELEMENT_STYLES,
@@ -16,7 +21,7 @@ import {
   SCHEMES,
   STAGES,
   UI_FONTS,
-  themeTokens,
+  pageVars,
   type Corner,
   type ElementStyle,
   type ReadFont,
@@ -34,38 +39,18 @@ interface Props {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[5.5rem_1fr] items-center gap-3 py-1.5">
-      <Label className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{label}</Label>
-      <div className="flex min-w-0 items-center gap-2">{children}</div>
-    </div>
+    <Group gap="sm" wrap="nowrap" align="center" py={5}>
+      <Text w={62} flex="none" size="10px" fw={600} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.08em' }}>
+        {label}
+      </Text>
+      <Group gap={8} wrap="nowrap" flex={1} miw={0}>
+        {children}
+      </Group>
+    </Group>
   )
 }
 
-function Chips<T extends string>({
-  items,
-  value,
-  onChange,
-}: {
-  items: readonly { id: T; label: string }[]
-  value: T
-  onChange(v: T): void
-}) {
-  return (
-    <div className="flex flex-wrap gap-1">
-      {items.map((it) => (
-        <Button
-          key={it.id}
-          size="sm"
-          variant={value === it.id ? 'secondary' : 'ghost'}
-          className={cn('h-6 px-2 text-[11px] font-normal', value === it.id && 'font-medium ring-1 ring-ring')}
-          onClick={() => onChange(it.id)}
-        >
-          {it.label}
-        </Button>
-      ))}
-    </div>
-  )
-}
+const seg = (items: readonly { id: string; label: string }[]) => items.map((i) => ({ value: i.id, label: i.label }))
 
 export function SettingsPanel({ settings, patch, reset, onClose }: Props) {
   const ref = useRef<HTMLDivElement | null>(null)
@@ -77,7 +62,7 @@ export function SettingsPanel({ settings, patch, reset, onClose }: Props) {
   useEffect(() => {
     if (pos.x >= 0 || pos.y >= 0) return
     if (window.innerWidth < 400) return
-    const w = ref.current?.offsetWidth ?? 336
+    const w = ref.current?.offsetWidth ?? 340
     setPos({ x: Math.max(8, window.innerWidth - w - 12), y: 64 })
   }, [pos.x, pos.y])
 
@@ -91,7 +76,7 @@ export function SettingsPanel({ settings, patch, reset, onClose }: Props) {
   const onMove = (e: React.PointerEvent) => {
     const d = drag.current
     if (!d || d.id !== e.pointerId) return
-    const w = ref.current?.offsetWidth ?? 336
+    const w = ref.current?.offsetWidth ?? 340
     setPos({
       x: Math.max(4, Math.min(window.innerWidth - w - 4, e.clientX - d.dx)),
       y: Math.max(4, Math.min(window.innerHeight - 40, e.clientY - d.dy)),
@@ -105,154 +90,186 @@ export function SettingsPanel({ settings, patch, reset, onClose }: Props) {
 
   const s = settings
   return (
-    <div
+    <Box
       ref={ref}
-      className="panel panel-floating fixed z-[70] w-[21rem] overflow-hidden shadow-lg"
-      style={{ left: pos.x, top: pos.y }}
+      className="panel panel-floating"
+      pos="fixed"
+      w={344}
+      style={{ left: pos.x, top: pos.y, zIndex: 70, overflow: 'hidden', boxShadow: 'var(--mantine-shadow-lg)' }}
       role="dialog"
       aria-label="Settings"
     >
-      <div
-        className="flex cursor-grab touch-none select-none items-center gap-2 border-b border-border px-3 py-2 active:cursor-grabbing"
+      <Group
+        gap={8}
+        px="sm"
+        py={6}
+        wrap="nowrap"
+        style={{ borderBottom: '1px solid var(--panel-border)', cursor: 'grab', touchAction: 'none', userSelect: 'none' }}
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
         onPointerCancel={onUp}
       >
-        <GripHorizontal className="size-3.5 text-muted-foreground" />
-        <span className="flex-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Settings</span>
-        <Button variant="ghost" size="icon" className="size-6" onClick={reset} aria-label="Reset to defaults">
-          <RotateCcw className="size-3.5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="size-6" onClick={onClose} aria-label="Close settings">
-          <X className="size-3.5" />
-        </Button>
-      </div>
+        <IconGripHorizontal size={14} style={{ color: 'var(--mantine-color-dimmed)' }} />
+        <Text flex={1} size="11px" fw={600} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.08em' }}>
+          Settings
+        </Text>
+        <ActionIcon size="sm" variant="subtle" color="gray" onClick={reset} aria-label="Reset to defaults">
+          <IconRotate size={14} />
+        </ActionIcon>
+        <ActionIcon size="sm" variant="subtle" color="gray" onClick={onClose} aria-label="Close settings">
+          <IconX size={14} />
+        </ActionIcon>
+      </Group>
 
       <Tabs defaultValue="colour">
-        <TabsList className="mx-3 mt-2 grid w-[calc(100%-1.5rem)] grid-cols-3">
-          <TabsTrigger value="colour" className="text-[11px]">Colour</TabsTrigger>
-          <TabsTrigger value="elements" className="text-[11px]">Elements</TabsTrigger>
-          <TabsTrigger value="type" className="text-[11px]">Type</TabsTrigger>
-        </TabsList>
+        <Tabs.List grow px="sm" pt={6}>
+          <Tabs.Tab value="colour" fz="11px">Colour</Tabs.Tab>
+          <Tabs.Tab value="elements" fz="11px">Elements</Tabs.Tab>
+          <Tabs.Tab value="type" fz="11px">Type</Tabs.Tab>
+        </Tabs.List>
 
-        <ScrollArea className="max-h-[26rem]">
-          <div className="px-3 pb-3">
-            <TabsContent value="colour" className="mt-2">
-              <div className="grid grid-cols-4 gap-1.5">
+        <ScrollArea.Autosize mah={420} type="auto">
+          <Box px="sm" pb="sm">
+            <Tabs.Panel value="colour" pt={10}>
+              <Box
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}
+              >
                 {SCHEMES.map((sc) => {
-                  const t = themeTokens({ ...s, scheme: sc.id })
+                  const v = pageVars({ ...s, scheme: sc.id })
+                  const on = s.scheme === sc.id
                   return (
-                    <button
+                    <UnstyledButton
                       key={sc.id}
                       onClick={() => patch({ scheme: sc.id })}
-                      className={cn(
-                        'group flex flex-col items-stretch gap-1 rounded-md border p-1 text-left transition',
-                        s.scheme === sc.id ? 'border-ring ring-1 ring-ring' : 'border-border hover:border-input',
-                      )}
-                      aria-pressed={s.scheme === sc.id}
+                      aria-pressed={on}
+                      p={4}
+                      style={{
+                        borderRadius: 'var(--mantine-radius-default)',
+                        border: `1px solid ${on ? 'var(--mantine-primary-color-filled)' : 'var(--panel-border)'}`,
+                        outline: on ? '1px solid var(--mantine-primary-color-filled)' : 'none',
+                      }}
                     >
-                      <span className="flex h-6 overflow-hidden rounded-sm border border-border/60">
-                        <span className="flex-1" style={{ background: t['--background'] }} />
-                        <span className="flex-1" style={{ background: t['--card'] }} />
-                        <span className="w-2" style={{ background: t['--primary'] }} />
-                      </span>
-                      <span className="truncate text-[10px] text-muted-foreground group-hover:text-foreground">{sc.label}</span>
-                    </button>
+                      <Group gap={0} h={24} style={{ borderRadius: 3, overflow: 'hidden', border: '1px solid var(--panel-border)' }} wrap="nowrap">
+                        <Box flex={1} h="100%" style={{ background: v['--bg'] }} />
+                        <Box flex={1} h="100%" style={{ background: v['--bg-raise'] }} />
+                        <Box w={8} h="100%" style={{ background: v['--accent'] }} />
+                      </Group>
+                      <Text size="10px" c="dimmed" mt={3} truncate>
+                        {sc.label}
+                      </Text>
+                    </UnstyledButton>
                   )
                 })}
-              </div>
-              <Separator className="my-3" />
+              </Box>
+              <Divider my="sm" />
               <Row label="Dark">
-                <Switch checked={s.dark} onCheckedChange={(v) => patch({ dark: v })} />
+                <Switch size="sm" checked={s.dark} onChange={(e) => patch({ dark: e.currentTarget.checked })} />
               </Row>
               <Row label="Stage">
-                <Chips items={STAGES} value={s.stage} onChange={(v) => patch({ stage: v as Stage })} />
+                <SegmentedControl
+                  size="xs"
+                  fullWidth
+                  data={seg(STAGES)}
+                  value={s.stage}
+                  onChange={(v) => patch({ stage: v as Stage })}
+                />
               </Row>
-            </TabsContent>
+            </Tabs.Panel>
 
-            <TabsContent value="elements" className="mt-2">
+            <Tabs.Panel value="elements" pt={10}>
               <Row label="Style">
-                <Chips items={ELEMENT_STYLES} value={s.element} onChange={(v) => patch({ element: v as ElementStyle })} />
+                <SegmentedControl
+                  size="xs"
+                  orientation="vertical"
+                  fullWidth
+                  data={seg(ELEMENT_STYLES)}
+                  value={s.element}
+                  onChange={(v) => patch({ element: v as ElementStyle })}
+                />
               </Row>
               <Row label="Corners">
-                <Chips items={CORNERS} value={s.corner} onChange={(v) => patch({ corner: v as Corner })} />
+                <SegmentedControl
+                  size="xs"
+                  fullWidth
+                  data={seg(CORNERS)}
+                  value={s.corner}
+                  onChange={(v) => patch({ corner: v as Corner })}
+                />
               </Row>
-              <Separator className="my-2" />
+              <Divider my="xs" />
               <Row label="Opacity">
-                <Slider min={30} max={100} step={1} value={[s.panelAlpha]} onValueChange={([v]) => patch({ panelAlpha: v })} />
-                <span className="w-9 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">{s.panelAlpha}%</span>
+                <Slider flex={1} min={30} max={100} step={1} value={s.panelAlpha} onChange={(v) => patch({ panelAlpha: v })} label={null} />
+                <Text w={36} ta="right" size="11px" c="dimmed">{s.panelAlpha}%</Text>
               </Row>
               <Row label="Blur">
-                <Slider min={0} max={28} step={1} value={[s.panelBlur]} onValueChange={([v]) => patch({ panelBlur: v })} />
-                <span className="w-9 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">{s.panelBlur}px</span>
+                <Slider flex={1} min={0} max={28} step={1} value={s.panelBlur} onChange={(v) => patch({ panelBlur: v })} label={null} />
+                <Text w={36} ta="right" size="11px" c="dimmed">{s.panelBlur}px</Text>
               </Row>
-              <Separator className="my-2" />
+              <Divider my="xs" />
               <Row label="Minimap">
-                <Switch checked={s.minimap} onCheckedChange={(v) => patch({ minimap: v })} />
+                <Switch size="sm" checked={s.minimap} onChange={(e) => patch({ minimap: e.currentTarget.checked })} />
               </Row>
-            </TabsContent>
+            </Tabs.Panel>
 
-            <TabsContent value="type" className="mt-2">
+            <Tabs.Panel value="type" pt={10}>
               <Row label="Interface">
-                <Select value={s.uiFont} onValueChange={(v) => patch({ uiFont: v as UiFont })}>
-                  <SelectTrigger size="sm" className="h-7 w-full text-[11.5px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {UI_FONTS.map((f) => (
-                      <SelectItem key={f.id} value={f.id} className="text-[12px]" style={{ fontFamily: f.v }}>
-                        {f.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Select
+                  size="xs"
+                  flex={1}
+                  data={UI_FONTS.map((f) => ({ value: f.id, label: f.label }))}
+                  value={s.uiFont}
+                  onChange={(v) => v && patch({ uiFont: v as UiFont })}
+                  allowDeselect={false}
+                  comboboxProps={{ withinPortal: true }}
+                />
               </Row>
               <Row label="Reading">
-                <Select value={s.readFont} onValueChange={(v) => patch({ readFont: v as ReadFont })}>
-                  <SelectTrigger size="sm" className="h-7 w-full text-[11.5px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {READ_FONTS.map((f) => (
-                      <SelectItem key={f.id} value={f.id} className="text-[12px]" style={{ fontFamily: f.v }}>
-                        {f.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Select
+                  size="xs"
+                  flex={1}
+                  data={READ_FONTS.map((f) => ({ value: f.id, label: f.label }))}
+                  value={s.readFont}
+                  onChange={(v) => v && patch({ readFont: v as ReadFont })}
+                  allowDeselect={false}
+                  comboboxProps={{ withinPortal: true }}
+                />
               </Row>
               <Row label="Size">
-                <Slider min={11} max={22} step={0.5} value={[s.readSize]} onValueChange={([v]) => patch({ readSize: v })} />
-                <span className="w-9 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">{s.readSize}</span>
+                <Slider flex={1} min={11} max={22} step={0.5} value={s.readSize} onChange={(v) => patch({ readSize: v })} label={null} />
+                <Text w={36} ta="right" size="11px" c="dimmed">{s.readSize}</Text>
               </Row>
               <Row label="Leading">
-                <Slider min={1.2} max={2.2} step={0.02} value={[s.readLeading]} onValueChange={([v]) => patch({ readLeading: v })} />
-                <span className="w-9 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">{s.readLeading.toFixed(2)}</span>
+                <Slider flex={1} min={1.2} max={2.2} step={0.02} value={s.readLeading} onChange={(v) => patch({ readLeading: v })} label={null} />
+                <Text w={36} ta="right" size="11px" c="dimmed">{s.readLeading.toFixed(2)}</Text>
               </Row>
-              <Separator className="my-2" />
+              <Divider my="xs" />
               <Row label="Columns">
-                <Switch checked={s.pairAuto} onCheckedChange={(v) => patch({ pairAuto: v })} />
-                <span className="shrink-0 text-[11px] text-muted-foreground">Auto</span>
+                <Switch
+                  size="sm"
+                  checked={s.pairAuto}
+                  onChange={(e) => patch({ pairAuto: e.currentTarget.checked })}
+                  label={<Text size="11px" c="dimmed">Auto</Text>}
+                />
               </Row>
               {!s.pairAuto && (
                 <Row label="Divide">
                   <Slider
+                    flex={1}
                     min={25}
                     max={75}
                     step={1}
-                    value={[Math.round(s.pairFrac * 100)]}
-                    onValueChange={([v]) => patch({ pairFrac: v / 100 })}
+                    value={Math.round(s.pairFrac * 100)}
+                    onChange={(v) => patch({ pairFrac: v / 100 })}
+                    label={null}
                   />
-                  <span className="w-9 shrink-0 text-right text-[11px] tabular-nums text-muted-foreground">
-                    {Math.round(s.pairFrac * 100)}%
-                  </span>
+                  <Text w={36} ta="right" size="11px" c="dimmed">{Math.round(s.pairFrac * 100)}%</Text>
                 </Row>
               )}
-            </TabsContent>
-          </div>
-        </ScrollArea>
+            </Tabs.Panel>
+          </Box>
+        </ScrollArea.Autosize>
       </Tabs>
-    </div>
+    </Box>
   )
 }

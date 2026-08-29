@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { cn } from '@/lib/utils'
+import { Box, Group, Text } from '@mantine/core'
 import type { Book } from '@/whl/books'
 import type { PageKey } from '@/whl/vanilla'
 
@@ -32,18 +32,22 @@ export function PositionIndicator({
   const pct = (n: number) => ((n - 0.5) / total) * 100
 
   return (
-    <div className="px-3 pb-2.5 pt-2">
-      <div className="mb-1.5 flex items-baseline justify-between gap-2">
-        <span className="truncate text-[11.5px] font-medium">{book.span.label(page)}</span>
-        <span className="shrink-0 text-[10.5px] tabular-nums text-muted-foreground">
+    <Box px="sm" pt={8} pb={10}>
+      <Group justify="space-between" align="baseline" gap="xs" mb={6} wrap="nowrap">
+        <Text size="11.5px" fw={500} truncate>
+          {book.span.label(page)}
+        </Text>
+        <Text size="10.5px" c="dimmed" flex="none">
           {current ?? '—'} / {total} {unit}s
-        </span>
-      </div>
+        </Text>
+      </Group>
 
-      <div
-        className="relative h-3 w-full cursor-pointer rounded-full bg-muted"
+      <Box
+        h={12}
+        pos="relative"
         role="group"
         aria-label={`Position in ${total} ${unit}s`}
+        style={{ background: 'var(--muted)', borderRadius: 999, cursor: 'pointer' }}
         onClick={(e) => {
           const r = e.currentTarget.getBoundingClientRect()
           const n = ((e.clientX - r.left) / r.width) * total
@@ -53,34 +57,57 @@ export function PositionIndicator({
         }}
       >
         {/* the stretch this edition carries */}
-        <div
-          className="absolute inset-y-0 rounded-full bg-primary/25"
-          style={{ left: `${((lo - 1) / total) * 100}%`, width: `${Math.max(1.2, ((hi - lo + 1) / total) * 100)}%` }}
+        <Box
+          pos="absolute"
+          top={0}
+          bottom={0}
+          style={{
+            left: `${((lo - 1) / total) * 100}%`,
+            width: `${Math.max(1.2, ((hi - lo + 1) / total) * 100)}%`,
+            background: 'color-mix(in oklab, var(--accent) 30%, transparent)',
+            borderRadius: 999,
+          }}
         />
         {/* every held leaf */}
-        {held.map((h) => (
-          <span
-            key={h.key}
-            className={cn(
-              'absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full',
-              h.key === page ? 'bg-transparent' : 'bg-primary/60',
-            )}
-            style={{ left: `${pct(h.n)}%` }}
-          />
-        ))}
+        {held.map((h) =>
+          h.key === page ? null : (
+            <Box
+              key={h.key}
+              pos="absolute"
+              w={6}
+              h={6}
+              style={{
+                left: `${pct(h.n)}%`,
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                borderRadius: 999,
+                background: 'color-mix(in oklab, var(--accent) 65%, transparent)',
+              }}
+            />
+          ),
+        )}
         {/* the leaf on view */}
         {current != null && (
-          <span
-            className="absolute top-1/2 h-4 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary ring-2 ring-background"
-            style={{ left: `${pct(current)}%` }}
+          <Box
+            pos="absolute"
+            w={4}
+            h={16}
+            style={{
+              left: `${pct(current)}%`,
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              borderRadius: 999,
+              background: 'var(--accent)',
+              boxShadow: '0 0 0 2px var(--panel-solid-bg)',
+            }}
           />
         )}
-      </div>
+      </Box>
 
-      <div className="mt-1 flex justify-between text-[10px] tabular-nums text-muted-foreground">
-        <span>1</span>
-        <span>{total}</span>
-      </div>
-    </div>
+      <Group justify="space-between" mt={3}>
+        <Text size="10px" c="dimmed">1</Text>
+        <Text size="10px" c="dimmed">{total}</Text>
+      </Group>
+    </Box>
   )
 }

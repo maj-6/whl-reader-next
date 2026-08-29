@@ -1,0 +1,183 @@
+/* Page-level styling that sits alongside Mantine: the panel surface registers,
+   the scrollbar treatment, the facsimile stage, and the handful of marks the
+   vanilla whl-text module emits. All of it reads the generated tokens written
+   onto <html> by applyPageVars(). */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Scrollbars take their colour from the surface they sit on: the track is
+   transparent so the panel shows through, the thumb is the theme's border ink.
+   -------------------------------------------------------------------------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--panel-border) 90%, transparent) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--panel-border) 90%, transparent);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--input);
+  background-clip: padding-box;
+}
+/* Mantine's own ScrollArea thumb follows the same ink. */
+.mantine-ScrollArea-thumb {
+  background-color: color-mix(in oklab, var(--panel-border) 90%, transparent) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Panel surfaces. `.panel` is the shared surface; the element register on
+   <html data-element> decides border and elevation; `.panel-floating` opts a
+   panel into translucency, `.panel-solid` keeps it opaque and in flow.
+   -------------------------------------------------------------------------- */
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+}
+.panel-solid {
+  background: var(--panel-solid-bg);
+}
+.panel-floating {
+  background: color-mix(in oklab, var(--panel-bg) calc(min(100, var(--panel-alpha)) * 1%), transparent);
+  backdrop-filter: blur(var(--panel-blur));
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  border-radius: var(--radius);
+}
+
+html[data-element='bordered'] .panel {
+  border-width: 1px;
+  box-shadow: none;
+}
+html[data-element='shaded'] .panel {
+  border-color: color-mix(in oklab, var(--panel-border) 55%, transparent);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1), 0 6px 20px rgb(0 0 0 / 0.08);
+}
+html[data-element='flat'] .panel {
+  border-color: transparent;
+  box-shadow: none;
+}
+html[data-element='outlined'] .panel {
+  border-width: 2px;
+  border-color: color-mix(in oklab, var(--mantine-color-text) 30%, transparent);
+  box-shadow: none;
+}
+html[data-element='inset'] .panel {
+  border-color: transparent;
+  box-shadow: inset 0 0 0 1px var(--panel-border), inset 0 2px 8px rgb(0 0 0 / 0.08);
+}
+html[data-element='ruled'] .panel {
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-top-width: 2px;
+  border-top-color: var(--mantine-color-text);
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Marks emitted by the vanilla whl-text module. These are the only rules
+   carried over from assets/tokens.css; they now read the generated tokens.
+   -------------------------------------------------------------------------- */
+.ent {
+  text-decoration: underline dotted 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.ent.author { color: var(--ent-author); text-decoration-color: var(--ent-author); }
+.ent.plant { color: var(--ent-plant); text-decoration-color: var(--ent-plant); }
+.ent.cite { color: var(--ent-cite); text-decoration-color: var(--ent-cite); }
+.ent.substance { color: var(--ent-substance); text-decoration-color: var(--ent-substance); }
+.rub { color: var(--rubric); }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: var(--muted);
+  color: var(--ink-3);
+  border: 1px solid var(--panel-border);
+}
+.skel {
+  background: linear-gradient(100deg, var(--muted) 40%, var(--panel-bg) 50%, var(--muted) 60%);
+  background-size: 200% 100%;
+  animation: skel 1.2s infinite linear;
+  border-radius: var(--radius);
+}
+@keyframes skel {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Reading panes. whl-text stamps `.whl-text` on the host element itself, so
+   these are same-element selectors; id selectors keep them ahead of the
+   stylesheet whl-text injects into <head> at runtime. */
+#whlTextMain .tx,
+#whlTextMain .xl,
+#whlTextWin .tx,
+#whlTextWin .xl {
+  line-height: var(--read-leading);
+}
+#whlTextMain .rg-el {
+  padding: 10px 12px;
+}
+#whlTextMain[data-layout='pair'] .rg-el {
+  grid-template-columns: var(--pair-tx, 1fr) var(--pair-xl, 1fr);
+}
+#whlTextMain[data-layout='pair'] .rg-el > .tx { grid-area: 2 / 1; }
+#whlTextMain[data-layout='pair'] .rg-el > .hl-block { grid-area: 3 / 1; }
+#whlTextMain[data-layout='pair'] .rg-el > .xl { grid-area: 2 / 2 / span 2; }
+#whlTextWin[data-layout='strip'] .strip-line {
+  white-space: normal;
+  overflow: visible;
+  padding: 10px 12px 12px;
+}
+#whlTextWin[data-layout='strip'] .strip-body { white-space: normal; display: block; }
+#whlTextWin[data-layout='strip'] .strip-tx2 { font-style: italic; }
+#whlTextWin[data-layout='strip'] .strip-xl2 { margin-top: 8px; }
+#whlTextWin .rg-case { display: none; }
+
+/* Hieroglyph lines injected per region (data-gated toggle). */
+.hl-block { margin: 6px 0 2px; }
+.hl-line { display: flex; gap: 8px; align-items: baseline; padding: 1.5px 0; }
+.hl-ref { flex: none; font-size: 10px; color: var(--ink-3); }
+.hl-t {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  line-height: 1.5;
+  font-family: 'Noto Sans Egyptian Hieroglyphs', 'Segoe UI Historic', sans-serif;
+}
+
+/* The facsimile stage. whl-viewer stamps its own `.wv-host` on this element and
+   injects that stylesheet at runtime, i.e. after this file — an id selector is
+   what keeps the stage stretched and black. */
+#stage {
+  position: absolute;
+  inset: 0;
+  background: var(--stage);
+  overflow: hidden;
+}
+#stage .openseadragon-canvas {
+  outline: none !important;
+}

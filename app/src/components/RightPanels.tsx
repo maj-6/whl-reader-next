@@ -1,10 +1,6 @@
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { cn } from '@/lib/utils'
+import { ActionIcon, Box, Collapse, Group, ScrollArea, Text, TextInput, UnstyledButton } from '@mantine/core'
+import { IconChevronDown } from '@tabler/icons-react'
 import { TextPane } from './TextPane'
 import type { Book } from '@/whl/books'
 import type { Reader } from '@/whl/useReader'
@@ -25,22 +21,30 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
-    <Collapsible
-      open={open}
-      onOpenChange={setOpen}
-      className={cn('flex min-h-0 flex-col', grow && open ? 'flex-1' : 'flex-none')}
-    >
-      <div className="flex items-center gap-2 px-3 py-2">
-        <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-2 text-left">
-          <span className="truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-            {title}
-          </span>
-          <ChevronDown className={cn('size-3 shrink-0 text-muted-foreground transition-transform', !open && '-rotate-90')} />
-        </CollapsibleTrigger>
+    <Box display="flex" mih={0} style={{ flexDirection: 'column', flex: grow && open ? 1 : 'none' }}>
+      <Group gap="xs" px="sm" py={7} wrap="nowrap">
+        <UnstyledButton onClick={() => setOpen((v) => !v)} flex={1} miw={0} aria-expanded={open}>
+          <Group gap={8} wrap="nowrap">
+            <Text size="10px" fw={600} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.08em' }} truncate>
+              {title}
+            </Text>
+            <IconChevronDown
+              size={12}
+              style={{
+                flex: 'none',
+                color: 'var(--mantine-color-dimmed)',
+                transform: open ? undefined : 'rotate(-90deg)',
+                transition: 'transform 150ms ease',
+              }}
+            />
+          </Group>
+        </UnstyledButton>
         {right}
-      </div>
-      <CollapsibleContent className="flex min-h-0 flex-1 flex-col">{children}</CollapsibleContent>
-    </Collapsible>
+      </Group>
+      <Collapse expanded={open} style={{ display: 'flex', flexDirection: 'column', minHeight: 0, flex: grow && open ? 1 : undefined }}>
+        {children}
+      </Collapse>
+    </Box>
   )
 }
 
@@ -53,45 +57,53 @@ interface Props {
 }
 
 export function RightPanels({ book, reader, settings, patch, hieroAvailable }: Props) {
-  const { curPage, curRegion, layerTick } = reader
+  const { curPage, layerTick } = reader
   const regions = reader.regionsOf(curPage)
   const noData = !reader.hasData(curPage)
   const entities = (reader.store?.get(curPage)?.entities ?? []).filter((e) => e.type !== 'citation')
   const comm = book.comm[curPage] ?? []
   const layout = settings.rightWidth >= 420 ? 'pair' : 'stacked'
+  const entColor = (t: string) => `var(--ent-${t === 'citation' ? 'cite' : t})`
 
   return (
-    <div
-      className="pointer-events-auto absolute bottom-3 right-3 top-3 z-30 flex flex-col gap-2"
-      style={{ width: settings.rightWidth }}
+    <Box
+      pos="absolute"
+      top={12}
+      bottom={12}
+      right={12}
+      w={settings.rightWidth}
+      display="flex"
       aria-label="Information"
+      style={{ flexDirection: 'column', gap: 8, zIndex: 30, pointerEvents: 'auto' }}
     >
       {/* Text */}
-      <div
-        className="panel panel-floating flex min-h-0 flex-col overflow-hidden shadow-lg"
-        style={{ flex: `0 0 ${settings.rightSplit}%` }}
+      <Box
+        className="panel panel-floating"
+        display="flex"
+        mih={0}
+        style={{ flex: `0 0 ${settings.rightSplit}%`, flexDirection: 'column', overflow: 'hidden', boxShadow: 'var(--mantine-shadow-lg)' }}
       >
         <Section
           title="Text"
           grow
           right={
             hieroAvailable ? (
-              <Button
-                variant={settings.hiero ? 'secondary' : 'outline'}
+              <ActionIcon
                 size="sm"
-                className="h-6 px-2 font-[Noto_Sans_Egyptian_Hieroglyphs,'Segoe_UI_Historic',sans-serif] text-[13px] leading-none"
+                variant={settings.hiero ? 'light' : 'default'}
                 aria-pressed={settings.hiero}
                 aria-label="Hieroglyphic lines"
                 onClick={() => patch({ hiero: !settings.hiero })}
+                style={{ fontFamily: "'Noto Sans Egyptian Hieroglyphs','Segoe UI Historic',sans-serif", fontSize: 13 }}
               >
                 &#x1332A;
-              </Button>
+              </ActionIcon>
             ) : undefined
           }
         >
-          <ScrollArea className="min-h-0 flex-1">
+          <ScrollArea flex={1} mih={0} type="auto">
             {noData ? (
-              <p className="p-3 text-[13px] text-muted-foreground">—</p>
+              <Text p="sm" size="13px" c="dimmed">—</Text>
             ) : (
               <TextPane
                 domId="whlTextMain"
@@ -110,62 +122,64 @@ export function RightPanels({ book, reader, settings, patch, hieroAvailable }: P
             )}
           </ScrollArea>
         </Section>
-      </div>
+      </Box>
 
       {/* Commentary / Entities / Ask */}
-      <div className="panel panel-floating flex min-h-0 flex-1 flex-col overflow-hidden shadow-lg">
-        <ScrollArea className="min-h-0 flex-1">
+      <Box
+        className="panel panel-floating"
+        display="flex"
+        mih={0}
+        flex={1}
+        style={{ flexDirection: 'column', overflow: 'hidden', boxShadow: 'var(--mantine-shadow-lg)' }}
+      >
+        <ScrollArea flex={1} mih={0} type="auto">
           <Section title="Commentary">
             {comm.length === 0 ? (
-              <p className="px-3 pb-3 text-[12px] text-muted-foreground">—</p>
+              <Text px="sm" pb="sm" size="12px" c="dimmed">—</Text>
             ) : (
-              <div className="space-y-2 px-3 pb-3">
+              <Box px="sm" pb="sm">
                 {comm.map(([h, t]) => (
-                  <div key={h}>
-                    <div className="text-[11.5px] font-semibold">{h}</div>
-                    <p className="text-[12.5px] leading-relaxed text-muted-foreground" style={{ fontFamily: 'var(--font-read)' }}>
+                  <Box key={h} mb={8}>
+                    <Text size="11.5px" fw={600}>{h}</Text>
+                    <Text size="12.5px" c="dimmed" ff="var(--font-read)" style={{ lineHeight: 1.55 }}>
                       {t}
-                    </p>
-                  </div>
+                    </Text>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             )}
           </Section>
 
           <Section title="Entities">
             {entities.length === 0 ? (
-              <p className="px-3 pb-3 text-[12px] text-muted-foreground">{noData ? '—' : '…'}</p>
+              <Text px="sm" pb="sm" size="12px" c="dimmed">{noData ? '—' : '…'}</Text>
             ) : (
-              <div className="space-y-1.5 px-3 pb-3">
+              <Box px="sm" pb="sm">
                 {entities.map((e) => (
-                  <div
-                    key={e.id}
-                    className="border-l-2 pl-2"
-                    style={{ borderColor: `var(--ent-${e.type === 'citation' ? 'cite' : e.type})` }}
-                  >
-                    <div className="text-[12px] font-semibold" style={{ color: `var(--ent-${e.type === 'citation' ? 'cite' : e.type})` }}>
+                  <Box key={e.id} pl={8} mb={6} style={{ borderLeft: `2px solid ${entColor(e.type)}` }}>
+                    <Text size="12px" fw={600} c={entColor(e.type)}>
                       {e.label}
-                    </div>
-                    <p className="line-clamp-2 text-[11.5px] leading-snug text-muted-foreground">{e.summary}</p>
-                  </div>
+                    </Text>
+                    <Text size="11.5px" c="dimmed" lineClamp={2} style={{ lineHeight: 1.4 }}>
+                      {e.summary}
+                    </Text>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             )}
           </Section>
 
           <Section title="Ask" defaultOpen={false}>
-            <div className="px-3 pb-3">
-              <div className="text-[12.5px] font-medium">{book.qa[0]}</div>
-              <p className="mt-1 border-l-2 border-border pl-2 text-[12.5px] leading-relaxed text-muted-foreground">
+            <Box px="sm" pb="sm">
+              <Text size="12.5px" fw={500}>{book.qa[0]}</Text>
+              <Text size="12.5px" c="dimmed" pl={8} mt={4} style={{ borderLeft: '2px solid var(--panel-border)', lineHeight: 1.55 }}>
                 {book.qa[1]}
-              </p>
-              <Input placeholder="Ask about this passage" aria-label="Ask about this passage" className="mt-2 h-7 text-[12px]" />
-            </div>
+              </Text>
+              <TextInput size="xs" mt={8} placeholder="Ask about this passage" aria-label="Ask about this passage" />
+            </Box>
           </Section>
         </ScrollArea>
-      </div>
-
-      <span className="sr-only">{curRegion}</span>
-    </div>
+      </Box>
+    </Box>
   )
 }

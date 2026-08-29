@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { TooltipProvider } from '@/components/ui/tooltip'
+import { Box, MantineProvider, createTheme, type CSSVariablesResolver } from '@mantine/core'
 import { Masthead } from '@/components/Masthead'
 import { SettingsPanel } from '@/components/SettingsPanel'
 import { LeftSidebar } from '@/components/LeftSidebar'
@@ -7,37 +7,32 @@ import { RightPanels } from '@/components/RightPanels'
 import { ReadingWindow } from '@/components/ReadingWindow'
 import { Minimap } from '@/components/Minimap'
 import { BOOKS, resolveBook } from '@/whl/books'
-import { useSettings } from '@/whl/settings'
-import { applyTheme } from '@/whl/theme'
+import { useSettings, type Settings } from '@/whl/settings'
+import { CORNERS, READ_FONTS, UI_FONTS, applyPageVars, mantineVars, pick, primaryShades } from '@/whl/theme'
 import { useReader } from '@/whl/useReader'
 
 const clamp = (lo: number, hi: number, v: number) => Math.max(lo, Math.min(hi, v))
 
-export default function App() {
+function Explorer({
+  settings,
+  patch,
+  reset,
+}: {
+  settings: Settings
+  patch(p: Partial<Settings>): void
+  reset(): void
+}) {
   const bookId = useMemo(() => resolveBook(new URLSearchParams(location.search).get('book')), [])
   const book = BOOKS[bookId]
-  const { settings, patch, reset } = useSettings(bookId)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const reader = useReader(book, settings.opening)
 
-  /* theme + element register live on <html> */
+  /* tokens the page and the vanilla modules read live on <html> */
   useEffect(() => {
-    applyTheme({
-      scheme: settings.scheme,
-      dark: settings.dark,
-      corner: settings.corner,
-      stage: settings.stage,
-      uiFont: settings.uiFont,
-      readFont: settings.readFont,
-      readSize: settings.readSize,
-      readLeading: settings.readLeading,
-      panelAlpha: settings.panelAlpha,
-      panelBlur: settings.panelBlur,
-    })
+    applyPageVars(settings)
     document.documentElement.dataset.element = settings.element
   }, [settings])
 
-  /* hieroglyph control appears only where the data does */
   const { dataPages, regionsOf, hasData, curPage, curRegion } = reader
   const hieroAvailable = useMemo(
     () => dataPages.some((k) => regionsOf(k).some((r) => Array.isArray(r.hl) && r.hl.length > 0)),
@@ -111,87 +106,126 @@ export default function App() {
     return () => document.removeEventListener('keydown', onKey)
   }, [onKey])
 
+  const handle = { position: 'absolute' as const, zIndex: 40, touchAction: 'none' as const }
+
   return (
-    <TooltipProvider delayDuration={400}>
-      <div className="flex h-full flex-col" onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
-        <Masthead
-          book={book}
-          dark={settings.dark}
-          leftOpen={settings.leftOpen}
-          rightOpen={settings.rightOpen}
-          onDark={(v) => patch({ dark: v })}
-          onLeft={(v) => patch({ leftOpen: v })}
-          onRight={(v) => patch({ rightOpen: v })}
-          onSettings={() => setSettingsOpen((v) => !v)}
-          settingsOpen={settingsOpen}
-        />
+    <Box h="100%" display="flex" style={{ flexDirection: 'column' }} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
+      <Masthead
+        book={book}
+        dark={settings.dark}
+        leftOpen={settings.leftOpen}
+        rightOpen={settings.rightOpen}
+        onDark={(v) => patch({ dark: v })}
+        onLeft={(v) => patch({ leftOpen: v })}
+        onRight={(v) => patch({ rightOpen: v })}
+        onSettings={() => setSettingsOpen((v) => !v)}
+        settingsOpen={settingsOpen}
+      />
 
-        <div className="relative flex min-h-0 flex-1">
-          {settings.leftOpen && (
-            <>
-              <LeftSidebar
-                book={book}
-                reader={reader}
-                opening={settings.opening}
-                onOpening={(v) => patch({ opening: v })}
-                width={settings.leftWidth}
-              />
-              <div
-                className="absolute bottom-0 top-0 z-40 w-1.5 cursor-ew-resize touch-none hover:bg-primary/40"
-                style={{ left: settings.leftWidth - 3 }}
-                onPointerDown={startDrag('left')}
-                role="separator"
-                aria-label="Resize navigation"
-              />
-            </>
-          )}
-
-          {/* facsimile stage */}
-          <div className="relative min-w-0 flex-1">
-            <div id="stage" ref={reader.stageRef} />
-
-            <div className="pointer-events-none absolute inset-0">
-              {settings.minimap && <Minimap book={book} reader={reader} opening={settings.opening} />}
-
-              {settings.rightOpen && (
-                <>
-                  <RightPanels
-                    book={book}
-                    reader={reader}
-                    settings={settings}
-                    patch={patch}
-                    hieroAvailable={hieroAvailable}
-                  />
-                  <div
-                    className="pointer-events-auto absolute bottom-3 top-3 z-40 w-2.5 cursor-ew-resize touch-none rounded-full hover:bg-primary/40"
-                    style={{ right: settings.rightWidth + 7 }}
-                    onPointerDown={startDrag('right')}
-                    role="separator"
-                    aria-label="Resize information panels"
-                  />
-                  <div
-                    className="pointer-events-auto absolute z-40 h-2 cursor-ns-resize touch-none rounded-full hover:bg-primary/40"
-                    style={{
-                      right: 12,
-                      width: settings.rightWidth,
-                      top: `calc(0.75rem + (100% - 1.5rem) * ${settings.rightSplit / 100} - 4px)`,
-                    }}
-                    onPointerDown={startDrag('split')}
-                    role="separator"
-                    aria-label="Resize panel division"
-                  />
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {!settings.rightOpen && (
-          <ReadingWindow book={book} reader={reader} settings={settings} patch={patch} entryLabel={entryLabel} />
+      <Box pos="relative" display="flex" flex={1} mih={0}>
+        {settings.leftOpen && (
+          <>
+            <LeftSidebar
+              book={book}
+              reader={reader}
+              opening={settings.opening}
+              onOpening={(v) => patch({ opening: v })}
+              width={settings.leftWidth}
+            />
+            <Box
+              role="separator"
+              aria-label="Resize navigation"
+              onPointerDown={startDrag('left')}
+              style={{ ...handle, top: 0, bottom: 0, left: settings.leftWidth - 3, width: 6, cursor: 'ew-resize' }}
+            />
+          </>
         )}
 
-        {settingsOpen && <SettingsPanel settings={settings} patch={patch} reset={reset} onClose={() => setSettingsOpen(false)} />}
-      </div>
-    </TooltipProvider>
+        {/* facsimile stage */}
+        <Box pos="relative" flex={1} miw={0}>
+          <Box id="stage" ref={reader.stageRef} />
+
+          <Box pos="absolute" inset={0} style={{ pointerEvents: 'none' }}>
+            {settings.minimap && <Minimap book={book} reader={reader} opening={settings.opening} />}
+
+            {settings.rightOpen && (
+              <>
+                <RightPanels book={book} reader={reader} settings={settings} patch={patch} hieroAvailable={hieroAvailable} />
+                <Box
+                  role="separator"
+                  aria-label="Resize information panels"
+                  onPointerDown={startDrag('right')}
+                  style={{
+                    ...handle,
+                    top: 12,
+                    bottom: 12,
+                    right: settings.rightWidth + 7,
+                    width: 10,
+                    cursor: 'ew-resize',
+                    pointerEvents: 'auto',
+                  }}
+                />
+                <Box
+                  role="separator"
+                  aria-label="Resize panel division"
+                  onPointerDown={startDrag('split')}
+                  style={{
+                    ...handle,
+                    right: 12,
+                    width: settings.rightWidth,
+                    height: 8,
+                    top: `calc(12px + (100% - 24px) * ${settings.rightSplit / 100} - 4px)`,
+                    cursor: 'ns-resize',
+                    pointerEvents: 'auto',
+                  }}
+                />
+              </>
+            )}
+          </Box>
+        </Box>
+      </Box>
+
+      {!settings.rightOpen && (
+        <ReadingWindow book={book} reader={reader} settings={settings} patch={patch} entryLabel={entryLabel} />
+      )}
+
+      {settingsOpen && <SettingsPanel settings={settings} patch={patch} reset={reset} onClose={() => setSettingsOpen(false)} />}
+    </Box>
+  )
+}
+
+export default function App() {
+  const bookId = useMemo(() => resolveBook(new URLSearchParams(location.search).get('book')), [])
+  const { settings, patch, reset } = useSettings(bookId)
+
+  /* Mantine's own components sit on the generated palette: the primary colour is
+     built from the scheme's accent, and the surface variables are replaced. */
+  const theme = useMemo(
+    () =>
+      createTheme({
+        primaryColor: 'brand',
+        primaryShade: { light: 6, dark: 4 },
+        colors: { brand: primaryShades(settings.scheme, settings.dark) },
+        defaultRadius: pick(CORNERS, settings.corner).v,
+        fontFamily: pick(UI_FONTS, settings.uiFont).v,
+        headings: { fontFamily: pick(READ_FONTS, settings.readFont).v },
+        fontSizes: { xs: '11px', sm: '12.5px', md: '14px' },
+        cursorType: 'pointer',
+      }),
+    [settings.corner, settings.dark, settings.readFont, settings.scheme, settings.uiFont],
+  )
+
+  // Mantine emits the light/dark blocks at higher specificity than the shared
+  // `variables` block, so the overrides have to go in both to take effect. The
+  // colour scheme is forced, so the same map serves for each.
+  const resolver: CSSVariablesResolver = useMemo(() => {
+    const vars = mantineVars(settings)
+    return () => ({ variables: {}, light: vars, dark: vars })
+  }, [settings])
+
+  return (
+    <MantineProvider theme={theme} cssVariablesResolver={resolver} forceColorScheme={settings.dark ? 'dark' : 'light'}>
+      <Explorer settings={settings} patch={patch} reset={reset} />
+    </MantineProvider>
   )
 }

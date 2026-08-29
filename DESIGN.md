@@ -59,16 +59,17 @@ Skeletons per arriving layer; page usable at each stage (image alone → +text �
 
 ## Explorer implementation (iteration 6 — current)
 
-The explorer is now a **React + Tailwind + shadcn/ui** app under `app/`, built by Vite
-into `mockups/explorer.html`; the other pages remain vanilla. The reader machinery is
+The explorer is now a **React + Mantine** app under `app/`, built by Vite into
+`mockups/explorer.html`; the other pages remain vanilla. The reader machinery is
 unchanged — `whl-viewer`, `whl-text`, `whl-store`, `whl-linker` are imported as source
 through one typed façade (`app/src/whl/vanilla.ts`) and driven from a `useReader` hook,
 so the component library stays the single implementation of the reading substrate.
 
 Theming is generated rather than hand-authored: twelve schemes come from a few oklch
-parameters, and one token map feeds both the shadcn names (`--background`, `--card`,
-`--popover`, `--border`, `--ring`) and the legacy names the vanilla modules read
-(`--ink`, `--line`, `--tint-*`, `--rubric`), so both systems follow one theme.
+parameters, and one generated token map feeds both consumers — Mantine, through the
+provider's theme and `cssVariablesResolver` (`--mantine-color-body`, `-text`,
+`-dimmed`, `-default*`, plus a primary palette built from the scheme's accent), and
+the legacy names the vanilla modules read (`--ink`, `--line`, `--tint-*`, `--rubric`).
 `assets/tokens.css` is untouched and no longer loaded by the explorer.
 
 Chrome: a masthead carrying the book's **bibliographic record** (transcribed from the

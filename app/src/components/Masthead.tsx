@@ -1,18 +1,37 @@
-import { BookOpen, Moon, PanelLeft, PanelRight, Settings2, Sun } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  ActionIcon,
+  Anchor,
+  Box,
+  Button,
+  Divider,
+  Group,
+  Popover,
+  ScrollArea,
+  Stack,
+  Text,
+  Tooltip,
+} from '@mantine/core'
+import {
+  IconBook,
+  IconLayoutSidebar,
+  IconLayoutSidebarRight,
+  IconMoon,
+  IconSettings,
+  IconSun,
+} from '@tabler/icons-react'
 import { BOOKS, BOOK_IDS, type Book } from '@/whl/books'
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   if (!children) return null
   return (
-    <div className="grid grid-cols-[7.5rem_1fr] gap-3 py-1.5">
-      <dt className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{label}</dt>
-      <dd className="text-[12.5px] leading-relaxed">{children}</dd>
-    </div>
+    <Group align="flex-start" gap="sm" wrap="nowrap" py={3}>
+      <Text w={112} flex="none" size="10px" fw={600} tt="uppercase" c="dimmed" style={{ letterSpacing: '0.08em' }}>
+        {label}
+      </Text>
+      <Text size="12.5px" style={{ lineHeight: 1.55 }}>
+        {children}
+      </Text>
+    </Group>
   )
 }
 
@@ -33,125 +52,125 @@ export function Masthead({ book, dark, leftOpen, rightOpen, onDark, onLeft, onRi
   const imprint = [b.place, b.printer].filter(Boolean).join(': ')
 
   return (
-    <header className="panel z-50 flex h-14 shrink-0 items-center gap-3 border-x-0 border-t-0 px-3">
-      <a
-        href="index.html"
-        className="shrink-0 text-[12px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-      >
-        ← Mockups
-      </a>
-      <Separator orientation="vertical" className="!h-6" />
+    <Box component="header" className="panel" h={56} px="xs" style={{ borderTop: 0, borderInline: 0, zIndex: 50 }}>
+      <Group h="100%" gap="sm" wrap="nowrap">
+        <Anchor href="index.html" size="12px" c="dimmed" underline="hover" flex="none">
+          ← Mockups
+        </Anchor>
+        <Divider orientation="vertical" my={12} />
 
-      {/* bibliographic line for the book on view */}
-      <div className="flex min-w-0 flex-1 flex-col justify-center leading-tight">
-        <div className="flex min-w-0 items-baseline gap-2">
-          <h1 className="truncate text-[14px] font-semibold tracking-tight">{b.titleShort}</h1>
-          <span className="truncate text-[12px] text-muted-foreground">{b.author}</span>
-        </div>
-        <div className="truncate text-[11.5px] text-muted-foreground">
-          {[imprint, b.date, b.language].filter(Boolean).join(' · ')}
-        </div>
-      </div>
+        {/* the bibliographic line for the book on view */}
+        <Stack gap={1} flex={1} miw={0} justify="center">
+          <Group gap={8} wrap="nowrap" align="baseline">
+            <Text size="14px" fw={600} truncate>
+              {b.titleShort}
+            </Text>
+            <Text size="12px" c="dimmed" truncate>
+              {b.author}
+            </Text>
+          </Group>
+          <Text size="11.5px" c="dimmed" truncate>
+            {[imprint, b.date, b.language].filter(Boolean).join(' · ')}
+          </Text>
+        </Stack>
 
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-8 shrink-0 gap-1.5 text-[11.5px]">
-            <BookOpen className="size-3.5" />
-            Record
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent align="end" className="w-[30rem] p-0">
-          <ScrollArea className="max-h-[70vh]">
-            <div className="p-4">
-              <h2 className="mb-1 text-[13px] font-semibold leading-snug">{b.title}</h2>
-              <dl className="divide-y divide-border/60">
-                <Field label="Author">{b.author}</Field>
-                <Field label="Date">{b.date}</Field>
-                <Field label="Place">{b.place}</Field>
-                <Field label="Printer">{b.printer}</Field>
-                <Field label="Language">{b.language}</Field>
-                <Field label="Script">{b.script}</Field>
-                <Field label="Extent">{b.extent}</Field>
-                <Field label="Held by">{b.institution}</Field>
-                <Field label="Identifiers">
-                  <ul className="space-y-0.5">
-                    {(b.identifier ?? []).map((id) => (
-                      <li key={id.label + id.value}>
-                        <span className="text-muted-foreground">{id.label}: </span>
-                        {id.href ? (
-                          <a className="text-primary underline-offset-4 hover:underline" href={id.href} target="_blank" rel="noreferrer">
-                            {id.value}
-                          </a>
-                        ) : (
-                          <span className="break-all">{id.value}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </Field>
-                <Field label="Note">{b.note}</Field>
-              </dl>
-            </div>
-          </ScrollArea>
-        </PopoverContent>
-      </Popover>
+        <Popover width={480} position="bottom-end" shadow="md" withinPortal>
+          <Popover.Target>
+            <Button variant="default" size="compact-sm" leftSection={<IconBook size={14} />} fz="11.5px" flex="none">
+              Record
+            </Button>
+          </Popover.Target>
+          <Popover.Dropdown p={0}>
+            <ScrollArea.Autosize mah="70vh" type="auto">
+              <Box p="md">
+                <Text size="13px" fw={600} mb={6} style={{ lineHeight: 1.4 }}>
+                  {b.title}
+                </Text>
+                <Stack gap={0}>
+                  <Field label="Author">{b.author}</Field>
+                  <Field label="Date">{b.date}</Field>
+                  <Field label="Place">{b.place}</Field>
+                  <Field label="Printer">{b.printer}</Field>
+                  <Field label="Language">{b.language}</Field>
+                  <Field label="Script">{b.script}</Field>
+                  <Field label="Extent">{b.extent}</Field>
+                  <Field label="Held by">{b.institution}</Field>
+                  <Field label="Identifiers">
+                    <Stack gap={2}>
+                      {(b.identifier ?? []).map((id) => (
+                        <span key={id.label + id.value}>
+                          <Text span c="dimmed" inherit>
+                            {id.label}:{' '}
+                          </Text>
+                          {id.href ? (
+                            <Anchor href={id.href} target="_blank" rel="noreferrer" inherit>
+                              {id.value}
+                            </Anchor>
+                          ) : (
+                            <Text span inherit style={{ wordBreak: 'break-all' }}>
+                              {id.value}
+                            </Text>
+                          )}
+                        </span>
+                      ))}
+                    </Stack>
+                  </Field>
+                  <Field label="Note">{b.note}</Field>
+                </Stack>
+              </Box>
+            </ScrollArea.Autosize>
+          </Popover.Dropdown>
+        </Popover>
 
-      <Separator orientation="vertical" className="!h-6" />
+        <Divider orientation="vertical" my={12} />
 
-      <nav className="flex shrink-0 items-center gap-0.5" aria-label="Book">
-        {BOOK_IDS.map((id) => (
-          <Button
-            key={id}
-            asChild
-            size="sm"
-            variant={id === book.id ? 'secondary' : 'ghost'}
-            className="h-8 px-2 text-[11.5px] font-medium"
-          >
-            <a href={`?book=${id}`} aria-current={id === book.id ? 'page' : undefined}>
+        <Group gap={2} wrap="nowrap" flex="none" aria-label="Book">
+          {BOOK_IDS.map((id) => (
+            <Button
+              key={id}
+              component="a"
+              href={`?book=${id}`}
+              size="compact-sm"
+              fz="11.5px"
+              variant={id === book.id ? 'light' : 'subtle'}
+              color={id === book.id ? undefined : 'gray'}
+              aria-current={id === book.id ? 'page' : undefined}
+            >
               {BOOKS[id].id}
-            </a>
+            </Button>
+          ))}
+        </Group>
+
+        <Divider orientation="vertical" my={12} />
+
+        <Group gap={2} wrap="nowrap" flex="none">
+          <Tooltip label="Navigation [" openDelay={400}>
+            <ActionIcon variant={leftOpen ? 'light' : 'subtle'} color="gray" onClick={() => onLeft(!leftOpen)} aria-label="Toggle navigation">
+              <IconLayoutSidebar size={17} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Information ]" openDelay={400}>
+            <ActionIcon variant={rightOpen ? 'light' : 'subtle'} color="gray" onClick={() => onRight(!rightOpen)} aria-label="Toggle information">
+              <IconLayoutSidebarRight size={17} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label={dark ? 'Light' : 'Dark'} openDelay={400}>
+            <ActionIcon variant="subtle" color="gray" onClick={() => onDark(!dark)} aria-label="Toggle dark mode">
+              {dark ? <IconSun size={17} /> : <IconMoon size={17} />}
+            </ActionIcon>
+          </Tooltip>
+          <Button
+            size="compact-sm"
+            fz="11.5px"
+            variant={settingsOpen ? 'light' : 'default'}
+            leftSection={<IconSettings size={14} />}
+            onClick={onSettings}
+            aria-expanded={settingsOpen}
+          >
+            Settings
           </Button>
-        ))}
-      </nav>
-
-      <Separator orientation="vertical" className="!h-6" />
-
-      <div className="flex shrink-0 items-center gap-0.5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8" onClick={() => onLeft(!leftOpen)} aria-label="Toggle navigation">
-              <PanelLeft className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Navigation [</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8" onClick={() => onRight(!rightOpen)} aria-label="Toggle information">
-              <PanelRight className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Information ]</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8" onClick={() => onDark(!dark)} aria-label="Toggle dark mode">
-              {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{dark ? 'Light' : 'Dark'}</TooltipContent>
-        </Tooltip>
-        <Button
-          variant={settingsOpen ? 'secondary' : 'outline'}
-          size="sm"
-          className="h-8 gap-1.5 text-[11.5px]"
-          onClick={onSettings}
-          aria-expanded={settingsOpen}
-        >
-          <Settings2 className="size-3.5" />
-          Settings
-        </Button>
-      </div>
-    </header>
+        </Group>
+      </Group>
+    </Box>
   )
 }

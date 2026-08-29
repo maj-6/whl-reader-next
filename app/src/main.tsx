@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
-import './index.css'
+import '@mantine/core/styles.css'
+import './theme.css'
 import App from './App.tsx'
 
 // No StrictMode: the viewer, store and text panes are imperative singletons from

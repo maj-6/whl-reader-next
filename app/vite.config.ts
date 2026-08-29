@@ -1,6 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 
 // The mockups/ directory is what GitHub Pages serves verbatim, so the build
@@ -9,7 +8,7 @@ import { defineConfig } from 'vite'
 // imported as source and bundled; mockups/lib/data and mockups/assets stay
 // runtime fetches relative to explorer.html.
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

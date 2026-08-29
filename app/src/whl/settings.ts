@@ -40,7 +40,7 @@ export const DEFAULTS: Settings = {
   stage: 'black',
   panelAlpha: 92,
   panelBlur: 14,
-  uiFont: 'geist',
+  uiFont: 'inter',
   readFont: 'source-serif',
   readSize: 14.5,
   readLeading: 1.66,

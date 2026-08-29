@@ -7,7 +7,7 @@ Rules for any session or subagent working in this repo. The goal is a small, cur
 Design prototype for the WHL reader (historical herbal / materia-medica library). Two viewers, six books, one component library. No backend yet; layer data is pre-extracted static JSON served over HTTP.
 
 ```
-app/                explorer is a React + Tailwind + shadcn/ui app (Vite, TypeScript)
+app/                explorer is a React + Mantine app (Vite, TypeScript)
   src/whl/          books + bibliography, theme registry, settings, reader hook,
                     vanilla.ts = the ONLY typed façade over mockups/lib
   src/components/   masthead, settings panel, sidebar, panels, minimap, window
