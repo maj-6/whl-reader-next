@@ -33,7 +33,7 @@ lib/
 ```js
 createBus() → { on(type, fn)→off, off(type, fn), emit(type, payload) }
 ```
-Event names used across modules: `hover` `{src:'viewer'|'text', page, region, word?, group?}` | `hover:clear` | `select` `{page, region, group?}` | `select:clear` | `highlight` `{regions:Map<'page/idx',weight>, words:Map<'page/r:i',weight>, groups:Map<id,weight>}` | `view` `{page}` (viewer's current page/col changed) | `layer` `{page, name, status:'pending'|'loading'|'ready'|'error'}` | `mode` `{mode}` | `adv` `{on}` | `nav` `{page, region?}` (sidebar → viewer/text).
+Event names used across modules: `hover` `{src:'viewer'|'text', page, region, word?, group?, px?, py?}` | `hover:clear` | `select` `{page, region, group?, px?, py?}` | `select:clear` | `highlight` `{regions:Map<'page/idx',weight>, words:Map<'page/r:i',weight>, groups:Map<id,weight>}` | `view` `{page}` (viewer's current page/col changed) | `layer` `{page, name, status:'pending'|'loading'|'ready'|'error'}` | `mode` `{mode}` | `adv` `{on}` | `nav` `{page, region?}` (sidebar → viewer/text).
 
 ## whl-chrome.js
 
@@ -62,23 +62,34 @@ Fetches layer files in canonical priority order `source → words|glyphs → ass
 
 ```js
 createViewer({ el, bus, store, book,
-  profile:{ layout:'single'|'scroll-h', direction?:'rtl', zoom?:{max?,min?} },
-  pages:[{ key, url, w, h }], regions?:true, start?:pageKey }) →
+  profile:{ layout:'single'|'scroll-h', direction?:'rtl', zoom?:{max?,min?},
+            gap?:0.02, zoomOnSelect?:true },
+  pages:[{ key, url, w, h, clip?:{top?,bottom?,left?,right?} }], regions?:true, start?:pageKey }) →
   { goto(pageKey, opts?), next(), prev(), current(), select(page, region),
-    applyHighlight(h), setRegionsVisible(bool), addOverlayEl(page, box, el), destroy() }
+    applyHighlight(h), setRegionsVisible(bool), setWordBoxes(pageKey, bool),
+    addOverlayEl(page, box, el), destroy() }
 ```
 - `scroll-h` lays pages edge-to-edge in one OSD world honoring `direction:'rtl'` (col N+1 left of N; `next()` pans toward reading direction). `single` = one image.
-- Region overlays from `store.get(page)`'s `source.regions[].box` (pass `store`; without it the viewer is image-only), word boxes on demand from `words/glyphs`; overlay DOM carries `data-p`/`data-r` (and `data-w`); pointer hit-testing emits `hover`/`select` on the bus; `applyHighlight` paints weight classes.
-- Emits `view {page}` as viewport center crosses page bounds.
+- `pages[].clip`: fractions of the source image to crop per side (scanner borders). The clipped window — not the full image — is normalized to world height 1 with x-advance = clipped aspect; region/word overlay boxes stay fractions of the full image and are compensated for the clip offset automatically. OSD mode uses `tiledImage.setClip`; the no-OSD strip crops via an overflow-hidden wrapper (same visual result).
+- `profile.gap`: world gap between pages in `scroll-h` (default 0.02); `gap:0` butts pages exactly edge-to-edge (strip fallback maps 0 → 0px, otherwise keeps its default spacing).
+- `profile.zoomOnSelect:false`: `select()` highlights + emits without moving the viewport.
+- `hover`/`select` bus events carry `px`/`py` (pointer client coords) when a real pointer caused them; absent for programmatic calls.
+- `setWordBoxes(pageKey, on)`: paints/removes ALL word/glyph boxes of a page as passive outlines (`.wv-wordvis`, pointer-events none) — independent of the `applyHighlight` path, which keeps painting over them.
+- Region overlays from `store.get(page)`'s `source.regions[].box` (pass `store`; without it the viewer is image-only), word boxes on demand from `words/glyphs`; overlay DOM carries `data-p`/`data-r` (and `data-w`); pointer hit-testing emits `hover`/`select` on the bus (clicks via one `OpenSeadragon.MouseTracker` per overlay in OSD mode, a plain listener in the fallback strip — never both).
+- Emits `view {page}` as viewport center crosses page bounds. With `profile.viewportEvents:true` also emits rAF-throttled `viewport {x,y,w,h}` (world bounds) on every pan/zoom/scroll — for facing panes that track the roll continuously. `viewportInfo()` returns the same on demand; `worldRect(pageKey)` returns a page's world rect (clipped geometry, `{x,y,w,h}`, height 1).
+- `addOverlayEl` wrappers are positioned by OSD in CSS px: the wrapper's px size tracks zoom, so children sized in % scale with the page while children sized in fixed px keep constant screen scale (position world-anchored either way). Wrappers ship `pointer-events:none`; interactive content sets `pointer-events:auto` on its own node and, in OSD mode, needs an `OpenSeadragon.MouseTracker` for real clicks.
+- `hover`/`select` may carry `groups` (array of association group ids) alongside the singular `group`; the linker resolves either.
 - MUST include: visibility/rAF guard (hidden pane → stale container; re-home on first real resize), `window.OpenSeadragon` absence fallback (static strip w/ positioned overlays, same events), image load error placeholder.
 
 ## whl-text.js
 
 ```js
-createTextPane({ el, bus, store, book, page, layout?:'pair'|'stacked'|'strip' }) →
-  { applyHighlight(h), scrollTo(region, opts?), setLayout(l), destroy() }
+createTextPane({ el, bus, store, book, page, layout?:'pair'|'stacked'|'strip', stripShow?:'both' }) →
+  { applyHighlight(h), scrollTo(region, opts?), setLayout(l), setRegion(i), destroy() }
 ```
-Renders `source.regions` as `.rg-el[data-r]` sections: transcription `.tx` + translation `.xl` (tinted). When associations ready, wraps group spans in `<span data-g>` (UTF-16 offsets; code-point safe); when entities ready, wraps mention quotes in `.ent.<type>` anchors (first match per region per quote). Rubric/`case_label` chrome where present. Hover/click on spans → bus `hover`/`select` with group. `'strip'` = single-region running line (scroll reader / explore lens).
+Renders `source.regions` as `.rg-el[data-r]` sections: transcription `.tx` + translation `.xl` (tinted). When associations ready, wraps group spans in `<span data-g>` (UTF-16 offsets; code-point safe); when entities ready, wraps mention quotes in `.ent.<type>` anchors (first match per region per quote). Rubric/`case_label` chrome where present. Hover/click on spans → bus `hover`/`select` with group (+ `px`/`py` from real pointers). `'strip'` = single-region running line (scroll reader / explore lens), showing translation when present else transcription; `stripShow:'both'` stacks the transcription line over the translation line when both exist.
+- `setRegion(i)` sets the displayed region directly with no bus side-effects (strip re-renders; pair/stacked scroll to it).
+- Region-level hover parity: in pair/stacked, hovering a region block that has NO `[data-g]` spans (association-less witnesses like E52) emits `hover {src:'text', page, region}` and `hover:clear` on leave; regions WITH spans keep span-driven hover only (no duplicate region-level emits).
 
 ## whl-linker.js
 
@@ -125,11 +136,9 @@ Behavior notes:
 - `whl-linker` races rAF against a 32ms macrotask so highlights land even in occluded/hidden windows.
 
 Known seams (deliberately deferred; pages currently work around them):
-1. `whl-viewer` overlay **click** events do not fire from real pointers in OSD mode (OSD pointer capture retargets them; hover works). Pages needing real clicks use a page-level pointer tracker (see reader-explore). Production port: OSD MouseTracker per overlay.
-2. `whl-viewer` has no per-page **crop/clip** (EB01 scanner borders show in the stitched roll; old hand-rolled page used `item.setClip`). Add `pages[].clip`.
-3. `whl-text` `'strip'` layout: no `setRegion()` API (pages drive it via a private bus) and single text per region (translation else transcription); region-level hover parity for association-less witnesses (E52) missing.
-4. `whl-store` reports a missing layer file as `'error'`; a distinct `'absent'` status would let advanced UIs say "no layer for this witness" without implying breakage. (Pages currently style error dots per context.)
-5. `whl-viewer` `select()` always zooms; needs `zoomOnSelect:false`. Hover/select events carry no pointer coordinates (lens-near-click needs a page tracker).
-6. `whl-viewer` re-home fires on the first sane container size, which can land mid-CSS-transition (study→facsimile); a settle-debounce would remove reader-codex's delayed `goto` workaround. Word-box painting: `setWordsVisible(page)` (parallel to `setRegionsVisible`) would replace the applyHighlight-merge hack for glyph-box toggles.
-7. `whl-sidebar`: no sanctioned custom-content slot in contents/thispage (column map is prepended into internal DOM); citation cards lack a distinct resolved-quotation field (excerpt currently shows the entity summary).
-8. Navigation scrolling uses `scrollIntoView({behavior:'smooth'})`, which crawls in throttled panes; pages ship verify-and-jump fallbacks.
+1. `whl-store` reports a missing layer file as `'error'`; a distinct `'absent'` status would let advanced UIs say "no layer for this witness" without implying breakage. (Pages currently style error dots per context.)
+2. `whl-viewer` re-home fires on the first sane container size, which can land mid-CSS-transition (study→facsimile); a settle-debounce would remove reader-codex's delayed `goto` workaround.
+3. `whl-sidebar`: no sanctioned custom-content slot in contents/thispage (column map is prepended into internal DOM); citation cards lack a distinct resolved-quotation field (excerpt currently shows the entity summary).
+4. Navigation scrolling uses `scrollIntoView({behavior:'smooth'})`, which crawls in throttled panes; pages ship verify-and-jump fallbacks.
+
+Resolved in v1.1: overlay clicks from real pointers in OSD mode (MouseTracker per overlay), `pages[].clip`, `profile.gap`, `profile.zoomOnSelect:false`, `px`/`py` on pointer-caused hover/select, `setWordBoxes()`, strip `setRegion()` + `stripShow:'both'`, region-level hover parity for association-less witnesses. reader-scroll's applyHighlight-merge glyph toggle and reader-explore's page-level click tracker still work but are superseded by `setWordBoxes` / native overlay clicks.

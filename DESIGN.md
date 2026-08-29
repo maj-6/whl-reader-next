@@ -49,6 +49,28 @@ Skeletons per arriving layer; page usable at each stage (image alone → +text �
 
 `?embed=` variants: `full` (chrome-less reader, not demoed in mockups), `excerpt` (single passage card w/ hover, "open in reader" link), `card` (cover + title + Read CTA), `explore` (visual-first). Parent site composes these.
 
+## Design language (iteration 3 — binding)
+
+- **Restrained, institutional.** No marketing idioms: no hero taglines, no "Try:", no feature-selling copy, no playful microcopy. The existing Archive tokens are the palette; **design effort goes to layout and interaction, not colors or fonts.**
+- **Concise, declarative prose.** Assume the reader knows what they are looking at. Labels name things ("Column 45 · Eb 188–190"), they do not explain them. Show, don't tell; explanatory text is a last resort and one sentence when unavoidable.
+- **Intuitive navigation without oversimplifying.** Controls where a scholar expects them; no onboarding chrome, no tooltips that restate labels.
+- **The reader is the product.** It ships embedded or semi-embedded in a parent site; overview/library pages are secondary chrome around it.
+- Mock-notes (mockup-only chrome) shrink to one terse line stating what is interactive.
+
+## Explore concepts (iteration 3)
+
+The visual↔information balance is the core design question. Five concepts, one shared substrate (the seamless EB01 roll, cols 44–48, real data), differing ONLY in how text/information surfaces:
+
+| Concept | Mechanism |
+|---|---|
+| `explore-window` | movable, resizable, translucency-adjustable reading window floating over the roll |
+| `explore-ghost` | translation as an in-place ghost layer on the papyrus itself; opacity-controlled, no panel chrome |
+| `explore-apparatus` | fixed compact gloss rail synced to the viewport, like a critical edition's apparatus |
+| `explore-lens` | cursor loupe: hold to peek translation under the pointer; click freezes a small card |
+| `explore-ribbon` | facing translation ribbon: a second seamless band scrolling in lockstep beneath the roll |
+
+Seamlessness: scanner borders are clipped per column (top ≈7.5%, bottom ≈8.5%; sides are continuous), clipped regions normalized to equal world height, zero world gap.
+
 ## Component library (iteration 2)
 
 The reader machinery is packaged as vanilla ES modules in `mockups/lib/` with a written contract ([lib/API.md](mockups/lib/API.md)) so mockups compose instead of reimplementing: `whl-bus` (events), `whl-chrome` (topbar + persistence), `whl-store` (layer fetching, priority order, simulated latency), `whl-viewer` (OSD plane: single & scroll-h RTL profiles, overlays, fallbacks), `whl-text` (reading pane: atomic spans, entities), `whl-linker` (hover/select → weighted highlights), `whl-sidebar` (contents / this page / article / appearance). Live playground + API cheat-sheets: `mockups/lib/components.html`. The readers run on **real extracted corpus data** (`lib/data/`): E17 page-0382, EB01 cols 0044–0048, E52 page-0014. These modules are mockup-grade seeds of the production reader, not throwaway.

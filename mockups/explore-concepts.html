@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Explore concepts — WHL Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  .wrap { max-width: 880px; margin: 0 auto; padding: 56px 24px 80px; }
+
+  .wrap > p.q { font-family: var(--font-read); font-size: 16.5px; line-height: 1.66;
+    color: var(--ink-2); max-width: 62ch; margin: 0 0 36px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { font: 600 11px var(--font-chrome); letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-3); text-align: left; padding: 0 14px 9px 0; border-bottom: 1px solid var(--line-2); }
+  th.spec { padding-right: 0; }
+  th.spec .ends { display: flex; justify-content: space-between; gap: 12px; }
+  td { padding: 13px 14px 13px 0; border-bottom: 1px solid var(--line); vertical-align: baseline; }
+  td.name { width: 128px; white-space: nowrap; }
+  td.name a { font: 600 15px var(--font-display); color: var(--ink); }
+  td.name a:hover { color: var(--accent); text-decoration: none; }
+  td.mech { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
+  td.spec { width: 118px; padding-right: 0; }
+
+  .dots { display: flex; justify-content: space-between; align-items: center; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--line-2);
+    background: transparent; }
+  .dots i.on { background: var(--accent); border-color: var(--accent); }
+
+  .prior { margin-top: 34px; font: 600 11px var(--font-chrome); letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-3); }
+  .prior a { color: var(--ink-2); }
+  .prior a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+
+<main class="wrap">
+  <p class="q">Explore mode's open question is the balance of visual against information
+  focus. Five mechanisms surface the same text on the same seamless roll (EB01,
+  columns 44–48); each sits at a different point on that spectrum.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Concept</th>
+        <th>Mechanism</th>
+        <th class="spec"><span class="ends"><span>Visual</span><span>Information</span></span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="name"><a href="explore-window.html">Window</a></td>
+        <td class="mech">Movable, resizable reading window floating over the roll; translucency-adjustable.</td>
+        <td class="spec"><span class="dots"><i></i><i></i><i class="on"></i><i></i><i></i></span></td>
+      </tr>
+      <tr>
+        <td class="name"><a href="explore-ghost.html">Ghost</a></td>
+        <td class="mech">Translation as an in-place ghost layer on the papyrus itself; opacity-controlled, no panel chrome.</td>
+        <td class="spec"><span class="dots"><i></i><i class="on"></i><i></i><i></i><i></i></span></td>
+      </tr>
+      <tr>
+        <td class="name"><a href="explore-apparatus.html">Apparatus</a></td>
+        <td class="mech">Fixed compact gloss rail synced to the viewport, as in a critical edition's apparatus.</td>
+        <td class="spec"><span class="dots"><i></i><i></i><i></i><i class="on"></i><i></i></span></td>
+      </tr>
+      <tr>
+        <td class="name"><a href="explore-lens.html">Lens</a></td>
+        <td class="mech">Cursor loupe: hold to peek the translation under the pointer; click freezes a small card.</td>
+        <td class="spec"><span class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></span></td>
+      </tr>
+      <tr>
+        <td class="name"><a href="explore-ribbon.html">Ribbon</a></td>
+        <td class="mech">Facing translation ribbon: a second seamless band scrolling in lockstep beneath the roll.</td>
+        <td class="spec"><span class="dots"><i></i><i></i><i></i><i></i><i class="on"></i></span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="prior"><a href="reader-explore.html">Reader-explore</a> — earlier E52 single-page treatment</p>
+</main>
+
+<script type="module">
+  import { mountChrome } from './lib/whl-chrome.js';
+  mountChrome({
+    title: 'Explore concepts',
+    back: 'index.html',
+    adv: false,
+    mockSwitch: 'mode-only',
+    note: 'Five mechanisms on the same roll; open each in sequence.',
+  });
+</script>
+</body>
+</html>

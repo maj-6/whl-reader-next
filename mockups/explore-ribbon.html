@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EB01 Explore — Facing Ribbon — WHL Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  html, body { height: 100%; }
+  body { display: flex; flex-direction: column; overflow: hidden; }
+
+  /* chrome topbar → floating translucent bar over the stage */
+  .topbar {
+    position: absolute; top: 12px; left: 12px; right: 12px; z-index: 60;
+    border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--bg-raise) 80%, transparent);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    box-shadow: var(--shadow);
+  }
+
+  /* ---- stage: roll over ribbon, one hairline between ---- */
+  .stage { flex: 1; position: relative; display: flex; flex-direction: column;
+    min-height: 0; --rollh: 72%; }
+  .rollwrap { height: var(--rollh); position: relative; min-height: 0;
+    background: var(--bg-sunk); }
+  #osd { position: absolute; inset: 0; }
+  #osd .openseadragon-canvas:focus { outline: none; }
+
+  /* ---- the facing ribbon ---- */
+  .band { flex: 1; min-height: 0; position: relative; overflow: hidden;
+    border-top: 1px solid var(--line); background: var(--bg); }
+  .track { position: absolute; top: 0; bottom: 0; left: 0; width: 0; will-change: transform; }
+  /* horizontal padding lives on the children so a thin block (column header)
+     keeps its exact world width instead of a padding-induced minimum */
+  .blk { position: absolute; top: 0; bottom: 0; box-sizing: border-box;
+    border-left: 1px solid var(--line); padding: 9px 0 6px;
+    display: flex; flex-direction: column; overflow: hidden; cursor: pointer; }
+  .blk .cl { flex: none; font: 600 10.5px var(--font-chrome); letter-spacing: .05em;
+    color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 5px; padding: 0 12px; }
+  .blk .xl { flex: 1; min-height: 0; font: 13px/1.55 var(--font-read); color: var(--ink-2);
+    overflow: hidden; padding: 0 12px;
+    -webkit-mask-image: linear-gradient(#000 calc(100% - 24px), transparent);
+    mask-image: linear-gradient(#000 calc(100% - 24px), transparent); }
+  .blk.hdr .xl { font-style: italic; color: var(--ink-3); }
+  .blk:hover, .blk.hlC, .blk.hlR { background: var(--tint-region); }
+  .blk.sel { background: var(--tint-select); }
+
+  /* ---- split stops: three quiet toggles at the hairline's right end ---- */
+  .stops { position: absolute; right: 12px; top: var(--rollh); transform: translateY(-50%);
+    display: flex; gap: 5px; z-index: 8; }
+  .stop { position: relative; width: 22px; height: 16px; padding: 0; cursor: pointer;
+    border: 1px solid var(--line-2); border-radius: 3px; background: var(--bg-raise); }
+  .stop i { position: absolute; left: 2px; right: 2px; height: 1px; background: var(--ink-3); }
+  .stop:hover { border-color: var(--accent); }
+  .stop.active { border-color: var(--accent); }
+  .stop.active i { background: var(--accent); }
+</style>
+</head>
+<body>
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+
+<div class="stage" id="stage">
+  <div class="rollwrap"><div id="osd"></div></div>
+  <div class="band" id="band" aria-label="Facing translation ribbon">
+    <div class="track" id="track"></div>
+  </div>
+  <div class="stops" id="stops" role="group" aria-label="Ribbon height">
+    <button type="button" class="stop" data-roll="85" title="85 / 15"><i style="top:85%"></i></button>
+    <button type="button" class="stop active" data-roll="72" title="72 / 28"><i style="top:72%"></i></button>
+    <button type="button" class="stop" data-roll="60" title="60 / 40"><i style="top:60%"></i></button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0/build/openseadragon/openseadragon.min.js"></script>
+<script type="module">
+import { createBus } from './lib/whl-bus.js';
+import { mountChrome } from './lib/whl-chrome.js';
+import { createRoll, COLS, DATA_COLS } from './explore-common.js';
+
+const $ = s => document.querySelector(s);
+const bus = createBus();
+
+mountChrome({
+  title: 'Papyrus Ebers', back: 'explore-concepts.html', bus,
+  book: { label: 'EB01', title: 'Papyrus Ebers', thumb: 'assets/thumbs/EB01.jpg' },
+  adv: false, mockSwitch: 'mode-only',
+  note: 'Facing translation ribbon in lockstep with the roll — hover links a case, click selects, stops at the rule set the split.',
+});
+
+/* createRoll merges viewerOpts.profile over its scroll-h RTL defaults; the full
+   profile is restated here only for explicitness. */
+const { viewer, store } = createRoll({
+  el: $('#osd'), bus,
+  viewerOpts: { profile: { layout: 'scroll-h', direction: 'rtl', gap: 0,
+    viewportEvents: true, zoom: { max: 3 } } },
+});
+
+/* ---------- ribbon layout ----------
+   Case blocks live in world-x coordinates so the band aligns spatially with the
+   roll. EB01 region boxes are full-width line bands (x-extents degenerate), so
+   each case's width is its y-extent share of the column, laid RTL in reading
+   order across the column's world stretch. col-0047 has no layers: its stretch
+   stays empty ground. */
+const band = $('#band'), track = $('#track');
+const X0 = Math.min(...COLS.map(c => viewer.worldRect(c.key).x)); // leftmost world x
+const BLKS = [];                 // {el, wx, ww}
+const byKey = new Map();         // 'page/r' → el
+const perCol = new Map();        // page → els (for rebuilds)
+let S = 0;                       // px per world unit
+
+function buildCol(key) {
+  const regs = store.get(key)?.source?.regions;
+  const wr = viewer.worldRect(key);
+  if (!Array.isArray(regs) || !regs.length || !wr) return;
+  for (const el of perCol.get(key) || []) {
+    el.remove();
+    BLKS.splice(BLKS.findIndex(b => b.el === el), 1);
+    byKey.delete(key + '/' + el.dataset.r);
+  }
+  const els = [];
+  const spans = regs.map(r => Math.max(0.001, (r.box?.[3] ?? 0) - (r.box?.[1] ?? 0)));
+  const total = spans.reduce((a, b) => a + b, 0);
+  let edge = wr.x + wr.w;                       // reading starts at the column's right edge
+  const n = +key.slice(4);
+  regs.forEach((rg, i) => {
+    const ww = spans[i] / total * wr.w;
+    edge -= ww;
+    const el = document.createElement('div');
+    el.className = 'blk' + (rg.type === 'header' ? ' hdr' : '');
+    el.dataset.p = key; el.dataset.r = i;
+    const cl = document.createElement('span');
+    cl.className = 'cl';
+    cl.textContent = rg.case_label || (rg.type === 'header' ? 'Column ' + n : '—');
+    const xl = document.createElement('div');
+    xl.className = 'xl';
+    xl.textContent = rg.translation || rg.text || '—';
+    el.append(cl, xl);
+    el.addEventListener('pointerenter', () => bus.emit('hover', { src: 'text', page: key, region: i }));
+    el.addEventListener('pointerleave', () => bus.emit('hover:clear'));
+    el.addEventListener('click', () => viewer.select(key, i));
+    track.appendChild(el);
+    els.push(el);
+    BLKS.push({ el, wx: edge, ww });
+    byKey.set(key + '/' + i, el);
+  });
+  perCol.set(key, els);
+  relayout();
+}
+
+function relayout() {
+  if (!S) return;
+  for (const b of BLKS) {
+    b.el.style.left = (b.wx - X0) * S + 'px';
+    b.el.style.width = b.ww * S + 'px';
+  }
+}
+
+/* lockstep: world x → same screen x as the roll; translation, not scroll */
+function sync(v) {
+  if (!v || !v.w || !band.clientWidth) return;
+  const s2 = band.clientWidth / v.w;
+  if (Math.abs(s2 - S) > 0.25) { S = s2; relayout(); }
+  track.style.transform = 'translate3d(' + (X0 - v.x) * S + 'px,0,0)';
+}
+bus.on('viewport', sync);
+bus.on('view', () => sync(viewer.viewportInfo()));
+new ResizeObserver(() => sync(viewer.viewportInfo())).observe(band);
+(function boot(n) {
+  const v = viewer.viewportInfo();
+  if (v) sync(v); else if (n) requestAnimationFrame(() => boot(n - 1));
+})(90);
+
+/* blocks appear as source layers land */
+bus.on('layer', p => { if (p && p.name === 'source' && p.status === 'ready') buildCol(p.page); });
+for (const k of DATA_COLS) buildCol(k);
+
+/* ribbon ↔ roll highlight parity (linker output) */
+let lit = [];
+bus.on('highlight', h => {
+  viewer.applyHighlight(h);
+  for (const el of lit) el.classList.remove('hlC', 'hlR', 'sel');
+  lit = [];
+  if (!h || !h.regions) return;
+  for (const [k, w] of h.regions) {
+    const el = byKey.get(k);
+    if (el) { el.classList.add(w); lit.push(el); }
+  }
+});
+
+/* split stops */
+$('#stops').addEventListener('click', e => {
+  const b = e.target.closest('.stop');
+  if (!b) return;
+  document.querySelectorAll('.stop').forEach(x => x.classList.toggle('active', x === b));
+  $('#stage').style.setProperty('--rollh', b.dataset.roll + '%');
+  requestAnimationFrame(() => requestAnimationFrame(() => sync(viewer.viewportInfo())));
+});
+
+/* keyboard: ←/→ pan columns (RTL semantics in the lib); Esc clears selection */
+document.addEventListener('keydown', e => {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (/input|select|textarea/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowLeft') { viewer.next(); e.preventDefault(); }
+  else if (e.key === 'ArrowRight') { viewer.prev(); e.preventDefault(); }
+  else if (e.key === 'Escape') bus.emit('select:clear', {});
+});
+
+window.__whl = { bus, store, viewer };
+</script>
+</body>
+</html>

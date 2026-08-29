@@ -19,6 +19,8 @@ const CSS = `
 .whl-text .rg-el.sel{background:var(--tint-region);box-shadow:inset 2px 0 0 var(--accent)}
 .whl-text[data-layout="strip"] .strip-line{white-space:nowrap;overflow-x:auto;padding:8px 12px;border-bottom:0}
 .whl-text[data-layout="strip"] .strip-body{white-space:nowrap}
+.whl-text[data-layout="strip"] .strip-both .strip-body{display:block}
+.whl-text[data-layout="strip"] .strip-both .strip-xl2{color:var(--ink-2);margin-top:2px}
 .whl-text .whl-skel{height:110px;margin:12px}
 `;
 function injectCSS() {
@@ -64,11 +66,12 @@ function decorate(text, marks) {
   return out;
 }
 
-export function createTextPane({ el, bus, store, book, page, layout = 'pair' } = {}) {
+export function createTextPane({ el, bus, store, book, page, layout = 'pair', stripShow } = {}) {
   injectCSS();
   el.classList.add('whl-text');
   el.dataset.layout = layout;
-  let cur = 0, painted = [], gEls = new Map(), rEls = new Map(), offs = [], lastHover = null, lastHl = null;
+  let cur = 0, painted = [], gEls = new Map(), rEls = new Map(), offs = [], lastHover = null, lastRg = null, lastHl = null;
+  const pxy = (e, p) => { if (e && typeof e.clientX === 'number') { p.px = e.clientX; p.py = e.clientY; } return p; };
 
   const pd = () => (store && store.get) ? store.get(page) : null;
   const push = (map, r, m) => { const a = map.get(r); a ? a.push(m) : map.set(r, [m]); };
@@ -120,10 +123,16 @@ export function createTextPane({ el, bus, store, book, page, layout = 'pair' } =
     if (el.dataset.layout === 'strip') {
       const i = Math.max(0, Math.min(cur, src.regions.length - 1));
       const r = src.regions[i] || {};
-      const body = r.translation != null ? decorate(r.translation, T.get(i)) : decorate(r.text, S.get(i));
-      el.innerHTML = `<div class="rg-el strip-line" data-r="${i}">` +
-        (r.case_label ? `<span class="chip rg-case">${esc(r.case_label)}</span> ` : '') +
-        `<span class="strip-body">${body}</span></div>`;
+      const chip = r.case_label ? `<span class="chip rg-case">${esc(r.case_label)}</span> ` : '';
+      if (stripShow === 'both' && r.text != null && r.translation != null) {
+        el.innerHTML = `<div class="rg-el strip-line strip-both" data-r="${i}">` + chip +
+          `<span class="strip-body strip-tx2">${decorate(r.text, S.get(i))}</span>` +
+          `<span class="strip-body strip-xl2">${decorate(r.translation, T.get(i))}</span></div>`;
+      } else {
+        const body = r.translation != null ? decorate(r.translation, T.get(i)) : decorate(r.text, S.get(i));
+        el.innerHTML = `<div class="rg-el strip-line" data-r="${i}">` + chip +
+          `<span class="strip-body">${body}</span></div>`;
+      }
     } else {
       el.innerHTML = src.regions.map((r, i) => regionHTML(r, i, S.get(i), T.get(i))).join('');
     }
@@ -160,21 +169,47 @@ export function createTextPane({ el, bus, store, book, page, layout = 'pair' } =
 
   function setLayout(l) { el.dataset.layout = l; render(); }
 
+  // set the displayed region directly — no bus side-effects (strip re-renders, others scroll)
+  function setRegion(i) {
+    i = +i;
+    if (!Number.isFinite(i)) return;
+    cur = i;
+    el.dataset.layout === 'strip' ? render() : scrollTo(i);
+  }
+
   const gidsOf = n => n.dataset.g.split(' ');
   function onOver(e) {
     const g = e.target.closest('[data-g]');
-    if (g === lastHover) return;
-    lastHover = g;
-    if (!g || !el.contains(g)) { bus.emit('hover:clear', {}); return; }
-    const rg = g.closest('.rg-el');
-    bus.emit('hover', { src: 'text', page, region: rg ? +rg.dataset.r : null, group: gidsOf(g)[0], groups: gidsOf(g) });
+    if (g && el.contains(g)) {
+      if (g === lastHover) return;
+      lastHover = g; lastRg = null;
+      const rg = g.closest('.rg-el');
+      bus.emit('hover', pxy(e, { src: 'text', page, region: rg ? +rg.dataset.r : null, group: gidsOf(g)[0], groups: gidsOf(g) }));
+      return;
+    }
+    // region-level parity: in pair/stacked, a region block with NO association spans
+    // (association-less witnesses) hovers as a whole; span-bearing regions keep the old behavior.
+    const rg = e.target.closest('.rg-el');
+    const bare = rg && el.contains(rg) && el.dataset.layout !== 'strip' && !rg.querySelector('[data-g]');
+    if (bare) {
+      if (rg === lastRg && !lastHover) return;
+      lastHover = null; lastRg = rg;
+      bus.emit('hover', pxy(e, { src: 'text', page, region: +rg.dataset.r }));
+    } else if (lastHover || lastRg) {
+      lastHover = null; lastRg = null;
+      bus.emit('hover:clear', {});
+    }
   }
-  function onLeave() { lastHover = null; bus.emit('hover:clear', {}); }
+  function onLeave() {
+    if (!lastHover && !lastRg) return;
+    lastHover = null; lastRg = null;
+    bus.emit('hover:clear', {});
+  }
   function onClick(e) {
     const rg = e.target.closest('.rg-el');
     if (!rg || !el.contains(rg)) return;
     const g = e.target.closest('[data-g]');
-    const p = { page, region: +rg.dataset.r };
+    const p = pxy(e, { page, region: +rg.dataset.r });
     if (g) { p.group = gidsOf(g)[0]; p.groups = gidsOf(g); }
     bus.emit('select', p);
   }
@@ -202,7 +237,7 @@ export function createTextPane({ el, bus, store, book, page, layout = 'pair' } =
   render();
 
   return {
-    applyHighlight, scrollTo, setLayout,
+    applyHighlight, scrollTo, setLayout, setRegion,
     destroy() {
       for (const f of offs) if (typeof f === 'function') f();
       el.removeEventListener('mouseover', onOver);

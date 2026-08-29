@@ -36,8 +36,6 @@
   /* floating chrome over the facsimile */
   .float-tr { position: absolute; top: 12px; right: 14px; z-index: 6;
     display: flex; gap: 8px; align-items: center; }
-  .fchip { font: 11px var(--font-chrome); color: var(--ink-3); background: var(--bg-raise);
-    border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; opacity: .92; }
   .float-tr .btn { border-radius: 99px; font-size: 11.5px; padding: 5px 12px; opacity: .95; }
 
   /* the roll reads right-to-left: NEXT pans left, so it sits on the LEFT */
@@ -97,12 +95,7 @@
   #stripText .tx { font-style: italic; }
   #stripText .tx, #stripText .xl { font-size: var(--read-size, 16.5px); }
   .strip-msg { max-width: 940px; margin: 0 auto; padding: 18px 16px 22px;
-    font: italic 14px/1.6 var(--font-read); color: var(--ink-3); }
-  .strip-msg b { color: var(--ink-2); font-weight: 600; font-style: normal; }
-
-  /* adv glyph-box layer: the linker never assigns hlC to word boxes, so this rule
-     only strengthens the page's own glyph paint enough to read over the papyrus */
-  .wv-host .wv-word.hlC { background: var(--tint-select); box-shadow: inset 0 0 0 1px var(--line-2); }
+    font: 14px/1.6 var(--font-read); color: var(--ink-3); }
 
   /* ---- sidebar + rail ---- */
   .sidebar[hidden] { display: none !important; }
@@ -133,11 +126,10 @@
     <div class="osdwrap">
       <div id="osd"></div>
       <div class="float-tr">
-        <span class="fchip">roll reads right &rarr; left</span>
         <button type="button" class="btn adv-only" id="glyphBtn"
-          title="Paint every located glyph box on the current column (word layer of the facsimile)">&#9707; glyph boxes</button>
+          title="Glyph boxes, current column">&#9707; glyph boxes</button>
       </div>
-      <button type="button" class="navbtn next" id="btnNext" title="Next column — the text continues to the left">
+      <button type="button" class="navbtn next" id="btnNext" title="Next column">
         <span class="arr">&lsaquo;</span><span class="cap">next</span></button>
       <button type="button" class="navbtn prev" id="btnPrev" title="Previous column">
         <span class="arr">&rsaquo;</span><span class="cap">prev</span></button>
@@ -146,7 +138,7 @@
 
     <section class="strip" id="strip" aria-label="Reading strip">
       <div class="strip-head">
-        <button type="button" class="s-col" id="sCol" title="Fit this column in the viewport">Column —</button>
+        <button type="button" class="s-col" id="sCol" title="Fit column">Column —</button>
         <span class="s-ebs" id="sEbs"></span>
         <span class="s-div"></span>
         <div class="stepper">
@@ -156,7 +148,7 @@
           <span class="s-count" id="sCount"></span>
         </div>
         <span class="spacer"></span>
-        <div class="layseg" id="laySeg" title="Running line shows the translation of the current case; Cases shows transliteration and translation for the whole column">
+        <div class="layseg" id="laySeg">
           <button type="button" data-lay="strip" class="active">Line</button>
           <button type="button" data-lay="stacked">Cases</button>
         </div>
@@ -164,18 +156,14 @@
       </div>
       <div class="strip-clip">
         <div id="stripText"></div>
-        <div class="strip-msg" id="stripMsg" hidden>
-          <b>Column 47 &mdash; layers not yet ingested.</b> The facsimile is on the roll, but its
-          transliteration, translation, glyph boxes and entities have not been processed yet.
-          The reader keeps the column navigable and degrades to image-only.
-        </div>
+        <div class="strip-msg" id="stripMsg" hidden>&mdash;</div>
       </div>
     </section>
   </div>
 
   <aside id="sidebar" hidden aria-label="Sidebar"></aside>
   <nav class="rail" id="rail" aria-label="Sidebar rail">
-    <button type="button" class="railbtn" data-tab="contents" title="Contents — column map">&#9776;</button>
+    <button type="button" class="railbtn" data-tab="contents" title="Contents">&#9776;</button>
     <button type="button" class="railbtn" data-tab="thispage" title="On this column">&#9672;</button>
     <button type="button" class="railbtn r-aa" data-tab="appearance" title="Appearance">Aa</button>
   </nav>
@@ -190,21 +178,21 @@ import {createViewer} from './lib/whl-viewer.js';
 import {createTextPane} from './lib/whl-text.js';
 import {createLinker} from './lib/whl-linker.js';
 import {createSidebar} from './lib/whl-sidebar.js';
+import {COLS, DATA_COLS} from './explore-common.js';
 
 const $ = s => document.querySelector(s);
 const bus = createBus();
 
 /* ---------- column facts (from the extracted corpus layers) ---------- */
 const COLINFO = [
-  { key: 'col-0044', n: 44, w: 834,  ebs: 'Eb 214–225',  cases: 12 },
-  { key: 'col-0045', n: 45, w: 916,  ebs: 'Eb 225–238',  cases: 13 },
-  { key: 'col-0046', n: 46, w: 880,  ebs: 'Eb 237–245',  cases: 9  },
-  { key: 'col-0047', n: 47, w: 996,  ebs: 'Eb 246?–251?', cases: 0, noData: true },
-  { key: 'col-0048', n: 48, w: 967,  ebs: 'Eb 251d–262', cases: 12 },
+  { key: 'col-0044', n: 44, ebs: 'Eb 214–225',  cases: 12 },
+  { key: 'col-0045', n: 45, ebs: 'Eb 225–238',  cases: 13 },
+  { key: 'col-0046', n: 46, ebs: 'Eb 237–245',  cases: 9  },
+  { key: 'col-0047', n: 47, ebs: 'Eb 246?–251?', cases: 0, noData: true },
+  { key: 'col-0048', n: 48, ebs: 'Eb 251d–262', cases: 12 },
 ];
 const KEYS = COLINFO.map(c => c.key);
 const INFO = {}; COLINFO.forEach(c => { INFO[c.key] = c; });
-const DATA_COLS = KEYS.filter(k => !INFO[k].noData);
 const LAYERS = ['tiles', 'source', 'glyphs', 'associations', 'entities'];
 const START = 'col-0044';
 
@@ -212,10 +200,7 @@ const START = 'col-0044';
 const chrome = mountChrome({
   title: 'Scroll reader', back: 'index.html', bus,
   book: { label: 'EB01 · hieratic roll, c. 1550 BC', title: 'Papyrus Ebers', thumb: 'assets/thumbs/EB01.jpg' },
-  note: 'EB01 scroll reader, rebuilt on the component library. Columns 44–48 are real scans stitched ' +
-    'into one continuous right-to-left roll; case numbers and texts come from the extracted corpus layers ' +
-    '(TLA transliteration, Leipzig English translation). Column 47 is deliberately image-only — its layers ' +
-    'are not yet ingested — to demo graceful degradation. Article sidebar tab intentionally omitted in this mockup.'
+  note: 'Continuous RTL roll, columns 44–48; ←/→ pan columns, ↑/↓ step cases; column 47 facsimile-only.'
 });
 
 /* topbar column indicator: "col NN · Eb range" + adv-only layer dots (page-rendered per API.md) */
@@ -229,60 +214,35 @@ chrome.el.insertBefore(ind, chrome.el.querySelector('.advtog'));
 /* ---------- store (the four ingested columns; col-0047 will surface errors) ---------- */
 const store = createStore({ base: 'lib/data', book: 'EB01', bus, pages: DATA_COLS, latency: '3g' });
 
-/* ---------- viewer: five columns, one RTL world (col 44 rightmost) ---------- */
-const PAGES = COLINFO.map(c => ({ key: c.key, url: `assets/pages/EB01-${c.key}.jpg`, w: c.w, h: 1600 }));
+/* ---------- viewer: five columns, one seamless RTL world (col 44 rightmost) ---------- */
 const viewer = createViewer({
   el: $('#osd'), bus, store, book: 'EB01',
-  profile: { layout: 'scroll-h', direction: 'rtl', zoom: { max: 3 } },
-  pages: PAGES, start: START,
+  profile: { layout: 'scroll-h', direction: 'rtl', gap: 0, zoom: { max: 3 } },
+  pages: COLS, start: START,
 });
 
-/* ---------- linker + highlight fan-out (glyph-box layer merged for the viewer) ---------- */
+/* ---------- linker + highlight fan-out ---------- */
 createLinker({ bus, store });
-let lastH = null, glyphsOn = false, glyphH = null;
-function paintViewer() {
-  if (!glyphsOn || !glyphH) { viewer.applyHighlight(lastH); return; }
-  const words = new Map(glyphH);
-  if (lastH) for (const [k, w] of lastH.words) words.set(k, w); // linker weights win
-  viewer.applyHighlight({
-    regions: lastH ? lastH.regions : new Map(),
-    words, groups: lastH ? lastH.groups : new Map(),
-  });
-}
+let lastH = null, glyphsOn = false;
 bus.on('highlight', h => {
   lastH = h;
-  paintViewer();
+  viewer.applyHighlight(h);
   if (stripPane) stripPane.applyHighlight(h);
 });
 
-/* glyph boxes: cap to the current column; rebuilt only on toggle / column / layer arrival */
-function buildGlyphs() {
-  glyphH = null;
-  if (!glyphsOn) return;
-  const pd = store.get(curCol);
-  const glyphs = pd && pd.glyphs, regions = (pd && pd.source && pd.source.regions) || [];
-  if (!Array.isArray(glyphs)) return;
-  glyphH = new Map();
-  glyphs.forEach((g, i) => {
-    if (!g || !Array.isArray(g.box)) return;
-    const cx = (g.box[0] + g.box[2]) / 2, cy = (g.box[1] + g.box[3]) / 2;
-    let r = 0;
-    for (let j = 0; j < regions.length; j++) {
-      const b = regions[j].box;
-      if (b && cy >= b[1] && cy <= b[3] && cx >= b[0] && cx <= b[2]) { r = j; break; }
-    }
-    glyphH.set(curCol + '/' + r + ':' + i, 'hlC');
-  });
-}
+/* glyph boxes: passive outline layer on the current column (lib setWordBoxes) */
 const glyphBtn = $('#glyphBtn');
+function setGlyphs(on) {
+  glyphsOn = on;
+  glyphBtn.classList.toggle('active', on);
+  if (curCol) viewer.setWordBoxes(curCol, on);
+}
 glyphBtn.onclick = () => {
   if (document.documentElement.dataset.adv !== '1') return; // adv-only control
-  glyphsOn = !glyphsOn;
-  glyphBtn.classList.toggle('active', glyphsOn);
-  buildGlyphs(); paintViewer();
+  setGlyphs(!glyphsOn);
 };
 bus.on('adv', ({ on }) => {           // leaving Advanced also clears the glyph layer
-  if (!on && glyphsOn) { glyphsOn = false; glyphBtn.classList.remove('active'); buildGlyphs(); paintViewer(); }
+  if (!on && glyphsOn) setGlyphs(false);
 });
 
 /* ---------- reading strip: whl-text pane for the current column ---------- */
@@ -327,7 +287,7 @@ $('#sCol').onclick = () => bus.emit('nav', { page: curCol }); // refit whole col
 /* ---------- sidebar (collapsed to a rail by default) ---------- */
 const TREE = COLINFO.map(c => ({
   id: c.key, title: 'Column ' + c.n,
-  sub: c.noData ? 'facsimile only · not yet ingested' : c.ebs + ' · ' + c.cases + ' cases',
+  sub: c.noData ? 'facsimile only' : c.ebs + ' · ' + c.cases + ' cases',
   target: { page: c.key },
 }));
 const side = createSidebar({ el: $('#sidebar'), bus, tabs: {
@@ -342,8 +302,7 @@ mapSec.className = 'side-sec';
 mapSec.innerHTML = `<h4>Column map · 110 columns</h4>
   <div class="mapmeta"><span>col 110 · end</span><span>col 1 · start</span></div>
   <div class="colmap" id="colmap"></div>
-  <div class="maplegend">Columns 44–48 are in the loaded window; the rest of the roll would
-    stream in as the viewport approaches. Click a raised bar to pan.</div>`;
+  <div class="maplegend">Columns 44–48 loaded.</div>`;
 side.el.querySelector('.side-panel').prepend(mapSec); // contents is the first panel
 const colmap = mapSec.querySelector('#colmap');
 for (let n = 110; n >= 1; n--) {
@@ -351,7 +310,7 @@ for (let n = 110; n >= 1; n--) {
   const key = 'col-' + String(n).padStart(4, '0');
   b.className = 'bar' + (INFO[key] ? ' win' : '');
   b.dataset.key = key;
-  b.title = 'Column ' + n + (INFO[key] ? '' : ' · outside loaded window');
+  b.title = 'Column ' + n;
   colmap.appendChild(b);
 }
 colmap.onclick = e => {
@@ -401,7 +360,7 @@ function ensureNeighbors(col, silent) {
     store.prefetch(k);
     if (!silent && !toastShown) {
       toastShown = true;
-      showToast('fetching ' + k.replace('col-', 'col ') + ' layers…');
+      showToast('fetching col ' + INFO[k].n + ' layers…');
     }
   }
 }
@@ -417,7 +376,7 @@ function renderDots() {
 function renderState() {
   const c = INFO[curCol] || {};
   $('#ciCol').textContent = 'col ' + (c.n || '—');
-  $('#ciEbs').textContent = c.noData ? 'awaiting ingest' : (c.ebs || '');
+  $('#ciEbs').textContent = c.noData ? 'facsimile only' : (c.ebs || '');
   $('#sCol').textContent = 'Column ' + (c.n || '—');
   $('#sEbs').textContent = c.noData ? 'facsimile only' : (c.ebs || '');
   const regs = regionsOf(curCol), r = regs[curRegion];
@@ -438,11 +397,12 @@ function renderState() {
 /* ---------- view changes drive everything ---------- */
 function setCol(page, boot) {
   if (!page || page === curCol) return;
+  if (glyphsOn && curCol) viewer.setWordBoxes(curCol, false); // box layer follows the column
   curCol = page; curRegion = 0;
   store.load(page);                 // cached no-op for known cols; errors for col-0047
   mountStrip(page);
   refreshThisCol(page);
-  buildGlyphs(); paintViewer();
+  if (glyphsOn) viewer.setWordBoxes(page, true);
   renderState();
   ensureNeighbors(page, !!boot);    // toast is reserved for real view changes
 }
@@ -461,7 +421,6 @@ bus.on('layer', p => {
   if (p.status !== 'ready') return;
   if (p.name === 'entities') refreshThisCol(curCol);
   if (p.name === 'source') renderState();
-  if (glyphsOn && (p.name === 'glyphs' || p.name === 'source')) { buildGlyphs(); paintViewer(); }
 });
 
 /* ---------- nav buttons + keyboard (RTL semantics come from the viewer) ---------- */

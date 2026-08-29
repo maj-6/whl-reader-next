@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Explore — Reading window — WHL Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  html, body { height: 100%; }
+  body { overflow: hidden; }
+
+  /* ---- full-bleed stage; the roll is the page ---- */
+  .stage { position: absolute; inset: 0; background: var(--bg-sunk); }
+  #osd { position: absolute; inset: 0; }
+  #osd .openseadragon-canvas { outline: none; }
+
+  /* chrome topbar → floating translucent bar over the stage */
+  .topbar {
+    position: absolute; top: 12px; left: 12px; right: 12px; z-index: 60;
+    border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--bg-raise) 80%, transparent);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    box-shadow: var(--shadow);
+  }
+
+  /* ---- the reading window ---- */
+  .rw { position: fixed; z-index: 55; display: flex; flex-direction: column;
+    border: 1px solid var(--line); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow); overflow: hidden; }
+  .rw[data-op="solid"]   { background: var(--bg-raise); }
+  .rw[data-op="frosted"] { background: color-mix(in srgb, var(--bg-raise) 80%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .rw[data-op="glass"]   { background: color-mix(in srgb, var(--bg-raise) 45%, transparent);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  .rw.dragging { pointer-events: none; }   /* the roll pans underneath mid-drag */
+
+  .rw-head { flex: none; display: flex; align-items: baseline; gap: 6px;
+    padding: 8px 10px 7px; border-bottom: 1px solid var(--line);
+    cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
+  .rw.dragging .rw-head { cursor: grabbing; }
+  .rw-col { font: 600 12.5px var(--font-chrome); color: var(--ink); white-space: nowrap; }
+  .rw-case { flex: 1; min-width: 0; font: 11.5px var(--font-chrome); color: var(--ink-3);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rw-collapse { flex: none; align-self: center; border: 0; background: none; padding: 0 2px;
+    cursor: pointer; color: var(--ink-3); font: 11px var(--font-chrome); }
+  .rw-collapse:hover { color: var(--ink); }
+
+  .rw.collapsed { height: auto !important; min-height: 0; }
+  .rw.collapsed .rw-body, .rw.collapsed .rw-foot, .rw.collapsed .rw-resize { display: none; }
+  .rw.collapsed .rw-head { border-bottom: 0; }
+
+  .rw-body { flex: 1; min-height: 0; overflow-y: auto; --read-size: 14.5px; }
+  /* strip layout reflows inside the window instead of running as one nowrap line */
+  .rw-body .whl-text[data-layout="strip"] .strip-line { white-space: normal; overflow: visible;
+    padding: 10px 12px 12px; }
+  .rw-body .whl-text[data-layout="strip"] .strip-body { white-space: normal; display: block; }
+  .rw-body .whl-text[data-layout="strip"] .strip-tx2 { font-style: italic; }
+  .rw-body .whl-text[data-layout="strip"] .strip-xl2 { margin-top: 8px; }
+  .rw-body .whl-text .rg-case { display: none; }   /* the header already names the case */
+  .rw-body .whl-skel { height: 64px; margin: 10px; }
+  .rw-empty { padding: 12px; font: 14px/1.6 var(--font-read); color: var(--ink-3); }
+
+  .rw-foot { flex: none; display: flex; align-items: center; gap: 6px;
+    padding: 6px 10px; border-top: 1px solid var(--line); }
+  .stepbtn { flex: none; border: 1px solid var(--line-2); background: none; color: var(--ink-2);
+    border-radius: var(--radius); width: 22px; height: 22px; cursor: pointer;
+    font: 12px/1 var(--font-chrome); padding: 0; }
+  .stepbtn:hover { border-color: var(--accent); color: var(--ink); }
+  .stepbtn[disabled] { opacity: .35; cursor: default; }
+  .stepbtn[disabled]:hover { border-color: var(--line-2); color: var(--ink-2); }
+  .rw-count { font: 11px var(--font-chrome); color: var(--ink-3); min-width: 40px; text-align: center; }
+  .rw-foot .spacer { flex: 1; }
+  .opseg { display: inline-flex; border: 1px solid var(--line-2); border-radius: var(--radius);
+    overflow: hidden; }
+  .opseg button { border: 0; background: none; padding: 3px 8px; cursor: pointer;
+    font: 10.5px var(--font-chrome); color: var(--ink-2); }
+  .opseg button.active { background: var(--tint-select); color: var(--ink); font-weight: 600; }
+
+  .rw-resize { position: absolute; right: 0; bottom: 0; width: 16px; height: 16px;
+    cursor: nwse-resize; touch-action: none; }
+  .rw-resize::after { content: ''; position: absolute; right: 4px; bottom: 4px;
+    width: 6px; height: 6px; border-right: 2px solid var(--line-2);
+    border-bottom: 2px solid var(--line-2); }
+</style>
+</head>
+<body>
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+
+<div class="stage"><div id="osd"></div></div>
+
+<aside class="rw" id="rw" data-op="frosted" aria-label="Reading window">
+  <div class="rw-head" id="rwHead">
+    <span class="rw-col" id="rwCol">Column —</span>
+    <span class="rw-case" id="rwCase"></span>
+    <button type="button" class="rw-collapse" id="rwCollapse" title="Collapse">&#9662;</button>
+  </div>
+  <div class="rw-body" id="rwBody">
+    <div id="rwText"></div>
+    <div class="rw-empty" id="rwEmpty" hidden>&mdash;</div>
+  </div>
+  <div class="rw-foot">
+    <button type="button" class="stepbtn" id="rwPrev" title="Previous case">&lsaquo;</button>
+    <span class="rw-count" id="rwCount"></span>
+    <button type="button" class="stepbtn" id="rwNext" title="Next case">&rsaquo;</button>
+    <span class="spacer"></span>
+    <div class="opseg" id="opSeg" role="group" aria-label="Window translucency">
+      <button type="button" data-op="solid">Solid</button>
+      <button type="button" data-op="frosted" class="active">Frosted</button>
+      <button type="button" data-op="glass">Glass</button>
+    </div>
+  </div>
+  <div class="rw-resize" id="rwResize" title="Resize"></div>
+</aside>
+
+<script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0/build/openseadragon/openseadragon.min.js"></script>
+<script type="module">
+import { createBus } from './lib/whl-bus.js';
+import { mountChrome } from './lib/whl-chrome.js';
+import { createTextPane } from './lib/whl-text.js';
+import { createRoll, DATA_COLS } from './explore-common.js';
+
+const $ = s => document.querySelector(s);
+const bus = createBus();
+
+/* ---------- chrome ---------- */
+const chrome = mountChrome({
+  title: 'Papyrus Ebers', back: 'explore-concepts.html', bus,
+  book: { label: 'EB01', title: 'Papyrus Ebers', thumb: 'assets/thumbs/EB01.jpg' },
+  adv: false, mockSwitch: 'mode-only',
+  note: 'Reading window &mdash; drag, resize, &lsaquo; &rsaquo; steps cases; ' +
+    'click a case on the roll to retarget; Esc clears.',
+});
+
+/* ---------- the roll (shared substrate); selection never moves the viewport ---------- */
+/* createRoll merges viewerOpts.profile over its scroll-h RTL defaults; the full
+   profile is restated here only for explicitness. */
+const { viewer, store } = createRoll({
+  el: $('#osd'), bus, start: 'col-0045',
+  viewerOpts: { profile: { layout: 'scroll-h', direction: 'rtl', gap: 0, zoomOnSelect: false } },
+});
+
+/* ---------- highlight fan-out: viewer glyph boxes + window text ---------- */
+let pane = null, lastH = null;
+bus.on('highlight', h => {
+  lastH = h;
+  viewer.applyHighlight(h);
+  if (pane) pane.applyHighlight(h);
+});
+
+/* ---------- window targeting ---------- */
+let curCol = null, curRegion = 1, selActive = false;
+const textEl = $('#rwText'), emptyEl = $('#rwEmpty');
+const regionsOf = col =>
+  (store.get(col) && store.get(col).source && store.get(col).source.regions) || [];
+
+function mountPane(col) {
+  if (pane) { pane.destroy(); pane = null; }
+  textEl.innerHTML = '';
+  const noData = !DATA_COLS.includes(col);
+  emptyEl.hidden = !noData;
+  textEl.hidden = noData;
+  if (noData) return;
+  pane = createTextPane({ el: textEl, bus, store, book: 'EB01', page: col,
+    layout: 'strip', stripShow: 'both' });
+  pane.setRegion(curRegion);
+  if (lastH) pane.applyHighlight(lastH);
+}
+
+function renderState() {
+  const noData = curCol && !DATA_COLS.includes(curCol);
+  $('#rwCol').textContent = 'Column ' + (curCol ? +curCol.slice(4) : '—');
+  const regs = regionsOf(curCol), r = regs[curRegion];
+  const label = r ? (r.case_label || (r.type === 'header' ? 'column header' : '')) :
+    (noData ? '—' : '…');
+  $('#rwCase').textContent = label ? '· ' + label : '';
+  $('#rwCount').textContent = regs.length ? (curRegion + 1) + ' / ' + regs.length : '';
+  $('#rwPrev').disabled = !regs.length || curRegion <= 0;
+  $('#rwNext').disabled = !regs.length || curRegion >= regs.length - 1;
+}
+
+function retarget(col, region) {
+  const colChanged = col !== curCol;
+  curCol = col;
+  curRegion = Math.max(0, +region || 0);
+  if (colChanged) mountPane(col);
+  else if (pane) pane.setRegion(curRegion);
+  renderState();
+}
+
+/* clicking a case on the roll (or stepping) selects; the window follows */
+bus.on('select', p => {
+  if (!p || p.page == null || p.region == null) return;
+  selActive = true;
+  retarget(p.page, +p.region);
+});
+bus.on('select:clear', () => { selActive = false; });
+
+/* panning to another column retargets to its first case — unless a case is selected */
+bus.on('view', p => {
+  if (!p || !p.page || p.page === curCol || selActive) return;
+  retarget(p.page, regionsOf(p.page).length > 1 ? 1 : 0);
+});
+
+/* case label arrives with the source layer */
+bus.on('layer', p => {
+  if (p && p.page === curCol && p.name === 'source' && p.status === 'ready') renderState();
+});
+
+/* stepper: retarget + highlight on the roll without a viewport jump */
+function step(d) {
+  const regs = regionsOf(curCol);
+  if (!regs.length) return;
+  const n = Math.max(0, Math.min(regs.length - 1, curRegion + d));
+  if (n !== curRegion) viewer.select(curCol, n);
+}
+$('#rwPrev').onclick = () => step(-1);
+$('#rwNext').onclick = () => step(1);
+
+/* ---------- window geometry: drag / resize / clamp / persist ---------- */
+const win = $('#rw'), head = $('#rwHead'), rz = $('#rwResize'), collapseBtn = $('#rwCollapse');
+const SKEY = 'whl-explore-window';
+let W = { x: -1, y: -1, w: 360, h: 300, op: 'frosted' };
+try {
+  const s = JSON.parse(sessionStorage.getItem(SKEY) || 'null');
+  if (s && typeof s === 'object') W = { ...W, ...s };
+} catch {}
+
+const topMin = () => chrome.el.getBoundingClientRect().bottom + 8;   /* never cover the topbar */
+function applyW() {
+  const vw = innerWidth, vh = innerHeight, ty = topMin();
+  W.w = Math.max(260, Math.min(W.w, vw - 16));
+  W.h = Math.max(160, Math.min(W.h, vh - ty - 8));
+  if (W.x < 0 && W.y < 0) { W.x = vw - W.w - 20; W.y = ty + 4; }   /* initial: at right */
+  W.x = Math.max(8, Math.min(W.x, vw - W.w - 8));
+  W.y = Math.max(ty, Math.min(W.y, vh - 44));
+  win.style.left = W.x + 'px'; win.style.top = W.y + 'px';
+  win.style.width = W.w + 'px'; win.style.height = W.h + 'px';
+  win.dataset.op = W.op;
+  document.querySelectorAll('#opSeg button')
+    .forEach(b => b.classList.toggle('active', b.dataset.op === W.op));
+}
+const save = () => { try { sessionStorage.setItem(SKEY, JSON.stringify(W)); } catch {} };
+
+let drag = null;
+head.addEventListener('pointerdown', e => {
+  if (e.button !== 0 || e.target.closest('#rwCollapse')) return;
+  drag = { dx: e.clientX - W.x, dy: e.clientY - W.y, id: e.pointerId };
+  try { head.setPointerCapture(e.pointerId); } catch {}
+  win.classList.add('dragging');
+});
+head.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  W.x = e.clientX - drag.dx; W.y = e.clientY - drag.dy;
+  applyW();
+});
+const endDrag = () => { if (!drag) return; drag = null; win.classList.remove('dragging'); save(); };
+head.addEventListener('pointerup', endDrag);
+head.addEventListener('pointercancel', endDrag);
+
+let rs = null;
+rz.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  rs = { dw: W.w - e.clientX, dh: W.h - e.clientY, id: e.pointerId };
+  try { rz.setPointerCapture(e.pointerId); } catch {}
+  win.classList.add('dragging');
+  e.preventDefault();
+});
+rz.addEventListener('pointermove', e => {
+  if (!rs || e.pointerId !== rs.id) return;
+  W.w = e.clientX + rs.dw; W.h = e.clientY + rs.dh;
+  applyW();
+});
+const endRs = () => { if (!rs) return; rs = null; win.classList.remove('dragging'); save(); };
+rz.addEventListener('pointerup', endRs);
+rz.addEventListener('pointercancel', endRs);
+
+function toggleCollapse() {
+  const c = win.classList.toggle('collapsed');
+  collapseBtn.innerHTML = c ? '&#9656;' : '&#9662;';
+  collapseBtn.title = c ? 'Expand' : 'Collapse';
+  if (!c) win.style.height = W.h + 'px';
+}
+collapseBtn.onclick = toggleCollapse;
+head.addEventListener('dblclick', e => { if (!e.target.closest('#rwCollapse')) toggleCollapse(); });
+
+$('#opSeg').addEventListener('click', e => {
+  const b = e.target.closest('button[data-op]');
+  if (!b || b.dataset.op === W.op) return;
+  W.op = b.dataset.op;
+  applyW(); save();
+});
+
+window.addEventListener('resize', applyW);   /* re-clamp into view */
+applyW(); save();
+
+/* ---------- keyboard: arrows pan columns, Esc clears selection ---------- */
+document.addEventListener('keydown', e => {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (/input|select|textarea/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowLeft') { viewer.next(); e.preventDefault(); }
+  else if (e.key === 'ArrowRight') { viewer.prev(); e.preventDefault(); }
+  else if (e.key === 'Escape') bus.emit('select:clear', {});
+});
+
+/* ---------- boot ---------- */
+retarget(viewer.current() || 'col-0045', 1);
+
+window.__whl = { bus, chrome, store, viewer, get pane() { return pane; } };
+</script>
+</body>
+</html>
