@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Reader — codex (E17) · WHL mockups</title>
+<title>Reader · WHL mockups</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/tokens.css">
 <style>
@@ -23,6 +23,13 @@ body { display: flex; flex-direction: column; overflow: hidden; }
 .ldots .dot[data-st="ready"] { background: var(--ok); border-color: var(--ok); }
 .ldots .dot[data-st="error"] { background: var(--rubric); border-color: var(--rubric); }
 @keyframes pulse { 50% { opacity: .3; } }
+
+/* ---------- topbar book switch (next to the book chip) ---------- */
+.bookswap { display: inline-flex; gap: 2px; align-items: center; margin-left: 4px; }
+.bookswap a { font: 11px var(--font-chrome); color: var(--ink-3); text-decoration: none;
+  padding: 3px 7px; border-radius: 3px; }
+.bookswap a:hover { color: var(--ink); background: var(--bg-sunk); }
+.bookswap a.cur { color: var(--accent); font-weight: 600; }
 
 /* ---------- viewer pane ---------- */
 #viewerPane { position: relative; width: 44%; min-width: 0; display: flex; flex-direction: column;
@@ -64,10 +71,16 @@ body.dragging #viewerPane { transition: none; }
 .crumb .chip { text-transform: none; letter-spacing: 0; font-weight: 400; }
 .rom { font-family: var(--font-read); font-style: italic; color: var(--ink-2);
   font-size: .95em; text-transform: none; letter-spacing: 0; }
+.crumb .hdr { text-transform: none; letter-spacing: 0; font-weight: 400;
+  font: italic 15px var(--font-read); color: var(--ink-2); } /* diplomatic header text — no case transform */
 #read { border-top: 1px solid var(--line); }
 #read .tx, #read .xl { font-size: var(--read-size, 16.5px); } /* wire sidebar text-size slider */
 .conf-note { margin-top: 22px; padding-top: 12px; border-top: 1px solid var(--line);
   font: 11px/1.6 var(--font-chrome); color: var(--ink-3); }
+
+/* E18/E25 layout amendments — scoped so E17 stays byte-identical to the reference look */
+body[data-book="E18"] .whl-text[data-layout="pair"] .rg-el > .tx:last-child { grid-column: 1 / -1; }
+body:not([data-book="E17"]) #read .rg-el.rg-table { display: block; } /* tables never split the pair grid */
 
 /* ---------- hint chip ---------- */
 #hint { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 80;
@@ -100,18 +113,16 @@ body.dragging #viewerPane { transition: none; }
     </div>
     <div id="osd"></div>
     <div id="rail"></div>
-    <span class="chip vfoot adv-only" title="Facsimile identity">E17 · page-0382 · 2112×3071</span>
+    <span class="chip vfoot adv-only" id="vfoot" title="Facsimile identity"></span>
   </div>
 
   <div id="divider" title="Drag to resize"></div>
 
   <div id="readingPane">
     <div class="reading-inner">
-      <div class="crumb">第二卷 &middot; 十画 &middot; 铁 <span class="rom">tiě</span>
-        <span class="chip" style="margin-left:auto">entries 3812–3815 &middot; printed p. 1856</span></div>
+      <div class="crumb" id="crumb"></div>
       <div id="read"></div>
-      <div class="conf-note adv-only">Source layers: layout-v2 regions (51) &middot; OCR profile zh-dict-1977 &middot;
-        parallel EN is a machine draft, editorially unreviewed &middot; 1,400 atomic alignment groups over 1,716 word boxes.</div>
+      <div class="conf-note adv-only" id="conf"></div>
     </div>
   </div>
 
@@ -119,7 +130,7 @@ body.dragging #viewerPane { transition: none; }
 </div>
 
 <div id="hint" hidden>
-  <span>Hover any word of the translation — the exact glyphs light up on the facsimile, and back. Click pins, <kbd>Esc</kbd> clears.</span>
+  <span id="hintText"></span>
   <button type="button" class="hx" aria-label="Dismiss hint">&times;</button>
 </div>
 
@@ -134,67 +145,129 @@ import {createLinker} from './lib/whl-linker.js';
 import {createSidebar} from './lib/whl-sidebar.js';
 
 const $ = s => document.querySelector(s);
-const PAGE = 'page-0382', BOOK = 'E17';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ---------- per-book configuration ---------- */
+const BOOKS = {
+  E17: {
+    page: 'page-0382', img: { url: 'assets/pages/E17-page.jpg', w: 1100, h: 1600 }, px: '2112×3071',
+    chip: { title: '中药大辞典', label: 'Zhōngyào dà cídiǎn · vol. 2 · 1977', thumb: 'assets/thumbs/E17.jpg' },
+    layout: 'pair', printed: '1856',
+    crumb: '第二卷 &middot; 十画 &middot; 铁 <span class="rom">tiě</span>' +
+      '<span class="chip" style="margin-left:auto">entries 3812&ndash;3815 &middot; printed p. 1856</span>',
+    conf: 'Source layers: layout-v2 regions (51) · OCR profile zh-dict-1977 · ' +
+      'parallel EN is a machine draft, editorially unreviewed · 1,400 atomic alignment groups over 1,716 word boxes.',
+    note: 'E17 p. 1856; hover links words ↔ glyphs; Esc clears.',
+    hint: { layer: 'associations', html: 'Hover any word of the translation — the exact glyphs light up on the facsimile, and back. Click pins, <kbd>Esc</kbd> clears.' },
+    article: `<div class="card art"><div class="kick">About this book</div>
+      <h3>Reading a stroke-count dictionary</h3>
+      <p>How the 中药大辞典 orders its 5,767 entries by stroke count, what the bracketed rubrics
+      (异名 · 基原 · 性味 · 选方) mean, and how its citations resolve to the source herbals they quote.</p>
+      <div class="meta">Bound to volume 2 · 4 min read · links E54, E49</div>
+      <button type="button" class="btn primary" title="Mockup stub — article view not in this mockup">Read article</button></div>`,
+    contents: contentsE17
+  },
+  E18: {
+    page: 'center', img: { url: 'assets/pages/E18-page.jpg', w: 884, h: 1600 }, px: '1989×3600',
+    chip: { title: 'Extemporaneous Dispensatory', label: 'H. D. Gaubius · 1741', thumb: 'assets/thumbs/E18.jpg' },
+    layout: 'pair', printed: null,
+    conf: 'Source layers: layout regions (21) · 181 word boxes · 88 alignment groups, text-level only ' +
+      '(no facsimile word refs on this page) · parallel EN is a machine draft, editorially unreviewed.',
+    note: 'E18; hover links transcription ↔ translation; Esc clears.',
+    hint: { layer: 'associations', html: 'Hover any phrase of the translation — the matching Latin lights up beside it. Click pins, <kbd>Esc</kbd> clears.' },
+    article: null,
+    contents: genericContents
+  },
+  E25: {
+    page: 'center', img: { url: 'assets/pages/E25-page.jpg', w: 891, h: 1600 }, px: '1530×2746',
+    chip: { title: 'Chemistry of Essential Oils', label: 'E. J. Parry · 1918', thumb: 'assets/thumbs/E25.jpg' },
+    layout: 'stacked', printed: null,
+    layers: ['source', 'words', 'entities'], /* no association layer for this witness */
+    conf: 'Source layers: layout regions (12) · 479 word boxes · no alignment layer — region-level hover only.',
+    note: 'E25; region-level hover; Esc clears.',
+    hint: { layer: 'source', html: 'Hover a paragraph — its region lights up on the facsimile. <kbd>Esc</kbd> clears.' },
+    article: null,
+    contents: genericContents
+  }
+};
+const qp = new URLSearchParams(location.search);
+const BOOK = BOOKS[qp.get('book')] ? qp.get('book') : 'E17';
+const B = BOOKS[BOOK], PAGE = B.page;
+document.title = `Reader — ${BOOK} · WHL mockups`;
+document.body.dataset.book = BOOK;
+const SS = k => `whl-reader:${BOOK}:${k}`; /* sessionStorage namespaced per book */
 const bus = createBus();
 
 /* ---------- chrome ---------- */
 const chrome = mountChrome({
   title: 'Reader · Codex', bus,
-  book: { title: '中药大辞典', label: 'Zhōngyào dà cídiǎn · vol. 2 · 1977', thumb: 'assets/thumbs/E17.jpg' },
-  modes: ['study', 'facsimile', 'explore'], mode: 'facsimile',
-  note: '<b>Codex reader on real E17 data</b> (printed p. 1856, entries 3812–3815 铁落·铁锈·铁精·铁马豆). ' +
-    'Layers stream on a simulated 3G link — watch the topbar dots (Advanced). Hover translation words ↔ facsimile glyphs; ' +
-    'click pins, Esc clears. Drag the divider; Study collapses the facsimile to a rail; all sidebar tabs live.'
+  book: B.chip,
+  modes: ['study', 'facsimile', 'explore'], modesDisabled: ['explore'], mode: 'facsimile',
+  note: B.note
 });
 const exBtn = chrome.el.querySelector('.whl-modeseg button[data-m="explore"]');
-if (exBtn) { exBtn.disabled = true; exBtn.title = 'Explore mode — see reader-explore.html'; }
+if (exBtn) { exBtn.disabled = true; exBtn.title = 'Explore — see explorer.html'; }
 
-/* page indicator: "p. 1856" + 5 layer dots from store layer events (dots adv-only) */
-const LAYERS = ['tiles', 'source', 'words', 'associations', 'entities'];
+/* book switch: quiet links beside the book chip, ?book= navigation */
+const swap = document.createElement('nav');
+swap.className = 'bookswap';
+swap.setAttribute('aria-label', 'Switch book');
+swap.innerHTML = Object.keys(BOOKS).map(k =>
+  `<a href="?book=${k}"${k === BOOK ? ' class="cur" aria-current="page"' : ''} title="${esc(BOOKS[k].chip.title)}">${k}</a>`).join('');
+const bp = chrome.el.querySelector('.bookpick');
+bp ? bp.after(swap) : chrome.el.appendChild(swap);
+
+/* page indicator: printed identity + layer dots driven by store status keys (dots adv-only) */
 const ind = document.createElement('div');
 ind.className = 'pageind';
-ind.title = 'Data layers streaming for this page: tiles · source · words · associations · entities';
-ind.innerHTML = `<span>p.&nbsp;<b>1856</b></span>` +
-  `<span class="ldots adv-only">${LAYERS.map(l => `<span class="dot" data-l="${l}" title="${l} — pending"></span>`).join('')}</span>` +
-  `<span class="adv-only"><span id="nl">0</span>/5</span>`;
+ind.innerHTML = `<span class="pid">${B.printed ? `p.&nbsp;<b>${B.printed}</b>` : `<b>${BOOK}</b>`}</span>` +
+  `<span class="ldots adv-only"></span>` +
+  `<span class="adv-only"><span id="nl">0</span>/<span id="nt">0</span></span>`;
 chrome.el.insertBefore(ind, chrome.el.querySelector('.mock-switch'));
+const dots = ind.querySelector('.ldots');
 bus.on('layer', p => {
   if (p.page !== PAGE) return;
-  const d = ind.querySelector(`.dot[data-l="${p.name}"]`);
-  if (d) { d.dataset.st = p.status; d.title = `${p.name} — ${p.status}`; }
-  $('#nl').textContent = [...ind.querySelectorAll('.dot')].filter(x => x.dataset.st === 'ready').length;
+  let d = dots.querySelector(`.dot[data-l="${p.name}"]`);
+  if (!d) {
+    d = document.createElement('span');
+    d.className = 'dot'; d.dataset.l = p.name;
+    dots.appendChild(d);
+    $('#nt').textContent = dots.children.length;
+    ind.title = 'Data layers streaming for this page: ' + [...dots.children].map(x => x.dataset.l).join(' · ');
+  }
+  d.dataset.st = p.status; d.title = `${p.name} — ${p.status}`;
+  $('#nl').textContent = [...dots.children].filter(x => x.dataset.st === 'ready').length;
 });
 
 /* ---------- store · viewer · text · linker ---------- */
-const store = createStore({ base: './lib/data', book: BOOK, bus, pages: [PAGE], latency: '3g' });
+const store = createStore({ base: './lib/data', book: BOOK, bus, pages: [PAGE], latency: '3g',
+  layers: B.layers ? { [PAGE]: B.layers } : undefined });
 const viewer = createViewer({
   el: $('#osd'), bus, store, book: BOOK, profile: { layout: 'single' },
-  pages: [{ key: PAGE, url: 'assets/pages/E17-page.jpg', w: 1100, h: 1600 }]
+  pages: [{ key: PAGE, url: B.img.url, w: B.img.w, h: B.img.h }]
 });
-const text = createTextPane({ el: $('#read'), bus, store, book: BOOK, page: PAGE, layout: 'pair' });
+const text = createTextPane({ el: $('#read'), bus, store, book: BOOK, page: PAGE, layout: B.layout });
 createLinker({ bus, store });
 bus.on('highlight', h => { viewer.applyHighlight(h); text.applyHighlight(h); });
 
+/* static identity chrome */
+$('#vfoot').textContent = `${BOOK} · ${PAGE} · ${B.px}`;
+$('#conf').textContent = B.conf;
+if (B.crumb) $('#crumb').innerHTML = B.crumb;
+
 /* ---------- sidebar ---------- */
 const art = document.createElement('div');
-art.innerHTML =
-  `<div class="card art"><div class="kick">About this book</div>
-  <h3>Reading a stroke-count dictionary</h3>
-  <p>How the 中药大辞典 orders its 5,767 entries by stroke count, what the bracketed rubrics
-  (异名 · 基原 · 性味 · 选方) mean, and how its citations resolve to the source herbals they quote.</p>
-  <div class="meta">Bound to volume 2 · 4 min read · links E54, E49</div>
-  <button type="button" class="btn primary" title="Mockup stub — article view not in this mockup">Read article</button></div>`;
+art.innerHTML = B.article || `<div class="card art"><p>No article for this page.</p></div>`;
 const side = createSidebar({ el: $('#side'), bus, tabs: {
   contents: { tree: [] }, thispage: { items: [] }, article: { el: art }, appearance: true
 }});
 side.open('thispage');
 
-/* contents tree derived from the real regions: title regions start entries,
-   【rubric】 openers become their children */
+/* E17 contents: title regions start entries, 【rubric】 openers become their children */
 const GLOSS = { '异名': 'other names', '基原': 'origin', '炮制': 'preparation', '性味': 'nature & flavour',
   '归经': 'channels entered', '功用主治': 'actions & indications', '用法与用量': 'dosage', '宜忌': 'cautions',
   '选方': 'selected prescriptions', '各家论述': 'commentaries', '备考': 'notes', '原植物': 'source plant' };
-function contentsFrom(src) {
+function contentsE17(src) {
   const mk = (id, title, sub, region, importance) => ({ id, title, sub, target: { page: PAGE, region }, importance, children: [] });
   let cur = mk('e3812', '3812 铁落', 'tiě luò · concluded from p. 1855', 0, 'secondary');
   const tree = [cur];
@@ -212,13 +285,80 @@ function contentsFrom(src) {
   });
   return tree;
 }
-const offSrc = bus.on('layer', p => {
-  if (p.page === PAGE && p.name === 'source' && p.status === 'ready') {
-    side.setContents(contentsFrom(store.get(PAGE).source)); offSrc();
+
+/* generic contents: title/caption regions head the tree, following regions nest under them;
+   no headings at all → flat region list labeled by type */
+function genericContents(src) {
+  const first = r => ((r.text || '').split('\n')[0]).trim();
+  const trim = t => t.length > 44 ? t.slice(0, 43) + '…' : t;
+  const heads = []; let cur = null;
+  (src.regions || []).forEach((r, i) => {
+    if (r.type === 'header' || r.type === 'footer') return;
+    const t = first(r);
+    if (r.type === 'title' || r.type === 'caption') {
+      cur = { id: 'h' + i, title: trim(t), target: { page: PAGE, region: i }, importance: 'secondary', children: [] };
+      heads.push(cur);
+    } else if (t && !/^[*⁂·—-]+$/.test(t)) {
+      const item = { id: 'r' + i, title: trim(t), sub: r.type !== 'text' ? r.type : undefined,
+        target: { page: PAGE, region: i }, importance: 'detail' };
+      if (cur) cur.children.push(item); else heads.push({ ...item, children: [] });
+    }
+  });
+  return heads.length ? heads
+    : (src.regions || []).map((r, i) => ({ id: 'r' + i, title: r.type || 'text', sub: trim(first(r)),
+        target: { page: PAGE, region: i }, children: [] }));
+}
+
+/* printed identity: a header/footer region whose text is a bare number — never invented */
+const printedFrom = src => {
+  for (const r of src.regions || []) if (r.type === 'header' || r.type === 'footer') {
+    const t = (r.text || '').trim();
+    if (/^\d{1,4}$/.test(t)) return t;
   }
+  return null;
+};
+const crumbFrom = src => {
+  const heads = (src.regions || []).filter(r => r.type === 'header')
+    .map(r => (r.text || '').trim()).filter(t => t && !/^\d+$/.test(t));
+  const n = printedFrom(src);
+  return `<span class="hdr">${esc(heads.join(' · '))}</span>` +
+    (n ? `<span class="chip" style="margin-left:auto">printed p. ${n}</span>` : '');
+};
+
+/* study-mode thumbnail rail (only the current page is loaded; neighbours are mock nav) */
+function buildRail() {
+  const rail = $('#rail'); rail.innerHTML = '';
+  const n = +B.printed;
+  const list = Number.isFinite(n) ? [n - 2, n - 1, n, n + 1, n + 2] : [BOOK];
+  list.forEach(p => {
+    const curr = p === n || list.length === 1;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'rl' + (curr ? ' cur' : '');
+    b.title = curr ? 'Current page' : `Mockup — only p. ${n} is loaded`;
+    b.innerHTML = `<img src="${B.img.url}" alt="">${p}`;
+    rail.appendChild(b);
+  });
+}
+if (B.printed) buildRail();
+
+/* source-derived chrome: contents tree, and (E18/E25) printed identity + crumb + rail */
+const offSrc = bus.on('layer', p => {
+  if (p.page !== PAGE || p.name !== 'source') return;
+  if (p.status === 'ready') {
+    const src = store.get(PAGE).source;
+    side.setContents(B.contents(src));
+    if (!B.crumb) $('#crumb').innerHTML = crumbFrom(src);
+    if (!B.printed) {
+      const n = printedFrom(src);
+      if (n) { B.printed = n; ind.querySelector('.pid').innerHTML = `p.&nbsp;<b>${n}</b>`; }
+      buildRail();
+    }
+    offSrc();
+  } else if (p.status === 'error') { buildRail(); offSrc(); }
 });
 
-/* this-page cards: all 42 real entities, relevance = mention count normalised, top 8 */
+/* this-page cards: all real entities, relevance = mention count normalised, top 8 */
 function itemsFrom(ents) {
   const max = Math.max(1, ...ents.map(e => (e.mentions || []).length));
   return ents.map(en => ({
@@ -261,18 +401,9 @@ const setRMode = m => {
 chrome.on('mode', p => setRMode(p.mode));
 setRMode('facsimile');
 
-/* study-mode thumbnail rail (only p. 1856 is loaded; neighbours are mock nav) */
-[1854, 1855, 1856, 1857, 1858].forEach(p => {
-  const b = document.createElement('button');
-  b.type = 'button';
-  b.className = 'rl' + (p === 1856 ? ' cur' : '');
-  b.title = p === 1856 ? 'Current page' : 'Mockup — only p. 1856 is loaded';
-  b.innerHTML = `<img src="assets/pages/E17-page.jpg" alt="">${p}`;
-  $('#rail').appendChild(b);
-});
-
-/* ---------- draggable divider ---------- */
+/* ---------- draggable divider (split persisted per book, session only) ---------- */
 const dv = $('#divider'), vp = $('#viewerPane'), stage = $('.stage');
+try { const w = sessionStorage.getItem(SS('split')); if (w) vp.style.width = w; } catch (e) {}
 dv.addEventListener('pointerdown', e => {
   e.preventDefault();
   dv.setPointerCapture(e.pointerId);
@@ -287,24 +418,29 @@ dv.addEventListener('pointerdown', e => {
     dv.releasePointerCapture(ev.pointerId);
     dv.removeEventListener('pointermove', move);
     dv.removeEventListener('pointerup', up);
+    try { sessionStorage.setItem(SS('split'), vp.style.width); } catch (err) {}
   };
   dv.addEventListener('pointermove', move);
   dv.addEventListener('pointerup', up);
 });
 
-/* ---------- hint chip + esc ---------- */
+/* ---------- hint chip + keys ---------- */
 const hint = $('#hint');
-const offAssoc = bus.on('layer', p => {
-  if (p.page === PAGE && p.name === 'associations' && p.status === 'ready') { hint.hidden = false; offAssoc(); }
+$('#hintText').innerHTML = B.hint.html;
+const offHint = bus.on('layer', p => {
+  if (p.page === PAGE && p.name === B.hint.layer && p.status === 'ready') { hint.hidden = false; offHint(); }
 });
 const hideHint = () => { hint.hidden = true; };
 hint.querySelector('.hx').onclick = hideHint;
 bus.on('select', hideHint);
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { bus.emit('select:clear', {}); bus.emit('hover:clear', {}); }
+  if (e.key === 'Escape') { bus.emit('select:clear', {}); bus.emit('hover:clear', {}); return; }
+  if (/^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(e.target.tagName)) return;
+  if (e.key === 'ArrowRight') viewer.next();
+  else if (e.key === 'ArrowLeft') viewer.prev();
 });
 
-window.__whl = { bus, chrome, store, viewer, text, side };
+window.__whl = { bus, chrome, store, viewer, text, side, book: BOOK };
 </script>
 </body>
 </html>

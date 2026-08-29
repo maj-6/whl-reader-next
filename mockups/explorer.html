@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Explore — Window + dual sidebars — WHL Mockups</title>
+<title>Explorer — WHL Mockups</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Sans+Egyptian+Hieroglyphs&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/tokens.css">
 <style>
@@ -16,6 +16,10 @@
     border-radius: var(--radius-lg); background: color-mix(in srgb, var(--bg-raise) 84%, transparent);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--shadow); }
   .topbar { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 60; }
+  .bookswitch { display: flex; align-items: center; gap: 2px; margin-left: 2px; }
+  .bookswitch a { font: 11px var(--font-chrome); color: var(--ink-3); text-decoration: none; padding: 3px 6px; border-radius: var(--radius); }
+  .bookswitch a:hover { color: var(--ink); background: var(--tint-region); }
+  .bookswitch a.cur { color: var(--ink); font-weight: 600; background: var(--tint-select); }
 
   /* ---- rails ---- */
   .rail { position: absolute; bottom: 12px; z-index: 50; display: flex; flex-direction: column; overflow: hidden; }
@@ -52,6 +56,7 @@
   .row { display: block; padding: 5px 10px 5px 12px; cursor: pointer; border-left: 2px solid transparent; }
   .row:hover { background: var(--tint-region); }
   .row.cur { border-left-color: var(--accent); background: var(--tint-region); }
+  .row.sub { padding-left: 24px; }
   .row .r1 { display: block; font: 500 12.5px var(--font-chrome); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .row.cur .r1 { font-weight: 600; }
   .row .r2 { display: block; font: 11px var(--font-chrome); color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -131,7 +136,7 @@
   <div class="rail-head"><button type="button" class="chev" id="lToggle" aria-label="Toggle navigation rail">&lsaquo;</button></div>
   <div class="rail-strip" id="lStrip"></div>
   <div class="rail-body">
-    <section class="sec" data-sec="columns">
+    <section class="sec" data-sec="columns" id="colSec">
       <div class="sec-h"><span class="sec-t">Columns</span><span class="cv">&#9662;</span></div>
       <div class="sec-b" id="colList"></div>
     </section>
@@ -148,7 +153,7 @@
   <div class="rail-body">
     <section class="sec sec-grow" data-sec="text">
       <div class="sec-h"><span class="sec-t">Text</span>
-        <button type="button" class="hbtn" id="hieroBtn" aria-label="hieroglyphic" aria-pressed="false">&#x1332A;</button>
+        <button type="button" class="hbtn" id="hieroBtn" aria-label="hieroglyphic" aria-pressed="false" hidden>&#x1332A;</button>
         <span class="cv">&#9662;</span></div>
       <div class="sec-b" id="txWrap"><div id="txPane"></div><div id="txEmpty" hidden>&mdash;</div></div>
     </section>
@@ -163,10 +168,7 @@
     <section class="sec" data-sec="ask">
       <div class="sec-h"><span class="sec-t">Ask</span><span class="cv">&#9662;</span></div>
       <div class="sec-b">
-        <div class="qa">
-          <div class="q">Which drugs recur in Eb 226&ndash;236?</div>
-          <div class="a">Coriander (&scaron;ꜣ.w), cumin (tpnn) and gum (qmy.t) each appear in more than one prescription of this column; wheat flour (sw.t) is the usual base.</div>
-        </div>
+        <div class="qa" id="qaBox"></div>
         <div class="ask-in"><input id="askIn" type="text" placeholder="Ask about this passage" aria-label="Ask about this passage"></div>
       </div>
     </section>
@@ -175,14 +177,14 @@
 
 <aside class="rw" id="rw" data-op="frosted" aria-label="Reading window" hidden>
   <div class="rw-head" id="rwHead">
-    <span class="rw-col" id="rwCol">Column &mdash;</span>
+    <span class="rw-col" id="rwCol">&mdash;</span>
     <span class="rw-case" id="rwCase"></span>
   </div>
   <div class="rw-body"><div id="rwText"></div><div id="rwEmpty" hidden>&mdash;</div></div>
   <div class="rw-foot">
-    <button type="button" class="stepbtn" id="rwPrev" title="Previous case">&lsaquo;</button>
+    <button type="button" class="stepbtn" id="rwPrev" title="Previous">&lsaquo;</button>
     <span class="rw-count" id="rwCount"></span>
-    <button type="button" class="stepbtn" id="rwNext" title="Next case">&rsaquo;</button>
+    <button type="button" class="stepbtn" id="rwNext" title="Next">&rsaquo;</button>
     <span class="spacer"></span>
     <div class="opseg" id="opSeg" role="group" aria-label="Window translucency">
       <button type="button" data-op="solid">Solid</button>
@@ -198,38 +200,109 @@
 import { createBus } from './lib/whl-bus.js';
 import { mountChrome } from './lib/whl-chrome.js';
 import { createTextPane } from './lib/whl-text.js';
+import { createStore } from './lib/whl-store.js';
+import { createViewer } from './lib/whl-viewer.js';
+import { createLinker } from './lib/whl-linker.js';
 import { createRoll, COLS, DATA_COLS, hieroHTML } from './explore-common.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const first = (s, n) => { s = String(s || '').split('\n')[0].trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+
+/* ---------- per-book configuration ---------- */
+const BOOKS = {
+  EB01: {
+    title: 'Papyrus Ebers', kind: 'roll', start: 'col-0045',
+    entriesTitle: c => 'Cases · col. ' + (+c.slice(4)),
+    pageLabel: c => 'Column ' + (+c.slice(4)),
+    rows: regs => regs.map((r, i) => r.case_label ? { i, r1: r.case_label } : null).filter(Boolean),
+    comm: {
+      'col-0044': [['Eb 217–224', 'Concordance: Grundriss der Medizin IV/1 ad loc. — = H 48–49, 79–82; the Hearst parallels run in block, variants orthographic.'], ['Eb 214', 'vgl. pChester Beatty VIII vso. 5,1–3, which transmits the same text in a later hand.']],
+      'col-0045': [['Eb 226–236', 'Concordance: Grundriss der Medizin IV/1 ad loc. for the cases of this column.'], ['Eb 227', 'vgl. Bln 58 — the Berlin papyrus transmits the same remedy with the drug list reordered.']],
+      'col-0046': [['Eb 242', 'Rubricated title case; the ḫꜣs.yt-fruit group it opens runs through Eb 245.'], ['Eb 243–245', '= H 71–73: the Hearst sequence keeps the order of the common Vorlage.']],
+      'col-0048': [['Eb 251d', 'Conclusion of a case begun in col. 47; only the final clause stands in this column.'], ['Eb 252–262', 'Date juice (bnj.w) is the standing vehicle through this run of prescriptions.']],
+    },
+    qa: ['Which drugs recur in Eb 226–236?', 'Coriander (šꜣ.w), cumin (tpnn) and gum (qmy.t) each appear in more than one prescription of this column; wheat flour (sw.t) is the usual base.'],
+  },
+  E54: {
+    title: 'Ben Cao Gang Mu', kind: 'single', page: 'center',
+    img: 'assets/pages/E54-page.jpg', w: 978, h: 1600,
+    layers: { center: ['source', 'glyphs', 'associations', 'entities'] },   // whl-store defaults to words for non-EB01
+    entriesTitle: () => 'Entries', pageLabel: () => 'fol. 19',
+    rows: regs => regs.map((r, i) => (r.text || '').trim() ?
+      { i, r1: first(r.text, 15), r2: first(r.translation, 44) } : null).filter(Boolean),
+    comm: { center: [['E17 · 中药大辞典', 'The dictionary resolves its Bencao gangmu citations against this edition; the 1888 Hongbaozhai woodblock is its reference printing.']] },
+    qa: ['How are pill sizes reckoned?', 'By a ladder of seeds: three sesame grains (胡麻) equal one hemp seed (大麻子), three hemp seeds the small bean (赤小豆), two small beans the soy bean (大豆), two soy beans the wutong seed (梧子).'],
+  },
+  E28: {
+    title: 'The English Physitian', kind: 'single', page: 'center',
+    img: 'assets/pages/E28-page.jpg', w: 1045, h: 1600,
+    entriesTitle: () => 'Entries', pageLabel: () => 'p. 18',
+    rows: regs => regs.map((r, i) => {
+      if (r.type !== 'title') return null;
+      const id = (/\[([^\]]+)\]/.exec(r.translation || '') || [])[1] || '';
+      return { i, r1: r.text, r2: id, sub: !id };
+    }).filter(Boolean),
+    comm: { center: [['This copy', 'An early annotating hand runs in the margins of this copy; the printed side-notes (Feavers, Head, Eyes …) index the virtues paragraph beside them.']] },
+    qa: ['What are the blites good for?', 'Cooling, drying and binding — Culpeper has them restrain fluxes of blood in man or woman, the red kind especially.'],
+  },
+};
+const BID = (id => BOOKS[id] ? id : 'EB01')(new URLSearchParams(location.search).get('book'));
+const B = BOOKS[BID];
 const bus = createBus();
 
 const chrome = mountChrome({
-  title: 'Papyrus Ebers', back: 'explore-concepts.html', bus,
-  book: { label: 'EB01', title: 'Papyrus Ebers', thumb: 'assets/thumbs/EB01.jpg' },
+  title: B.title, back: 'index.html', bus,
+  book: { label: BID, title: B.title, thumb: `assets/thumbs/${BID}.jpg` },
   adv: false, mockSwitch: 'mode-only',
-  note: '[ ] toggle rails; collapse right → window; Esc clears.',
+  note: '?book= switches the book; [ ] toggle rails; collapse right → window; Esc clears.',
 });
-const { viewer, store } = createRoll({ el: $('#osd'), bus, start: 'col-0045',
-  viewerOpts: { profile: { zoomOnSelect: false } } });
+const bsw = document.createElement('nav');
+bsw.className = 'bookswitch'; bsw.setAttribute('aria-label', 'Book');
+bsw.innerHTML = Object.keys(BOOKS).map(id =>
+  `<a href="?book=${id}"${id === BID ? ' class="cur" aria-current="page"' : ''}>${id}</a>`).join('');
+const chip = chrome.el.querySelector('.bookpick');
+if (chip) chip.after(bsw); else chrome.el.appendChild(bsw);
 
-/* ---------- persisted UI state ---------- */
-const SKEY = 'whl-explore-window-dual';
+const { viewer, store } = B.kind === 'roll'
+  ? createRoll({ el: $('#osd'), bus, start: B.start, viewerOpts: { profile: { zoomOnSelect: false } } })
+  : (() => {   // single-page profile, page-level (no explore-common edits)
+      const store = createStore({ base: 'lib/data', book: BID, bus, pages: [B.page], layers: B.layers, latency: '3g' });
+      const viewer = createViewer({ el: $('#osd'), bus, store, book: BID,
+        profile: { layout: 'single', zoomOnSelect: false },
+        pages: [{ key: B.page, url: B.img, w: B.w, h: B.h }], start: B.page });
+      createLinker({ bus, store });
+      store.load(B.page);
+      return { viewer, store };
+    })();
+const PAGES = B.kind === 'roll' ? COLS.map(c => c.key) : [B.page];
+const DATA_PAGES = B.kind === 'roll' ? DATA_COLS : [B.page];
+const START = B.kind === 'roll' ? B.start : B.page;
+
+/* ---------- persisted UI state (namespaced per book) ---------- */
+const SKEY = 'whl-explorer-' + BID;
 let S = { left: 0, right: 0, w: 340, hiero: 0, secs: {}, win: { x: -1, y: -1, w: 360, h: 300, op: 'frosted' } };
 try { const s = JSON.parse(sessionStorage.getItem(SKEY) || 'null');
   if (s && typeof s === 'object') S = { ...S, ...s, win: { ...S.win, ...(s.win || {}) }, secs: { ...(s.secs || {}) } };
 } catch {}
 const save = () => { try { sessionStorage.setItem(SKEY, JSON.stringify(S)); } catch {} };
 /* ---------- shared reading state (window ⇄ Text pane) ---------- */
-let viewCol = 'col-0045', curCol = 'col-0045', curRegion = 1, selActive = false, lastH = null;
+let viewCol = START, curCol = START, curRegion = 1, selActive = false, lastH = null;
 let txPane = null, winPane = null, txLayout = null;
 const regionsOf = c => (store.get(c) && store.get(c).source && store.get(c).source.regions) || [];
-const hasData = c => DATA_COLS.includes(c);
+const hasData = c => DATA_PAGES.includes(c);
+const entryLabel = i => {
+  const regs = regionsOf(curCol), r = regs[i];
+  if (!r) return hasData(curCol) ? '…' : '—';
+  if (B.kind === 'roll') return r.case_label || (r.type === 'header' ? 'column header' : '');
+  const row = B.rows(regs).filter(x => x.i <= i).pop();
+  return row ? row.r1 : (r.type || '');
+};
 
 bus.on('highlight', h => { lastH = h; viewer.applyHighlight(h);
   if (txPane) txPane.applyHighlight(h); if (winPane) winPane.applyHighlight(h); });
 
-/* ---------- hieroglyph lines (toggle-gated, off by default) ---------- */
+/* ---------- hieroglyph lines (toggle-gated; control exists only where hl data does) ---------- */
 function injectHiero(root, col) {
   if (!root) return;
   root.querySelectorAll('.hl-block').forEach(n => n.remove());
@@ -247,16 +320,23 @@ let hq = 0;   // debounced via macrotask (rAF stalls in occluded panes)
 const reHiero = () => { clearTimeout(hq); hq = setTimeout(() => {
   injectHiero($('#txPane'), curCol); injectHiero($('#rwText'), curCol); }, 32); };
 const hbtn = $('#hieroBtn');
+let hieroOK = false;   // gate by data presence: any region with hl lines
+function checkHiero() {
+  if (hieroOK) return;
+  if (DATA_PAGES.some(k => regionsOf(k).some(r => Array.isArray(r.hl) && r.hl.length)))
+    { hieroOK = true; hbtn.hidden = false; }
+}
 function syncHiero() { hbtn.classList.toggle('on', !!S.hiero);
   hbtn.setAttribute('aria-pressed', S.hiero ? 'true' : 'false'); reHiero(); }
 hbtn.addEventListener('click', () => { S.hiero = S.hiero ? 0 : 1; save(); syncHiero(); });
-/* ---------- left rail: columns + cases ---------- */
+/* ---------- left rail: columns (roll only) + cases/entries ---------- */
 const caseNo = l => { const m = /^Eb (\d+[a-z]?)/.exec(l || ''); return m ? m[1] : null; };
 function colRange(c) {
   const ns = regionsOf(c).map(r => caseNo(r.case_label)).filter(Boolean);
   return ns.length ? 'Eb ' + ns[0] + '–' + ns[ns.length - 1] : (hasData(c) ? '…' : '—');
 }
 function renderCols() {
+  if (B.kind !== 'roll') return;
   $('#colList').innerHTML = COLS.map(({ key }) =>
     `<div class="row${hasData(key) ? '' : ' dim'}${key === viewCol ? ' cur' : ''}" data-col="${key}">` +
     `<span class="r1">Column ${+key.slice(4)}</span><span class="r2">${colRange(key)}</span></div>`).join('');
@@ -264,25 +344,23 @@ function renderCols() {
     `<button type="button" class="stripbtn${key === viewCol ? ' cur' : ''}${hasData(key) ? '' : ' dim'}" data-col="${key}">${+key.slice(4)}</button>`).join('');
 }
 function renderCases() {
-  const rows = regionsOf(viewCol).map((r, i) => r.case_label ?
-    `<div class="row${viewCol === curCol && i === curRegion ? ' cur' : ''}" data-region="${i}"><span class="r1">${esc(r.case_label)}</span></div>` : '').join('');
-  $('#caseList').innerHTML = rows || `<div class="rail-empty">${hasData(viewCol) ? '…' : '—'}</div>`;
-  $('#casesTitle').textContent = 'Cases · col. ' + (+viewCol.slice(4));
+  const rows = B.rows(regionsOf(viewCol));
+  const curI = B.kind === 'roll' ? curRegion
+    : (rows.filter(x => x.i <= curRegion).pop() || { i: -1 }).i;
+  $('#caseList').innerHTML = rows.length ? rows.map(r =>
+    `<div class="row${r.sub ? ' sub' : ''}${viewCol === curCol && r.i === curI ? ' cur' : ''}" data-region="${r.i}">` +
+    `<span class="r1">${esc(r.r1)}</span>${r.r2 ? `<span class="r2">${esc(r.r2)}</span>` : ''}</div>`).join('')
+    : `<div class="rail-empty">${hasData(viewCol) ? '…' : '—'}</div>`;
+  $('#casesTitle').textContent = B.entriesTitle(viewCol);
 }
 $('#lrail').addEventListener('click', e => {
   const c = e.target.closest('[data-col]'); if (c) { viewer.goto(c.dataset.col); return; }
   const r = e.target.closest('[data-region]'); if (r) viewer.select(viewCol, +r.dataset.region);
 });
 
-/* ---------- right sidebar: commentary + entities ---------- */
-const COMM = {
-  'col-0044': [['Eb 217–224', 'Concordance: Grundriss der Medizin IV/1 ad loc. — = H 48–49, 79–82; the Hearst parallels run in block, variants orthographic.'], ['Eb 214', 'vgl. pChester Beatty VIII vso. 5,1–3, which transmits the same text in a later hand.']],
-  'col-0045': [['Eb 226–236', 'Concordance: Grundriss der Medizin IV/1 ad loc. for the cases of this column.'], ['Eb 227', 'vgl. Bln 58 — the Berlin papyrus transmits the same remedy with the drug list reordered.']],
-  'col-0046': [['Eb 242', 'Rubricated title case; the ḫꜣs.yt-fruit group it opens runs through Eb 245.'], ['Eb 243–245', '= H 71–73: the Hearst sequence keeps the order of the common Vorlage.']],
-  'col-0048': [['Eb 251d', 'Conclusion of a case begun in col. 47; only the final clause stands in this column.'], ['Eb 252–262', 'Date juice (bnj.w) is the standing vehicle through this run of prescriptions.']],
-};
+/* ---------- right sidebar: commentary + entities + ask ---------- */
 function renderComm() {
-  const es = COMM[curCol] || [];
+  const es = B.comm[curCol] || [];
   $('#commList').innerHTML = es.length ? es.map(([h, t]) =>
     `<div class="com"><div class="com-h">${h}</div><div class="com-t">${t}</div></div>`).join('') :
     '<div class="rail-empty">—</div>';
@@ -293,6 +371,7 @@ function renderEnts() {
     `<div class="ent-row ent-${esc(e.type)}"><div class="ent-lab">${esc(e.label)}</div><div class="ent-sum">${esc(e.summary || '')}</div></div>`).join('') :
     `<div class="rail-empty">${hasData(curCol) ? '…' : '—'}</div>`;
 }
+$('#qaBox').innerHTML = `<div class="q">${esc(B.qa[0])}</div><div class="a">${esc(B.qa[1])}</div>`;
 const ask = $('#askIn');
 ask.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return; e.preventDefault();
@@ -307,7 +386,7 @@ function mountTx() {
   $('#txEmpty').hidden = !no; el.hidden = no;
   if (no || S.right) return;
   txLayout = S.w >= 420 ? 'pair' : 'stacked';
-  txPane = createTextPane({ el, bus, store, book: 'EB01', page: curCol, layout: txLayout });
+  txPane = createTextPane({ el, bus, store, book: BID, page: curCol, layout: txLayout });
   if (lastH) txPane.applyHighlight(lastH);
   reHiero();
 }
@@ -317,15 +396,15 @@ function mountWin() {
   const no = !hasData(curCol);
   $('#rwEmpty').hidden = !no; el.hidden = no;
   if (no || !S.right) return;
-  winPane = createTextPane({ el, bus, store, book: 'EB01', page: curCol, layout: 'strip', stripShow: 'both' });
+  winPane = createTextPane({ el, bus, store, book: BID, page: curCol, layout: 'strip', stripShow: 'both' });
   winPane.setRegion(curRegion);
   if (lastH) winPane.applyHighlight(lastH);
   reHiero();
 }
 function renderWinState() {
-  const regs = regionsOf(curCol), r = regs[curRegion];
-  $('#rwCol').textContent = 'Column ' + (+curCol.slice(4));
-  const label = r ? (r.case_label || (r.type === 'header' ? 'column header' : '')) : (hasData(curCol) ? '…' : '—');
+  const regs = regionsOf(curCol);
+  $('#rwCol').textContent = B.pageLabel(curCol);
+  const label = entryLabel(curRegion);
   $('#rwCase').textContent = label ? '· ' + label : '';
   $('#rwCount').textContent = regs.length ? (curRegion + 1) + ' / ' + regs.length : '';
   $('#rwPrev').disabled = !regs.length || curRegion <= 0;
@@ -361,7 +440,7 @@ bus.on('view', p => {
 });
 bus.on('layer', p => {
   if (!p || p.status !== 'ready') return;
-  if (p.name === 'source') { renderCols(); renderCases(); renderWinState(); }
+  if (p.name === 'source') { checkHiero(); renderCols(); renderCases(); renderWinState(); }
   if (p.name === 'entities' && p.page === curCol) renderEnts();
   reHiero();   // text panes re-render on each layer arrival, wiping injected lines
 });
@@ -495,19 +574,20 @@ const applySecs = () => document.querySelectorAll('.sec').forEach(s =>
 document.addEventListener('keydown', e => {
   if (e.altKey || e.ctrlKey || e.metaKey) return;
   if (/input|select|textarea/i.test(e.target.tagName)) return;
-  if (e.key === 'ArrowLeft') { viewer.next(); e.preventDefault(); }
-  else if (e.key === 'ArrowRight') { viewer.prev(); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { if (B.kind === 'roll') viewer.next(); else step(-1); e.preventDefault(); }
+  else if (e.key === 'ArrowRight') { if (B.kind === 'roll') viewer.prev(); else step(1); e.preventDefault(); }
   else if (e.key === '[') { toggleLeft(); e.preventDefault(); }
   else if (e.key === ']') { toggleRight(); e.preventDefault(); }
   else if (e.key === 'Escape') bus.emit('select:clear', {});
 });
 
 /* ---------- boot ---------- */
+if (B.kind !== 'roll') $('#colSec').style.display = 'none';
 function layoutTop() { const t = topMin(); lrail.style.top = rside.style.top = t + 'px'; }
 window.addEventListener('resize', () => { layoutTop(); if (!win.hidden) applyW(); });
 applySecs(); syncLeft(); syncHiero();
 rside.classList.toggle('collapsed', !!S.right); syncRight(); layoutTop();
-viewCol = curCol = viewer.current() || 'col-0045';
+viewCol = curCol = viewer.current() || START;
 renderCols(); renderCases(); renderComm(); renderEnts();
 if (S.right) { mountWin(); win.hidden = false; applyW(); } else mountTx();
 renderWinState();

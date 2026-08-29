@@ -48,7 +48,7 @@ Adv visibility is `<html>`-scoped: chrome injects `html:not([data-adv="1"]) .adv
 
 Appearance persistence delegation: chrome listens for `CustomEvent('whl-appearance', { detail: { scheme?, mode? } })` on `document` (whl-sidebar's appearance panel dispatches it). `scheme` ∈ archive|herbarium|oxford, `mode` ∈ light|dark.
 
-Not in the contract: the reader-codex page indicator ("p. N" + 5 loaded dots) is page-rendered — build it from store `layer` events and insert it into `chrome.el`.
+Not in the contract: the reader's page indicator ("p. N" + loaded dots) is page-rendered — build it from store `layer` events and insert it into `chrome.el`.
 
 ## whl-store.js
 
@@ -89,7 +89,7 @@ createTextPane({ el, bus, store, book, page, layout?:'pair'|'stacked'|'strip', s
 ```
 Renders `source.regions` as `.rg-el[data-r]` sections: transcription `.tx` + translation `.xl` (tinted). When associations ready, wraps group spans in `<span data-g>` (UTF-16 offsets; code-point safe); when entities ready, wraps mention quotes in `.ent.<type>` anchors (first match per region per quote). Rubric/`case_label` chrome where present. Hover/click on spans → bus `hover`/`select` with group (+ `px`/`py` from real pointers). `'strip'` = single-region running line (scroll reader / explore lens), showing translation when present else transcription; `stripShow:'both'` stacks the transcription line over the translation line when both exist.
 - `setRegion(i)` sets the displayed region directly with no bus side-effects (strip re-renders; pair/stacked scroll to it).
-- Region-level hover parity: in pair/stacked, hovering a region block that has NO `[data-g]` spans (association-less witnesses like E52) emits `hover {src:'text', page, region}` and `hover:clear` on leave; regions WITH spans keep span-driven hover only (no duplicate region-level emits).
+- Region-level hover parity: in pair/stacked, hovering a region block that has NO `[data-g]` spans (association-less witnesses like E28) emits `hover {src:'text', page, region}` and `hover:clear` on leave; regions WITH spans keep span-driven hover only (no duplicate region-level emits).
 
 ## whl-linker.js
 
@@ -141,4 +141,4 @@ Known seams (deliberately deferred; pages currently work around them):
 3. `whl-sidebar`: no sanctioned custom-content slot in contents/thispage (column map is prepended into internal DOM); citation cards lack a distinct resolved-quotation field (excerpt currently shows the entity summary).
 4. Navigation scrolling uses `scrollIntoView({behavior:'smooth'})`, which crawls in throttled panes; pages ship verify-and-jump fallbacks.
 
-Resolved in v1.1: overlay clicks from real pointers in OSD mode (MouseTracker per overlay), `pages[].clip`, `profile.gap`, `profile.zoomOnSelect:false`, `px`/`py` on pointer-caused hover/select, `setWordBoxes()`, strip `setRegion()` + `stripShow:'both'`, region-level hover parity for association-less witnesses. reader-scroll's applyHighlight-merge glyph toggle and reader-explore's page-level click tracker still work but are superseded by `setWordBoxes` / native overlay clicks.
+Resolved in v1.1: overlay clicks from real pointers in OSD mode (MouseTracker per overlay), `pages[].clip`, `profile.gap`, `profile.zoomOnSelect:false`, `px`/`py` on pointer-caused hover/select, `setWordBoxes()`, strip `setRegion()` + `stripShow:'both'`, region-level hover parity for association-less witnesses.

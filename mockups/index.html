@@ -3,348 +3,63 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WHL Reader Next — Mockups</title>
+<title>WHL Reader — Prototypes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/tokens.css">
 <style>
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px 80px; }
-
-  /* the hub is index.html — hide chrome's self-referential back link */
   .topbar .tb-back, .topbar .tb-back + .tb-sep { display: none; }
-
-  /* hero */
-  .hero { padding: 52px 0 36px; }
-  .kicker { font: 600 11px var(--font-chrome); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; }
-  .hero h1 { font-size: 42px; font-weight: 600; letter-spacing: -.01em; margin-bottom: 14px; }
-  .hero .lede { font-family: var(--font-read); font-size: 17.5px; line-height: 1.62; color: var(--ink-2); max-width: 64ch; margin: 0 0 22px; }
-  .ia { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-  .ia .step { font: 600 11px var(--font-chrome); letter-spacing: .1em; text-transform: uppercase;
-    padding: 5px 12px; border: 1px solid var(--line-2); border-radius: 99px; color: var(--ink-2); background: var(--bg-raise); }
-  .ia .arr { color: var(--ink-3); font-size: 12px; }
-  .hero .fine { font-size: 12.5px; color: var(--ink-3); max-width: 68ch; line-height: 1.7; }
-  .hero .fine .ent { font-family: var(--font-read); font-size: 13.5px; }
-
-  /* section headings */
-  .sec-h { display: flex; align-items: baseline; gap: 14px; margin: 44px 0 6px; }
-  .sec-h h2 { font-size: 26px; margin: 0; }
-  .sec-h .rule { flex: 1; height: 1px; background: var(--line); align-self: center; }
-  .sec-sub { font-size: 13px; color: var(--ink-3); margin: 0 0 22px; max-width: 78ch; }
-
-  /* mockup grid */
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-  .grid.two { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
-  .mcard { display: flex; flex-direction: column; overflow: hidden; color: var(--ink);
-    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
-  .mcard:hover { text-decoration: none; transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: var(--line-2); }
-  .mcard:hover h3 { color: var(--accent); }
-
-  .mthumb { height: 158px; background: var(--bg-sunk); border-bottom: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-  .mthumb.shelf { gap: 14px; padding: 16px 0; align-items: flex-end; }
-  .mthumb.shelf img { height: 122px; width: auto; border: 1px solid var(--line-2); border-radius: 2px; box-shadow: var(--shadow); }
-  .mthumb.shelf img:nth-child(2) { height: 132px; }
-  .mthumb.page img, .mthumb.strip img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
-  .mthumb.strip { gap: 2px; }
-  .mthumb.strip img { width: 33.5%; }
-  .mthumb.pair { gap: 18px; }
-  .mthumb.pair img { height: 126px; width: auto; border: 1px solid var(--line-2); border-radius: 2px; box-shadow: var(--shadow); }
-
-  .mbody { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
-  .mkick { font: 600 10.5px var(--font-chrome); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; }
-  .mcard.featured .mkick { color: var(--accent); }
-  .mbody h3 { font-size: 19.5px; margin-bottom: 6px; transition: color .16s ease; }
-  .mbody .desc { font-size: 13.5px; line-height: 1.6; color: var(--ink-2); margin: 0 0 12px; flex: 1; }
-  .try { font-size: 12.5px; line-height: 1.55; color: var(--ink-2); margin: 0; padding-top: 10px; border-top: 1px solid var(--line); }
-  .try b { font: 600 10px var(--font-chrome); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-right: 6px; }
-
-  /* start-here card thumbs: three art-direction panels */
-  .mthumb.dirs { gap: 12px; padding: 18px 22px; align-items: stretch; }
-  .dpanel { flex: 1; max-width: 118px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raise);
-    box-shadow: var(--shadow); padding: 10px 11px 9px; display: flex; flex-direction: column; gap: 6px; }
-  .dpanel .dl { font-size: 26px; line-height: 1.1; color: var(--accent); }
-  .dpanel:nth-child(1) .dl { font-family: var(--font-display); }
-  .dpanel:nth-child(2) .dl { font-family: var(--font-chrome); font-weight: 600; letter-spacing: .02em; }
-  .dpanel:nth-child(3) .dl { font-family: var(--font-read); font-style: italic; }
-  .dpanel .drule { height: 2px; border-radius: 99px; margin-bottom: 2px; }
-  .dpanel:nth-child(1) .drule { background: var(--accent); }
-  .dpanel:nth-child(2) .drule { background: var(--ent-plant); }
-  .dpanel:nth-child(3) .drule { background: var(--rubric); }
-  .dline { height: 4px; border-radius: 99px; background: var(--bg-sunk); }
-  .dline.w1 { width: 88%; } .dline.w2 { width: 70%; } .dline.w3 { width: 92%; }
-  .dline.tint { background: var(--tint-translation); }
-
-  /* start-here card thumbs: module wiring */
-  .mthumb.wire { flex-direction: column; gap: 9px; padding: 18px; }
-  .wrow { display: flex; gap: 8px; justify-content: center; position: relative; z-index: 1; }
-  .mchip { font: 500 10.5px ui-monospace, Consolas, monospace; padding: 4px 10px; border: 1px solid var(--line-2);
-    border-radius: 99px; background: var(--bg-raise); color: var(--ink-2); white-space: nowrap; }
-  .mchip.hub { background: var(--tint-select); border-color: var(--accent); color: var(--ink); font-weight: 600;
-    display: inline-flex; align-items: center; gap: 6px; }
-  .mchip.hub .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); animation: pulse 1.6s infinite ease-in-out; }
-  @keyframes pulse { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
-  .wire::before { content: ''; position: absolute; top: 24px; bottom: 24px; width: 1px; background: var(--line-2); left: 50%; }
-
-  /* streaming card diagram */
-  .mthumb.layers { flex-direction: column; align-items: stretch; justify-content: center; gap: 9px; padding: 18px 26px; }
-  .lrow { display: flex; align-items: center; gap: 10px; }
-  .ldot { width: 7px; height: 7px; border-radius: 50%; background: var(--line-2); flex: none; }
-  .ldot.on { background: var(--ok); }
-  .lname { font: 500 10px var(--font-chrome); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); width: 84px; flex: none; }
-  .lbar { height: 9px; border-radius: 99px; flex: 1; }
-  .lbar.solid { background: var(--tint-select); border: 1px solid var(--line-2); }
-  .lbar.skel { border: 1px solid var(--line); }
-
-  /* open questions */
-  .qs { list-style: none; counter-reset: q; margin: 0; padding: 0; max-width: 74ch; }
-  .qs li { counter-increment: q; position: relative; padding: 22px 0 22px 64px; border-top: 1px solid var(--line); }
-  .qs li:first-child { border-top: 0; }
-  .qs li::before { content: counter(q); position: absolute; left: 4px; top: 16px;
-    font: 400 32px var(--font-display); color: var(--accent); opacity: .85; font-feature-settings: "onum"; }
-  .qs li.new::after { content: 'New'; position: absolute; left: 0; top: 56px;
-    font: 600 9px var(--font-chrome); letter-spacing: .1em; text-transform: uppercase;
-    color: var(--accent); border: 1px solid var(--line-2); border-radius: 99px; padding: 2px 7px; background: var(--bg-raise); }
-  .qs h3 { font-size: 18.5px; margin-bottom: 5px; }
-  .qs .q-body { font-size: 14px; line-height: 1.62; color: var(--ink-2); margin: 0 0 10px; }
-  .qs .q-ref { margin: 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-  .qs .q-ref .lbl { font: 600 10px var(--font-chrome); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-right: 2px; }
-  .qs .q-ref a.chip:hover { text-decoration: none; border-color: var(--accent); color: var(--ink); }
-
-  footer.colophon { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line);
-    font-size: 12px; color: var(--ink-3); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-
-  @media (max-width: 720px) {
-    .hero h1 { font-size: 32px; }
-    .qs li { padding-left: 48px; }
-    .grid.two { grid-template-columns: 1fr; }
-  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 64px 24px 80px; }
+  h1 { font-size: 34px; margin-bottom: 6px; }
+  .lede { color: var(--ink-2); margin: 0 0 44px; max-width: 60ch; }
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 720px) { .modes { grid-template-columns: 1fr; } }
+  .mode { padding: 22px 22px 16px; }
+  .mode h2 { font-size: 23px; margin-bottom: 2px; }
+  .mode .sub { font-size: 12.5px; color: var(--ink-3); margin: 0 0 16px; }
+  .bk { display: flex; align-items: center; gap: 12px; padding: 9px 6px; border-top: 1px solid var(--line); color: var(--ink); }
+  .bk:hover { text-decoration: none; background: var(--tint-region); }
+  .bk img { width: 34px; height: 46px; object-fit: cover; border: 1px solid var(--line-2); border-radius: 2px; flex: none; }
+  .bk b { font-family: var(--font-display); font-weight: 600; font-size: 16px; display: block; line-height: 1.25; }
+  .bk small { color: var(--ink-3); font-size: 12px; }
+  .foot { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--line);
+    display: flex; gap: 18px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-3); }
 </style>
 </head>
 <body>
 <script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
 
 <main class="wrap">
+  <h1>WHL Reader</h1>
+  <p class="lede">Two viewers, six books, live on extracted corpus layers. Design brief: <a href="../DESIGN.md">DESIGN.md</a> · agent rules: <a href="../AGENTS.md">AGENTS.md</a>.</p>
 
-  <section class="hero">
-    <div class="kicker">Design review · iteration 2</div>
-    <h1>The next WHL reader</h1>
-    <p class="lede">Mockups for the redesign of the historical herbal library’s reader — now in a second round. The three readers are no longer pictures: they compose a small shared component library and fetch real extracted layer data — regions, word boxes, source–translation associations, entities — with staged network latency, so the behaviour can be argued with, not just the look. The library, overviews, and work hub remain static sketches. Imagery is the real corpus, from the Papyrus Ebers (c.&nbsp;1550&nbsp;BC) to <em>Standardized Plant Names</em> (1942).</p>
-    <div class="ia" aria-label="Information architecture">
-      <span class="step">Library</span><span class="arr">→</span>
-      <span class="step">Work</span><span class="arr">→</span>
-      <span class="step">Version</span><span class="arr">→</span>
-      <span class="step">Reader</span>
-    </div>
-    <p class="fine">The scheme switcher above (Archive · Herbarium · Oxford, light and dark) persists as you move between pages — please review in more than one. Entity colour runs throughout:
-      <span class="ent author">Li Shizhen</span>,
-      <span class="ent plant">Cnidium monnieri 蛇床子</span>,
-      <span class="ent substance">myrrh</span>,
-      <span class="ent cite">Diosc. III.6</span>,
-      and <span class="rub">rubrics in red</span>.</p>
-  </section>
+  <div class="modes">
+    <section class="mode card">
+      <h2>Explorer</h2>
+      <p class="sub">Visual-first · floating window · dual sidebars</p>
+      <a class="bk" href="explorer.html?book=EB01"><img src="assets/thumbs/EB01.jpg" alt=""><span><b>Papyrus Ebers</b><small>Thebes, c. 1550 BC · hieratic roll</small></span></a>
+      <a class="bk" href="explorer.html?book=E54"><img src="assets/thumbs/E54.jpg" alt=""><span><b>Ben Cao Gang Mu 本草纲目</b><small>Li Shizhen · Hongbaozhai ed., 1888</small></span></a>
+      <a class="bk" href="explorer.html?book=E28"><img src="assets/thumbs/E28.jpg" alt=""><span><b>The English Physitian</b><small>Culpeper · London, 1652</small></span></a>
+    </section>
+    <section class="mode card">
+      <h2>Reader</h2>
+      <p class="sub">Study &amp; facsimile · two-pane · knowledge sidebar</p>
+      <a class="bk" href="reader.html?book=E17"><img src="assets/thumbs/E17.jpg" alt=""><span><b>Zhongyao da cidian 中药大辞典</b><small>vol. 2 · 1977</small></span></a>
+      <a class="bk" href="reader.html?book=E18"><img src="assets/thumbs/E18.jpg" alt=""><span><b>The Extemporaneous Dispensatory</b><small>Gaubius · London, 1741</small></span></a>
+      <a class="bk" href="reader.html?book=E25"><img src="assets/thumbs/E25.jpg" alt=""><span><b>Chemistry of Essential Oils</b><small>Parry · 1918</small></span></a>
+    </section>
+  </div>
 
-  <div class="sec-h"><h2>Start here</h2><div class="rule"></div></div>
-  <p class="sec-sub">The open design decision, and the component library everything runs on.</p>
-
-  <section class="grid two">
-
-    <a class="mcard card featured" href="explore-concepts.html">
-      <div class="mthumb strip">
-        <img src="assets/pages/EB01-col-0046.jpg" alt=""><img src="assets/pages/EB01-col-0045.jpg" alt=""><img src="assets/pages/EB01-col-0044.jpg" alt="">
-      </div>
-      <div class="mbody">
-        <div class="mkick">Start here · iteration 3</div>
-        <h3>Explore concepts</h3>
-        <p class="desc">Window-family variants on the seamless EB01 roll: dual sidebars with window⇄sidebar coupling, window styles, split sidebar. Red ink preserved; hieroglyphic toggle. Question 8.</p>
-      </div>
-    </a>
-
-    <a class="mcard card featured" href="lib/components.html">
-      <div class="mthumb wire" aria-hidden="true">
-        <div class="wrow"><span class="mchip hub"><span class="pulse"></span>whl-bus</span></div>
-        <div class="wrow"><span class="mchip">chrome</span><span class="mchip">store</span><span class="mchip">viewer</span></div>
-        <div class="wrow"><span class="mchip">text</span><span class="mchip">linker</span><span class="mchip">sidebar</span></div>
-      </div>
-      <div class="mbody">
-        <div class="mkick">Start here · the machinery</div>
-        <h3>Component library playground</h3>
-        <p class="desc">Every reader module mounted live with its API alongside: the event bus, the store’s priority-ordered layer loading, viewer overlays, the text pane’s atomic spans, the linker, the sidebar. All sections share one bus.</p>
-      </div>
-    </a>
-
-  </section>
-
-  <div class="sec-h"><h2>Readers</h2><div class="rule"></div></div>
-  <p class="sec-sub">Now on real corpus data and the component library: three reading profiles, each a live composition of the same modules over extracted layers — regions, words, associations, entities — arriving in stages as they would over a network.</p>
-
-  <section class="grid">
-
-    <a class="mcard card" href="reader-codex.html">
-      <div class="mthumb page"><img src="assets/pages/E17-page.jpg" alt=""></div>
-      <div class="mbody">
-        <div class="mkick">Reader · codex</div>
-        <h3>Facsimile &amp; Study modes</h3>
-        <p class="desc">The default two-pane reader on E17, the <em>Zhongyao da cidian</em> vol.&nbsp;2 (1977). One dense dictionary page, fully extracted: 51 regions, 42 entities, 1,400 linked source–translation groups, 1,716 word boxes under the OpenSeadragon plane.</p>
-      </div>
-    </a>
-
-    <a class="mcard card" href="reader-scroll.html">
-      <div class="mthumb strip">
-        <img src="assets/pages/EB01-col-0046.jpg" alt=""><img src="assets/pages/EB01-col-0045.jpg" alt=""><img src="assets/pages/EB01-col-0044.jpg" alt="">
-      </div>
-      <div class="mbody">
-        <div class="mkick">Reader · scroll</div>
-        <h3>The Ebers roll, right to left</h3>
-        <p class="desc">EB01 as it physically is: columns 44–48 edge to edge in one horizontal right-to-left world, case rubrics and glyph boxes from the real extraction, transliteration and English translation in parallel. Column 47 carries an image and no data yet.</p>
-      </div>
-    </a>
-
-    <a class="mcard card" href="reader-explore.html">
-      <div class="mthumb page"><img src="assets/pages/E52-page.jpg" alt=""></div>
-      <div class="mbody">
-        <div class="mkick">Reader · explore</div>
-        <h3>Explore mode &amp; embeds</h3>
-        <p class="desc">Full-bleed facsimile-first reading for the Yale Cushing MS 49 Italian herbal — the painted Q initial and the chamomile paragraphs, entities at region level (this book has no word-alignment layer) — plus the <code>?embed=</code> variants a parent site composes.</p>
-      </div>
-    </a>
-
-  </section>
-
-  <div class="sec-h"><h2>Structure</h2><div class="rule"></div></div>
-  <p class="sec-sub">The information architecture around the readers — library, overviews at every tier, and the work hub. Static sketches with real corpus imagery.</p>
-
-  <section class="grid">
-
-    <a class="mcard card" href="library.html">
-      <div class="mthumb shelf">
-        <img src="assets/thumbs/EB01.jpg" alt=""><img src="assets/thumbs/E54.jpg" alt=""><img src="assets/thumbs/E28.jpg" alt=""><img src="assets/thumbs/E48.jpg" alt="">
-      </div>
-      <div class="mbody">
-        <div class="mkick">Library</div>
-        <h3>Library home</h3>
-        <p class="desc">The front door of the collection: landmark features for the Ebers papyrus and the <em>Ben Cao Gang Mu</em>, work clusters that fold copies and translations together, tier badges across the shelf.</p>
-      </div>
-    </a>
-
-    <a class="mcard card" href="overview-landmark.html">
-      <div class="mthumb page"><img src="assets/pages/EB01-col-0046.jpg" alt=""></div>
-      <div class="mbody">
-        <div class="mkick">Work overview · landmark</div>
-        <h3>Ebers Papyrus work page</h3>
-        <p class="desc">The richest tier: hero facsimile, catalogue record, layered read-more, and the two witnesses side by side — EB01, the hieratic papyrus in Leipzig, and EB02, Joachim’s 1890 German translation.</p>
-      </div>
-    </a>
-
-    <a class="mcard card" href="overview-standard.html">
-      <div class="mthumb pair">
-        <img src="assets/thumbs/E18.jpg" alt=""><img src="assets/thumbs/E44.jpg" alt="">
-      </div>
-      <div class="mbody">
-        <div class="mkick">Work overview · standard &amp; minimal</div>
-        <h3>Quieter tiers</h3>
-        <p class="desc">The same template with the richness turned down: Gaubius’s <em>Extemporaneous Dispensatory</em> (London 1741) at standard tier, the <em>Regimen Sanitatis Salernitanum</em> (Venice c.&nbsp;1500) at minimal.</p>
-      </div>
-    </a>
-
-    <a class="mcard card" href="work-dioscorides.html">
-      <div class="mthumb shelf">
-        <img src="assets/thumbs/E49.jpg" alt=""><img src="assets/thumbs/E46.jpg" alt=""><img src="assets/thumbs/E47.jpg" alt="">
-      </div>
-      <div class="mbody">
-        <div class="mkick">Work hub</div>
-        <h3>Dioscorides across witnesses</h3>
-        <p class="desc">One work, many bodies: Amatus Lusitanus’s Venice 1557 <em>Enarrationes</em> in two copies (E46 + E47) beside Montigiano’s 1547 Italian translation, with witness compare and a translation switcher.</p>
-      </div>
-    </a>
-
-  </section>
-
-  <div class="sec-h"><h2>Machinery</h2><div class="rule"></div></div>
-  <p class="sec-sub">The loading model underneath every reader — the same staging the store now simulates on real layer files.</p>
-
-  <section class="grid">
-
-    <a class="mcard card" href="streaming.html">
-      <div class="mthumb layers" aria-hidden="true">
-        <div class="lrow"><span class="ldot on"></span><span class="lname">image tiles</span><span class="lbar solid"></span></div>
-        <div class="lrow"><span class="ldot on"></span><span class="lname">source text</span><span class="lbar solid" style="max-width:78%"></span></div>
-        <div class="lrow"><span class="ldot on"></span><span class="lname">words</span><span class="lbar solid" style="max-width:55%"></span></div>
-        <div class="lrow"><span class="ldot"></span><span class="lname">associations</span><span class="lbar skel"></span></div>
-        <div class="lrow"><span class="ldot"></span><span class="lname">entities</span><span class="lbar skel"></span></div>
-      </div>
-      <div class="mbody">
-        <div class="mkick">Architecture</div>
-        <h3>Streaming &amp; progressive load</h3>
-        <p class="desc">Per-page layer bundles from object storage, priority-ordered — tiles, source, words, associations, entities — with a simulation of a page becoming usable at each stage. EB02’s 236 pages are the stress case.</p>
-      </div>
-    </a>
-
-  </section>
-
-  <div class="sec-h"><h2>Open design questions</h2><div class="rule"></div></div>
-  <p class="sec-sub">Cite questions by number. 1–7 stand from round one; 8 and 9 are current.</p>
-
-  <ol class="qs">
-    <li>
-      <h3>Per-book mode defaults</h3>
-      <p class="q-body">Which books open in Study, Facsimile, or Explore? The obvious cases are easy — E17’s dictionary entries want Study, the Cushing manuscript wants Explore — but should the default table be editorial (curated per book) or heuristic (derived from format and tier)? And may a user’s override outlive the session?</p>
-      <p class="q-ref"><span class="lbl">See</span><a class="chip" href="reader-codex.html">reader-codex</a><a class="chip" href="reader-explore.html">reader-explore</a></p>
-    </li>
-    <li>
-      <h3>Sidebar: tabs or stacked</h3>
-      <p class="q-body">Contents, On this page, Article, Appearance — four tabs hide three panels at any moment, yet Contents and On this page are often wanted together. A single stacked scroll with collapsible sections keeps both visible but gets long on dense pages. The codex mockup ships tabs; is that right?</p>
-      <p class="q-ref"><span class="lbl">See</span><a class="chip" href="reader-codex.html">reader-codex</a></p>
-    </li>
-    <li>
-      <h3>Shape of the entity relevance metric</h3>
-      <p class="q-body">“On this page” ranks entity mentions by a new per-page <code>relevance</code> attribute. What feeds it — mention count on the page, proximity to a rubric, entity tier, cross-corpus degree? Should it be computed at build time and pinned with the corpus hashes, and can a curator override the ranking for a page?</p>
-      <p class="q-ref"><span class="lbl">See</span><a class="chip" href="reader-codex.html">reader-codex</a></p>
-    </li>
-    <li>
-      <h3>Paged vs continuous for codices</h3>
-      <p class="q-body">Is a codex’s default OpenSeadragon profile paged openings or a continuous vertical strip? Continuous suits long reading and matches the streaming model; paged respects the object and its openings. Per-book choice, per-user preference, or per-mode (Facsimile paged, Study continuous)?</p>
-      <p class="q-ref"><span class="lbl">See</span><a class="chip" href="reader-codex.html">reader-codex</a></p>
-    </li>
-    <li>
-      <h3>Embed API surface</h3>
-      <p class="q-body">Are <code>excerpt</code>, <code>card</code>, and <code>explore</code> the whole surface (plus a chrome-less full variant, not demoed), or do embeds also need scheme/mode parameters, entity hover, and a postMessage channel so a parent article can drive the excerpt (scroll to a passage, light an entity)? Every addition is API we must keep stable.</p>
-      <p class="q-ref"><span class="lbl">See</span><a class="chip" href="reader-explore.html">reader-explore</a></p>
-    </li>
-    <li>
-      <h3>How far basic mode strips</h3>
-      <p class="q-body">Basic mode hides layer checkboxes, confidence, and engine chrome. Should it also suppress region outlines and entity underlines, leaving plain text and image? Diplomatic exactness argues that visible uncertainty must survive even in basic mode — where exactly is the line?</p>
-      <p class="q-ref"><span class="lbl">See</span><a class="chip" href="reader-codex.html">reader-codex</a></p>
-    </li>
-    <li>
-      <h3>Compare-view scope</h3>
-      <p class="q-body">The Dioscorides hub compares two copies of one edition (E46 vs E47) page by page. Does the same view stretch to cross-version alignment — EB01’s hieratic against EB02’s German — or is that a different tool? And does compare live on the work hub, inside the reader, or both?</p>
-      <p class="q-ref"><span class="lbl">See</span><a class="chip" href="work-dioscorides.html">work-dioscorides</a><a class="chip" href="overview-landmark.html">overview-landmark</a></p>
-    </li>
-    <li class="new">
-      <h3>Which window variant</h3>
-      <p class="q-body">The iteration narrowed to the window family: dual sidebars with window⇄sidebar coupling, window styles (frosted, card, docked, tabbed, second pinned window), and a split right sidebar with a toggleable apparatus panel. Which configuration — or which combination — carries the explore reader? (Ghost, apparatus rail, loupe, and ribbon are superseded, as is the art-directions page.)</p>
-      <p class="q-ref"><span class="lbl">See</span><a class="chip" href="explore-concepts.html">explore-concepts</a></p>
-    </li>
-    <li class="new">
-      <h3>Module API: are the seams right?</h3>
-      <p class="q-body">The readers now compose seven small modules behind a documented contract — bus event vocabulary, the store’s layer priority, viewer profiles, the linker’s highlight weights, chrome’s ownership of appearance. Before implementation hardens: is anything in the wrong module, did any page have to hack around a seam, and are these the event names we want to be stable?</p>
-      <p class="q-ref"><span class="lbl">See</span><a class="chip" href="lib/API.md">lib/API.md</a><a class="chip" href="lib/components.html">components</a></p>
-    </li>
-  </ol>
-
-  <footer class="colophon">
-    <span>WHL reader-next · mockups, iteration 3 · readers live on <code>lib/</code> + real extracted layers, no backend</span>
-    <span>Imagery from the corpus: Papyrus Ebers, c.&nbsp;1550&nbsp;BC — <em>Standardized Plant Names</em>, 1942</span>
-  </footer>
-
+  <div class="foot">
+    <a href="streaming.html">Delivery architecture</a>
+    <span>Component library: <a href="lib/API.md">lib/API.md</a></span>
+    <span>WHL reader-next · no backend · layers stream from static JSON</span>
+  </div>
 </main>
 
 <script type="module">
   import { mountChrome } from './lib/whl-chrome.js';
-  mountChrome({
-    title: 'WHL Reader Next · design mockups',
-    adv: false,
-    note: 'Scheme and mode (top right) persist across all mockups.'
-  });
+  mountChrome({ title: 'WHL Reader · prototypes', adv: false,
+    note: 'Pick a viewer; scheme and mode persist.' });
 </script>
 </body>
 </html>

@@ -24,7 +24,7 @@ Library → Work → Version (witness / edition / translation) → Reader
 |---|---|---|---|
 | **Study** | hidden or thumbnail rail | primary, full width | dictionaries, reference (E10, E17) |
 | **Facsimile** | OSD pane left (split, draggable) | reading pane right | default two-pane, like current |
-| **Explore** | full-bleed OSD | floating lens/strip, unobtrusive | manuscripts, plates, scrolls (E52, EB01, E25 plates) |
+| **Explore** | full-bleed OSD | window + sidebars, unobtrusive | manuscripts, scrolls, woodblocks (EB01, E54, E28) |
 
 **Basic/advanced toggle**: basic hides layer checkboxes, confidence, engine chrome, region outlines; advanced exposes regions/lines/words layers, atomic-mapping highlight, diagnostics. Persisted.
 
@@ -57,36 +57,28 @@ Skeletons per arriving layer; page usable at each stage (image alone → +text �
 - **The reader is the product.** It ships embedded or semi-embedded in a parent site; overview/library pages are secondary chrome around it.
 - Mock-notes (mockup-only chrome) shrink to one terse line stating what is interactive.
 
-## Explore concepts (iteration 3)
+## The two viewers (iteration 4 — current)
 
-The visual↔information balance is the core design question, on one shared substrate (the seamless EB01 roll, cols 44–48, real data). Round 3a's ghost/apparatus/lens/ribbon mechanisms were reviewed and rejected; the iteration narrowed to the **window family** (3b):
+Review settled the explorer on the **window + dual-sidebar** mechanism (all other explore concepts and the styles/split variants were rejected and deleted).
 
-| Variant | Mechanism |
-|---|---|
-| `explore-window-dual` | left nav sidebar + resizable right info sidebar (collapsible sections: text/commentary/entities/ask); collapsing the right sidebar materializes the floating window, expanding it sucks the window back and selection lands in the sidebar |
-| `explore-window-styles` | window chrome variants — frosted / card / edge-docked / tabbed (translation·transliteration·hieroglyphic); a second pinned window for comparing two cases |
-| `explore-window-split` | one right sidebar vertically split (text / notes, draggable splitter, each collapsible); secondary apparatus panel on a toggle; no floating window |
+- **`explorer.html?book=EB01|E54|E28`** — visual-first. Left nav sidebar (columns/cases for the roll, entries for codex pages; collapsible sections, rail collapses to a strip). Right info sidebar, drag-resizable, collapsible sections Text / Commentary / Entities / Ask; text layout flips stacked↔side-by-side with width. **Coupling:** right sidebar collapsed → floating reading window (drag/resize/translucency); expanded → window is sucked back and selection highlights/scrolls in the sidebar.
+- **`reader.html?book=E17|E18|E25`** — study/facsimile. Two-pane with draggable divider, Study mode collapses the viewer to a rail, layer-status dots (advanced), knowledge sidebar (contents/this page/article/appearance).
 
-Shared rules: sidebar text layout flips stacked↔side-by-side with width; red ink (rubrics) preserved in transliteration, translation, and hieroglyphs; hieroglyphic display is a toggle, off by default. Superseded 3a pages remain for record.
+Shared rules: red ink (rubrics) preserved wherever transcription, translation, or hieroglyphs render; hieroglyphic display is a data-gated toggle, off by default; layer capability is driven by what each book's data actually has (glyph-level E54/EB01, word-level E17, span-level E18, region-level E28/E25).
 
 Seamlessness: scanner borders are clipped per column (top ≈7.5%, bottom ≈8.5%; sides are continuous), clipped regions normalized to equal world height, zero world gap.
 
 ## Component library (iteration 2)
 
-The reader machinery is packaged as vanilla ES modules in `mockups/lib/` with a written contract ([lib/API.md](mockups/lib/API.md)) so mockups compose instead of reimplementing: `whl-bus` (events), `whl-chrome` (topbar + persistence), `whl-store` (layer fetching, priority order, simulated latency), `whl-viewer` (OSD plane: single & scroll-h RTL profiles, overlays, fallbacks), `whl-text` (reading pane: atomic spans, entities), `whl-linker` (hover/select → weighted highlights), `whl-sidebar` (contents / this page / article / appearance). Live playground + API cheat-sheets: `mockups/lib/components.html`. The readers run on **real extracted corpus data** (`lib/data/`): E17 page-0382, EB01 cols 0044–0048, E52 page-0014. These modules are mockup-grade seeds of the production reader, not throwaway.
+The reader machinery is packaged as vanilla ES modules in `mockups/lib/` with a written contract ([lib/API.md](mockups/lib/API.md)) so mockups compose instead of reimplementing: `whl-bus` (events), `whl-chrome` (topbar + persistence), `whl-store` (layer fetching, priority order, simulated latency), `whl-viewer` (OSD plane: single & scroll-h RTL profiles, overlays, fallbacks), `whl-text` (reading pane: atomic spans, entities), `whl-linker` (hover/select → weighted highlights), `whl-sidebar` (contents / this page / article / appearance). Contract + data schemas: `mockups/lib/API.md`. The viewers run on **real extracted corpus data** (`lib/data/`): EB01 cols 0044–0048, E54/E28/E18/E25 center pages, E17 page-0382. These modules are mockup-grade seeds of the production reader, not throwaway.
 
-## Mockup set (this phase)
+## Current file set
 
-| File | Shows |
+| File | Role |
 |---|---|
-| `index.html` | hub: all mockups + open design questions |
-| `library.html` | library home: landmark features, work clusters, tier badges |
-| `overview-landmark.html` | Ebers work page: hero, catalog, summary, read-more, witnesses, suggested reading |
-| `overview-standard.html` | standard + minimal tier overviews |
-| `work-dioscorides.html` | work hub: witness compare, translation switcher |
-| `reader-codex.html` | Facsimile+Study modes, real OSD, sidebar, basic/advanced |
-| `reader-scroll.html` | EB01 horizontal RTL roll in OSD, column nav, hiero layers |
-| `reader-explore.html` | visual-first explore mode + embed variants |
-| `streaming.html` | architecture + progressive-loading simulation |
+| `index.html` | entry: choice between the two viewers, three books each |
+| `explorer.html` | visual-first viewer (EB01, E54, E28) |
+| `reader.html` | study/facsimile viewer (E17, E18, E25) |
+| `streaming.html` | delivery architecture + progressive-loading simulation (backend phase) |
 
-Mockups are static, self-contained, GitHub-Pages-hosted; imagery = real corpus thumbs + downscaled sample pages in `mockups/assets/`.
+Everything else from earlier iterations (library/overview/work-hub pages, superseded explore concepts, art directions, the components playground) is deleted — see AGENTS.md; do not resurrect from git history. Pages are static, GitHub-Pages-hosted; imagery = corpus thumbs + downscaled samples in `mockups/assets/`; layer data extracted per book in `mockups/lib/data/`.
