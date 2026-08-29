@@ -1,0 +1,269 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Geist Variable', sans-serif;
+    --color-stage: var(--stage);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --radius: 0.25rem;
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+
+    --stage: #000;
+    --panel-alpha: 92;
+    --panel-blur: 14px;
+    --read-size: 14.5px;
+    --read-leading: 1.66;
+}
+
+.dark {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html, body, #root { height: 100%; }
+  body {
+    @apply bg-background text-foreground overflow-hidden;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Scrollbars take their colour from the surface they sit on: the
+   track is transparent so the panel shows through, the thumb is the
+   theme's border ink.
+   --------------------------------------------------------------- */
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--border) 90%, transparent) transparent;
+  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--border) 90%, transparent);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--input);
+    background-clip: padding-box;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Panel surfaces. `.panel` is the shared surface; the element-style
+   register on <html data-element> decides border and elevation, and
+   `.panel-floating` opts a panel into translucency.
+   --------------------------------------------------------------- */
+@layer components {
+  .panel {
+    background: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid var(--border);
+  }
+  .panel-solid { background: var(--sidebar); }
+  .panel-floating {
+    background: color-mix(in oklab, var(--card) calc(min(100, var(--panel-alpha)) * 1%), transparent);
+    backdrop-filter: blur(var(--panel-blur));
+    -webkit-backdrop-filter: blur(var(--panel-blur));
+    border-radius: var(--radius);
+  }
+
+  html[data-element='bordered'] .panel { border-width: 1px; box-shadow: none; }
+  html[data-element='shaded'] .panel {
+    border-color: color-mix(in oklab, var(--border) 55%, transparent);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1), 0 6px 20px rgb(0 0 0 / 0.08);
+  }
+  html[data-element='flat'] .panel { border-color: transparent; box-shadow: none; }
+  html[data-element='outlined'] .panel {
+    border-width: 2px;
+    border-color: color-mix(in oklab, var(--foreground) 30%, transparent);
+    box-shadow: none;
+  }
+  html[data-element='inset'] .panel {
+    border-color: transparent;
+    box-shadow: inset 0 0 0 1px var(--border), inset 0 2px 8px rgb(0 0 0 / 0.08);
+  }
+  html[data-element='ruled'] .panel {
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-top-width: 2px;
+    border-top-color: var(--foreground);
+    box-shadow: none;
+    border-radius: 0;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Legacy marks emitted by the vanilla whl-text module. These are the
+   only rules carried over from assets/tokens.css; they now read the
+   generated theme tokens like everything else.
+   --------------------------------------------------------------- */
+@layer components {
+  .ent { text-decoration: underline dotted 1px; text-underline-offset: 3px; cursor: pointer; }
+  .ent.author { color: var(--ent-author); text-decoration-color: var(--ent-author); }
+  .ent.plant { color: var(--ent-plant); text-decoration-color: var(--ent-plant); }
+  .ent.cite { color: var(--ent-cite); text-decoration-color: var(--ent-cite); }
+  .ent.substance { color: var(--ent-substance); text-decoration-color: var(--ent-substance); }
+  .rub { color: var(--rubric); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 1px 8px; border-radius: 999px; font-size: 11px;
+    background: var(--muted); color: var(--muted-foreground);
+    border: 1px solid var(--border);
+  }
+  .skel {
+    background: linear-gradient(100deg, var(--muted) 40%, var(--card) 50%, var(--muted) 60%);
+    background-size: 200% 100%;
+    animation: skel 1.2s infinite linear;
+    border-radius: var(--radius);
+  }
+  @keyframes skel { to { background-position: -200% 0; } }
+}
+
+/* Reading panes. Id selectors so these outrank the stylesheet whl-text
+   injects into <head> at runtime. */
+#whlTextMain .tx, #whlTextMain .xl,
+#whlTextWin .tx, #whlTextWin .xl { line-height: var(--read-leading); }
+#whlTextMain .rg-el { padding: 10px 12px; }
+#whlTextMain[data-layout='pair'] .rg-el {
+  grid-template-columns: var(--pair-tx, 1fr) var(--pair-xl, 1fr);
+}
+#whlTextMain[data-layout='pair'] .rg-el > .tx { grid-area: 2 / 1; }
+#whlTextMain[data-layout='pair'] .rg-el > .hl-block { grid-area: 3 / 1; }
+#whlTextMain[data-layout='pair'] .rg-el > .xl { grid-area: 2 / 2 / span 2; }
+/* whl-text stamps `.whl-text` on the host element itself, so these are
+   same-element selectors, not descendant ones. */
+#whlTextWin[data-layout='strip'] .strip-line { white-space: normal; overflow: visible; padding: 10px 12px 12px; }
+#whlTextWin[data-layout='strip'] .strip-body { white-space: normal; display: block; }
+#whlTextWin[data-layout='strip'] .strip-tx2 { font-style: italic; }
+#whlTextWin[data-layout='strip'] .strip-xl2 { margin-top: 8px; }
+#whlTextWin .rg-case { display: none; }
+
+/* Hieroglyph lines injected per region (data-gated toggle). */
+.hl-block { margin: 6px 0 2px; }
+.hl-line { display: flex; gap: 8px; align-items: baseline; padding: 1.5px 0; }
+.hl-ref { flex: none; font-size: 10px; color: var(--muted-foreground); }
+.hl-t {
+  min-width: 0; overflow-wrap: anywhere; font-size: 15px; line-height: 1.5;
+  font-family: 'Noto Sans Egyptian Hieroglyphs', 'Segoe UI Historic', sans-serif;
+}
+
+/* The facsimile stage sits behind everything and defaults to black.
+   whl-viewer stamps its own `.wv-host` class on this element and injects that
+   stylesheet into <head> at runtime, i.e. after this bundle — so an id selector
+   is what keeps the stage stretched and black. */
+#stage {
+  position: absolute;
+  inset: 0;
+  background: var(--stage);
+  overflow: hidden;
+}
+#stage .openseadragon-canvas { outline: none !important; }

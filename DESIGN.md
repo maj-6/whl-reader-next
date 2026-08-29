@@ -57,7 +57,28 @@ Skeletons per arriving layer; page usable at each stage (image alone → +text �
 - **The reader is the product.** It ships embedded or semi-embedded in a parent site; overview/library pages are secondary chrome around it.
 - Mock-notes (mockup-only chrome) shrink to one terse line stating what is interactive.
 
-## The two viewers (iteration 4 — current)
+## Explorer implementation (iteration 6 — current)
+
+The explorer is now a **React + Tailwind + shadcn/ui** app under `app/`, built by Vite
+into `mockups/explorer.html`; the other pages remain vanilla. The reader machinery is
+unchanged — `whl-viewer`, `whl-text`, `whl-store`, `whl-linker` are imported as source
+through one typed façade (`app/src/whl/vanilla.ts`) and driven from a `useReader` hook,
+so the component library stays the single implementation of the reading substrate.
+
+Theming is generated rather than hand-authored: twelve schemes come from a few oklch
+parameters, and one token map feeds both the shadcn names (`--background`, `--card`,
+`--popover`, `--border`, `--ring`) and the legacy names the vanilla modules read
+(`--ink`, `--line`, `--tint-*`, `--rubric`), so both systems follow one theme.
+`assets/tokens.css` is untouched and no longer loaded by the explorer.
+
+Chrome: a masthead carrying the book's **bibliographic record** (transcribed from the
+corpus `reader/<LABEL>.bib.json` sidecars, never invented) with the full record in a
+popover; a **solid** left sidebar showing where the leaf on view sits in the whole book;
+**floating** right panels; a minimap floating over the facsimile rather than in the
+sidebar; and a movable settings panel covering scheme, element style, corner radius,
+stage colour, panel opacity and blur, typefaces, reading size and leading.
+
+## The two viewers (iteration 4)
 
 Review settled the explorer on the **window + dual-sidebar** mechanism (all other explore concepts and the styles/split variants were rejected and deleted).
 

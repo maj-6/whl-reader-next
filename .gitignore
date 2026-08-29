@@ -2,3 +2,8 @@ __pycache__/
 node_modules/
 *.log
 .DS_Store
+
+# explorer.html and its chunks are built from app/ by `npm run build`
+# (and by the Pages workflow); the source of record is app/src.
+/mockups/explorer.html
+/mockups/app/

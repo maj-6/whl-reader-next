@@ -7,10 +7,15 @@ Rules for any session or subagent working in this repo. The goal is a small, cur
 Design prototype for the WHL reader (historical herbal / materia-medica library). Two viewers, six books, one component library. No backend yet; layer data is pre-extracted static JSON served over HTTP.
 
 ```
+app/                explorer is a React + Tailwind + shadcn/ui app (Vite, TypeScript)
+  src/whl/          books + bibliography, theme registry, settings, reader hook,
+                    vanilla.ts = the ONLY typed façade over mockups/lib
+  src/components/   masthead, settings panel, sidebar, panels, minimap, window
+  npm run build     emits mockups/explorer.html + mockups/app/* (both gitignored)
 mockups/
   index.html        entry: choice of viewer
-  explorer.html     visual-first viewer (?book=EB01|E54|E28) — window + dual sidebars + coupling
-  reader.html       study/facsimile viewer (?book=E17|E18|E25)
+  explorer.html     BUILD OUTPUT — do not edit; edit app/src instead
+  reader.html       study/facsimile viewer (?book=E17|E18|E25) — still vanilla
   streaming.html    delivery-architecture reference (backend phase)
   explore-common.js shared roll/page substrate + hieroglyph renderer
   lib/              component library (ES modules) — contract in lib/API.md
@@ -20,12 +25,17 @@ DESIGN.md           binding design brief + design language
 AGENTS.md           this file
 ```
 
+The Pages workflow runs `npm ci && npm run build` in `app/` before uploading
+`mockups/`, so a clone has no `mockups/explorer.html` until you build.
+
 ## Read this, and only this
 
 1. `DESIGN.md` — the brief and the binding design language.
 2. `lib/API.md` — the component contract, including data-file schemas. **The schemas make reading `lib/data/` unnecessary.**
-3. The one page you are changing, plus `explore-common.js` if it imports it.
-4. A lib module only if your task changes it.
+3. The one page you are changing, plus `explore-common.js` if it imports it. For the
+   explorer that means `app/src/`, never the built `mockups/explorer.html`.
+4. A lib module only if your task changes it. From the explorer app, the lib is
+   reached through `app/src/whl/vanilla.ts`; keep the shapes there and nowhere else.
 
 ## Do not ingest
 
@@ -36,7 +46,8 @@ AGENTS.md           this file
 
 ## Verification
 
-- Serve over HTTP: `python -m http.server 5200 --directory <repo>` (pages fetch layer JSON; file:// fails).
+- Build the explorer first (`cd app && npm run build`), then serve over HTTP:
+  `python -m http.server 5200 --directory <repo>` (pages fetch layer JSON; file:// fails).
 - A hidden/occluded browser pane freezes rAF, CSS transitions, and OSD animation, producing FALSE failures (stale computed styles, unfired `view` events, mid-flight transitions). Front the tab and reload before believing any failure.
 - Expected noise: OpenSeadragon `willReadFrequently` console warnings; 404s only for layers a book genuinely lacks.
 - Esc clears selection; ArrowLeft/Right pan; red ink (`.rub`) must stay red in transcription, translation, and hieroglyphs wherever they render.
