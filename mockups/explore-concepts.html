@@ -15,19 +15,11 @@
   table { width: 100%; border-collapse: collapse; }
   th { font: 600 11px var(--font-chrome); letter-spacing: .1em; text-transform: uppercase;
     color: var(--ink-3); text-align: left; padding: 0 14px 9px 0; border-bottom: 1px solid var(--line-2); }
-  th.spec { padding-right: 0; }
-  th.spec .ends { display: flex; justify-content: space-between; gap: 12px; }
   td { padding: 13px 14px 13px 0; border-bottom: 1px solid var(--line); vertical-align: baseline; }
-  td.name { width: 128px; white-space: nowrap; }
+  td.name { width: 168px; white-space: nowrap; }
   td.name a { font: 600 15px var(--font-display); color: var(--ink); }
   td.name a:hover { color: var(--accent); text-decoration: none; }
   td.mech { font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
-  td.spec { width: 118px; padding-right: 0; }
-
-  .dots { display: flex; justify-content: space-between; align-items: center; }
-  .dots i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--line-2);
-    background: transparent; }
-  .dots i.on { background: var(--accent); border-color: var(--accent); }
 
   .prior { margin-top: 34px; font: 600 11px var(--font-chrome); letter-spacing: .12em;
     text-transform: uppercase; color: var(--ink-3); }
@@ -39,48 +31,41 @@
 <script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
 
 <main class="wrap">
-  <p class="q">Explore mode's open question is the balance of visual against information
-  focus. Five mechanisms surface the same text on the same seamless roll (EB01,
-  columns 44–48); each sits at a different point on that spectrum.</p>
+  <p class="q">Explore mode's open question was the balance of visual against
+  information focus. The iteration narrows to the window family: three variants
+  of a floating reading window over the same seamless roll (EB01, columns 44–48),
+  each with a different sidebar system.</p>
 
   <table>
     <thead>
       <tr>
-        <th>Concept</th>
+        <th>Variant</th>
         <th>Mechanism</th>
-        <th class="spec"><span class="ends"><span>Visual</span><span>Information</span></span></th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td class="name"><a href="explore-window.html">Window</a></td>
-        <td class="mech">Movable, resizable reading window floating over the roll; translucency-adjustable.</td>
-        <td class="spec"><span class="dots"><i></i><i></i><i class="on"></i><i></i><i></i></span></td>
+        <td class="name"><a href="explore-window-dual.html">Window-dual</a></td>
+        <td class="mech">Dual sidebars flanking the roll; the window couples to either side — dock a window to a sidebar, tear a sidebar section out as a window.</td>
       </tr>
       <tr>
-        <td class="name"><a href="explore-ghost.html">Ghost</a></td>
-        <td class="mech">Translation as an in-place ghost layer on the papyrus itself; opacity-controlled, no panel chrome.</td>
-        <td class="spec"><span class="dots"><i></i><i class="on"></i><i></i><i></i><i></i></span></td>
+        <td class="name"><a href="explore-window-styles.html">Window-styles</a></td>
+        <td class="mech">One window, four chrome styles — frosted, card, docked, tabbed — plus a second pinned window for a held passage.</td>
       </tr>
       <tr>
-        <td class="name"><a href="explore-apparatus.html">Apparatus</a></td>
-        <td class="mech">Fixed compact gloss rail synced to the viewport, as in a critical edition's apparatus.</td>
-        <td class="spec"><span class="dots"><i></i><i></i><i></i><i class="on"></i><i></i></span></td>
-      </tr>
-      <tr>
-        <td class="name"><a href="explore-lens.html">Lens</a></td>
-        <td class="mech">Cursor loupe: hold to peek the translation under the pointer; click freezes a small card.</td>
-        <td class="spec"><span class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></span></td>
-      </tr>
-      <tr>
-        <td class="name"><a href="explore-ribbon.html">Ribbon</a></td>
-        <td class="mech">Facing translation ribbon: a second seamless band scrolling in lockstep beneath the roll.</td>
-        <td class="spec"><span class="dots"><i></i><i></i><i></i><i></i><i class="on"></i></span></td>
+        <td class="name"><a href="explore-window-split.html">Window-split</a></td>
+        <td class="mech">Split right sidebar: reading pane above, secondary apparatus panel below, each collapsible independently.</td>
       </tr>
     </tbody>
   </table>
 
-  <p class="prior"><a href="reader-explore.html">Reader-explore</a> — earlier E52 single-page treatment</p>
+  <p class="prior">Superseded —
+    <a href="explore-window.html">Window</a> ·
+    <a href="explore-ghost.html">Ghost</a> ·
+    <a href="explore-apparatus.html">Apparatus</a> ·
+    <a href="explore-lens.html">Lens</a> ·
+    <a href="explore-ribbon.html">Ribbon</a> ·
+    <a href="reader-explore.html">Reader-explore (E52)</a></p>
 </main>
 
 <script type="module">
@@ -90,7 +75,7 @@
     back: 'index.html',
     adv: false,
     mockSwitch: 'mode-only',
-    note: 'Five mechanisms on the same roll; open each in sequence.',
+    note: 'Three window variants on the same roll; superseded concepts linked below.',
   });
 </script>
 </body>

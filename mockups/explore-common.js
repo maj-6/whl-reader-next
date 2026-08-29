@@ -28,6 +28,24 @@ export function createRoll({ el, bus, start = 'col-0045', latency = '3g', viewer
   return { viewer, store };
 }
 
+// r.hl = [{ref, t, rub:[[s,e],…]}] — hieroglyph lines per TLA sentence, UTF-16 offsets, red-ink spans.
+// signs without Unicode codepoints arrive as literal [SIGN:XXX] tokens; show a quiet placeholder
+const escH = s => String(s).replace(/\[SIGN:[^\]]+\]/g, '▯').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+export function hieroHTML(r) {
+  if (!r || !Array.isArray(r.hl)) return '';
+  return r.hl.map(l => {
+    const spans = (l.rub || []).slice().sort((a, b) => a[0] - b[0]);
+    let out = '', pos = 0;
+    for (const [s, e] of spans) {
+      if (s > pos) out += escH(l.t.slice(pos, s));
+      out += `<span class="rub">${escH(l.t.slice(s, e))}</span>`;
+      pos = e;
+    }
+    out += escH(l.t.slice(pos));
+    return `<div class="hl-line"><span class="hl-ref">${escH(l.ref)}</span><span class="hl-t">${out}</span></div>`;
+  }).join('');
+}
+
 export function romanCol(key) {
   const n = +key.slice(4);
   const R = [[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];

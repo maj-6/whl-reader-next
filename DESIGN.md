@@ -59,15 +59,15 @@ Skeletons per arriving layer; page usable at each stage (image alone → +text �
 
 ## Explore concepts (iteration 3)
 
-The visual↔information balance is the core design question. Five concepts, one shared substrate (the seamless EB01 roll, cols 44–48, real data), differing ONLY in how text/information surfaces:
+The visual↔information balance is the core design question, on one shared substrate (the seamless EB01 roll, cols 44–48, real data). Round 3a's ghost/apparatus/lens/ribbon mechanisms were reviewed and rejected; the iteration narrowed to the **window family** (3b):
 
-| Concept | Mechanism |
+| Variant | Mechanism |
 |---|---|
-| `explore-window` | movable, resizable, translucency-adjustable reading window floating over the roll |
-| `explore-ghost` | translation as an in-place ghost layer on the papyrus itself; opacity-controlled, no panel chrome |
-| `explore-apparatus` | fixed compact gloss rail synced to the viewport, like a critical edition's apparatus |
-| `explore-lens` | cursor loupe: hold to peek translation under the pointer; click freezes a small card |
-| `explore-ribbon` | facing translation ribbon: a second seamless band scrolling in lockstep beneath the roll |
+| `explore-window-dual` | left nav sidebar + resizable right info sidebar (collapsible sections: text/commentary/entities/ask); collapsing the right sidebar materializes the floating window, expanding it sucks the window back and selection lands in the sidebar |
+| `explore-window-styles` | window chrome variants — frosted / card / edge-docked / tabbed (translation·transliteration·hieroglyphic); a second pinned window for comparing two cases |
+| `explore-window-split` | one right sidebar vertically split (text / notes, draggable splitter, each collapsible); secondary apparatus panel on a toggle; no floating window |
+
+Shared rules: sidebar text layout flips stacked↔side-by-side with width; red ink (rubrics) preserved in transliteration, translation, and hieroglyphs; hieroglyphic display is a toggle, off by default. Superseded 3a pages remain for record.
 
 Seamlessness: scanner borders are clipped per column (top ≈7.5%, bottom ≈8.5%; sides are continuous), clipped regions normalized to equal world height, zero world gap.
 

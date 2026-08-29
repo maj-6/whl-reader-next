@@ -85,8 +85,11 @@ export function createTextPane({ el, bus, store, book, page, layout = 'pair', st
     }
     const src = layerOf(pdata, 'source');
     const regions = (src && src.regions) || [];
-    regions.forEach((r, i) => {   // optional rubric spans on transcription
-      for (const u of r.rub || r.rubrics || []) if (u && u.length === 2) push(S, i, { s: u[0], e: u[1], rub: true });
+    const rubSpan = u => Array.isArray(u) && u.length === 2 ? { s: u[0], e: u[1] }
+      : (u && typeof u.s === 'number' && typeof u.e === 'number' ? { s: u.s, e: u.e } : null);
+    regions.forEach((r, i) => {   // optional rubric spans (red ink) on transcription + translation
+      for (const u of r.rub || r.rubrics || []) { const v = rubSpan(u); if (v) push(S, i, { ...v, rub: true }); }
+      for (const u of r.xl_rub || r.translation_rubrics || []) { const v = rubSpan(u); if (v) push(T, i, { ...v, rub: true }); }
     });
     const ents = layerOf(pdata, 'entities');
     if (Array.isArray(ents)) {

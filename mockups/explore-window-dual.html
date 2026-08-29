@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Explore — Window + dual sidebars — WHL Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Sans+Egyptian+Hieroglyphs&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  html, body { height: 100%; }
+  body { overflow: hidden; }
+  .stage { position: absolute; inset: 0; background: var(--bg-sunk); }
+  #osd { position: absolute; inset: 0; }
+  #osd .openseadragon-canvas { outline: none; }
+  .topbar, .rail { border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+    border-radius: var(--radius-lg); background: color-mix(in srgb, var(--bg-raise) 84%, transparent);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--shadow); }
+  .topbar { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 60; }
+
+  /* ---- rails ---- */
+  .rail { position: absolute; bottom: 12px; z-index: 50; display: flex; flex-direction: column; overflow: hidden; }
+  .rail.left { left: 12px; width: 230px; transition: width .16s ease; }
+  .rail.right { right: 12px; }
+  .rail.collapsed { width: 36px !important; }
+  .rail-head { flex: none; display: flex; padding: 3px; }
+  .chev { border: 0; background: none; color: var(--ink-3); cursor: pointer; font: 14px/1 var(--font-chrome); padding: 5px 8px; border-radius: var(--radius); }
+  .chev:hover, .stripbtn:hover { color: var(--ink); background: var(--tint-region); }
+  .rail-body { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .rail.collapsed .rail-body, .rail.collapsed .rs-grip, .sec.closed .sec-b { display: none; }
+  .rail-strip { display: none; flex-direction: column; gap: 2px; align-items: center; padding: 2px 0; }
+  .rail.collapsed .rail-strip { display: flex; }
+  .stripbtn { border: 0; background: none; color: var(--ink-2); cursor: pointer; font: 11.5px/1 var(--font-chrome); padding: 6px 0; width: 28px; border-radius: var(--radius); }
+  .stripbtn.cur { color: var(--ink); font-weight: 600; background: var(--tint-select); }
+  .stripbtn.dim, .row.dim .r1 { color: var(--ink-3); font-weight: 400; }
+
+  /* collapsible sections */
+  .sec { flex: none; display: flex; flex-direction: column; min-height: 0; border-top: 1px solid var(--line); }
+  .sec:first-child { border-top: 0; }
+  .sec-h { flex: none; display: flex; align-items: center; gap: 8px; padding: 7px 10px 6px; cursor: pointer; user-select: none; -webkit-user-select: none; }
+  .sec-t { flex: 1; min-width: 0; font: 600 10.5px var(--font-chrome); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sec-h:hover .sec-t { color: var(--ink); }
+  .cv { flex: none; color: var(--ink-3); font-size: 10px; transition: transform .15s ease; }
+  .sec.closed .cv { transform: rotate(-90deg); }
+  .sec-b { min-height: 0; overflow-y: auto; }
+  .sec-grow { flex: 1 1 auto; }
+  .sec-grow:not(.closed) { min-height: 200px; }
+  .sec-grow .sec-b { flex: 1; }
+  .sec-grow.closed { flex: 0 0 auto; }
+  .rail-empty { padding: 6px 12px 10px; font: 12.5px var(--font-chrome); color: var(--ink-3); }
+
+  /* left rail rows */
+  .row { display: block; padding: 5px 10px 5px 12px; cursor: pointer; border-left: 2px solid transparent; }
+  .row:hover { background: var(--tint-region); }
+  .row.cur { border-left-color: var(--accent); background: var(--tint-region); }
+  .row .r1 { display: block; font: 500 12.5px var(--font-chrome); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row.cur .r1 { font-weight: 600; }
+  .row .r2 { display: block; font: 11px var(--font-chrome); color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* right sidebar */
+  .rs-grip { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; touch-action: none; z-index: 5; }
+  .rs-grip::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; }
+  .rs-grip:hover::after { background: var(--accent); }
+  #txWrap { --read-size: 14.5px; }
+  #txWrap .whl-text .rg-el { padding: 10px 12px; }
+  #txEmpty, #rwEmpty { padding: 12px; font: 14px/1.6 var(--font-read); color: var(--ink-3); }
+  .hbtn { flex: none; border: 1px solid var(--line-2); background: none; color: var(--ink-2); border-radius: var(--radius); cursor: pointer; padding: 1px 7px 2px; font: 13px/1.4 "Noto Sans Egyptian Hieroglyphs","Segoe UI Historic",sans-serif; }
+  .hbtn.on { background: var(--tint-select); border-color: var(--accent); color: var(--ink); }
+
+  /* hieroglyph lines (toggle-gated); pair layout: they sit under the transliteration column */
+  .hl-block { margin: 6px 0 2px; }
+  .hl-line { display: flex; gap: 8px; align-items: baseline; padding: 1.5px 0; }
+  .hl-ref { flex: none; font: 10px var(--font-chrome); color: var(--ink-3); }
+  .hl-t { min-width: 0; font-family: "Noto Sans Egyptian Hieroglyphs","Segoe UI Historic",sans-serif; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+  #txPane[data-layout="pair"] .rg-el > .tx { grid-area: 2 / 1; }
+  #txPane[data-layout="pair"] .rg-el > .hl-block { grid-area: 3 / 1; }
+  #txPane[data-layout="pair"] .rg-el > .xl { grid-area: 2 / 2 / span 2; }
+
+  .com { padding: 5px 12px 7px; }
+  .com-h { font: 600 11.5px var(--font-chrome); color: var(--ink-2); }
+  .com-t { font: 13px/1.55 var(--font-read); color: var(--ink-2); }
+  .ent-row { padding: 5px 10px 6px; border-left: 2px solid var(--ec, var(--line-2)); margin: 2px 0 2px 12px; }
+  .ent-row.ent-plant { --ec: var(--ent-plant); } .ent-row.ent-substance { --ec: var(--ent-substance); }
+  .ent-row.ent-author { --ec: var(--ent-author); } .ent-row.ent-citation { --ec: var(--ent-cite); }
+  .ent-lab { font: 600 12px var(--font-chrome); color: var(--ec, var(--ink)); }
+  .ent-sum { font: 11.5px/1.45 var(--font-chrome); color: var(--ink-3); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .qa { margin: 2px 12px 8px; font: 12.5px/1.5 var(--font-chrome); }
+  .qa .q { color: var(--ink); font-weight: 500; }
+  .qa .a { margin-top: 4px; padding-left: 8px; border-left: 2px solid var(--line-2); color: var(--ink-2); }
+  .ask-in { display: flex; margin: 0 12px 10px; }
+  .ask-in input { flex: 1; min-width: 0; border: 1px solid var(--line-2); border-radius: var(--radius); background: var(--bg-raise); color: var(--ink); font: 12.5px var(--font-chrome); padding: 6px 9px; transition: opacity .2s; }
+  .ask-in input:disabled { opacity: .45; }
+  .ask-in input:focus { outline: none; border-color: var(--accent); }
+
+  /* ---- the reading window (materializes when the right sidebar collapses) ---- */
+  .rw { position: fixed; z-index: 55; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+  .rw[hidden] { display: none !important; }
+  .rw[data-op="solid"]   { background: var(--bg-raise); }
+  .rw[data-op="frosted"] { background: color-mix(in srgb, var(--bg-raise) 80%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .rw[data-op="glass"]   { background: color-mix(in srgb, var(--bg-raise) 45%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  .rw.dragging { pointer-events: none; }
+  .rw-head { flex: none; display: flex; align-items: baseline; gap: 6px; padding: 8px 10px 7px; border-bottom: 1px solid var(--line); cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
+  .rw.dragging .rw-head { cursor: grabbing; }
+  .rw-col { font: 600 12.5px var(--font-chrome); color: var(--ink); white-space: nowrap; }
+  .rw-case { flex: 1; min-width: 0; font: 11.5px var(--font-chrome); color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rw-body { flex: 1; min-height: 0; overflow-y: auto; --read-size: 14.5px; }
+  .rw-body .whl-text[data-layout="strip"] .strip-line { white-space: normal; overflow: visible; padding: 10px 12px 12px; }
+  .rw-body .whl-text[data-layout="strip"] .strip-body { white-space: normal; display: block; }
+  .rw-body .whl-text[data-layout="strip"] .strip-tx2 { font-style: italic; }
+  .rw-body .whl-text[data-layout="strip"] .strip-xl2 { margin-top: 8px; }
+  .rw-body .whl-text .rg-case { display: none; }
+  .rw-body .whl-skel { height: 64px; margin: 10px; }
+  .rw-foot { flex: none; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-top: 1px solid var(--line); }
+  .stepbtn { flex: none; border: 1px solid var(--line-2); background: none; color: var(--ink-2); border-radius: var(--radius); width: 22px; height: 22px; cursor: pointer; font: 12px/1 var(--font-chrome); padding: 0; }
+  .stepbtn:hover, .hbtn:hover { border-color: var(--accent); color: var(--ink); }
+  .stepbtn[disabled] { opacity: .35; cursor: default; }
+  .rw-count { font: 11px var(--font-chrome); color: var(--ink-3); min-width: 40px; text-align: center; }
+  .rw-foot .spacer { flex: 1; }
+  .opseg { display: inline-flex; border: 1px solid var(--line-2); border-radius: var(--radius); overflow: hidden; }
+  .opseg button { border: 0; background: none; padding: 3px 8px; cursor: pointer; font: 10.5px var(--font-chrome); color: var(--ink-2); }
+  .opseg button.active { background: var(--tint-select); color: var(--ink); font-weight: 600; }
+  .rw-resize { position: absolute; right: 0; bottom: 0; width: 16px; height: 16px; cursor: nwse-resize; touch-action: none; }
+  .rw-resize::after { content: ''; position: absolute; right: 4px; bottom: 4px; width: 6px; height: 6px; border-right: 2px solid var(--line-2); border-bottom: 2px solid var(--line-2); }
+</style>
+</head>
+<body>
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+
+<div class="stage"><div id="osd"></div></div>
+
+<aside class="rail left" id="lrail" aria-label="Navigation">
+  <div class="rail-head"><button type="button" class="chev" id="lToggle" aria-label="Toggle navigation rail">&lsaquo;</button></div>
+  <div class="rail-strip" id="lStrip"></div>
+  <div class="rail-body">
+    <section class="sec" data-sec="columns">
+      <div class="sec-h"><span class="sec-t">Columns</span><span class="cv">&#9662;</span></div>
+      <div class="sec-b" id="colList"></div>
+    </section>
+    <section class="sec sec-grow" data-sec="cases">
+      <div class="sec-h"><span class="sec-t" id="casesTitle">Cases</span><span class="cv">&#9662;</span></div>
+      <div class="sec-b" id="caseList"></div>
+    </section>
+  </div>
+</aside>
+
+<aside class="rail right" id="rside" aria-label="Information">
+  <div class="rs-grip" id="rsGrip" title="Resize"></div>
+  <div class="rail-head"><button type="button" class="chev" id="rToggle" aria-label="Toggle information sidebar">&rsaquo;</button></div>
+  <div class="rail-body">
+    <section class="sec sec-grow" data-sec="text">
+      <div class="sec-h"><span class="sec-t">Text</span>
+        <button type="button" class="hbtn" id="hieroBtn" aria-label="hieroglyphic" aria-pressed="false">&#x1332A;</button>
+        <span class="cv">&#9662;</span></div>
+      <div class="sec-b" id="txWrap"><div id="txPane"></div><div id="txEmpty" hidden>&mdash;</div></div>
+    </section>
+    <section class="sec" data-sec="comm">
+      <div class="sec-h"><span class="sec-t">Commentary</span><span class="cv">&#9662;</span></div>
+      <div class="sec-b" id="commList"></div>
+    </section>
+    <section class="sec" data-sec="ents">
+      <div class="sec-h"><span class="sec-t">Entities</span><span class="cv">&#9662;</span></div>
+      <div class="sec-b" id="entList" style="max-height:220px"></div>
+    </section>
+    <section class="sec" data-sec="ask">
+      <div class="sec-h"><span class="sec-t">Ask</span><span class="cv">&#9662;</span></div>
+      <div class="sec-b">
+        <div class="qa">
+          <div class="q">Which drugs recur in Eb 226&ndash;236?</div>
+          <div class="a">Coriander (&scaron;ꜣ.w), cumin (tpnn) and gum (qmy.t) each appear in more than one prescription of this column; wheat flour (sw.t) is the usual base.</div>
+        </div>
+        <div class="ask-in"><input id="askIn" type="text" placeholder="Ask about this passage" aria-label="Ask about this passage"></div>
+      </div>
+    </section>
+  </div>
+</aside>
+
+<aside class="rw" id="rw" data-op="frosted" aria-label="Reading window" hidden>
+  <div class="rw-head" id="rwHead">
+    <span class="rw-col" id="rwCol">Column &mdash;</span>
+    <span class="rw-case" id="rwCase"></span>
+  </div>
+  <div class="rw-body"><div id="rwText"></div><div id="rwEmpty" hidden>&mdash;</div></div>
+  <div class="rw-foot">
+    <button type="button" class="stepbtn" id="rwPrev" title="Previous case">&lsaquo;</button>
+    <span class="rw-count" id="rwCount"></span>
+    <button type="button" class="stepbtn" id="rwNext" title="Next case">&rsaquo;</button>
+    <span class="spacer"></span>
+    <div class="opseg" id="opSeg" role="group" aria-label="Window translucency">
+      <button type="button" data-op="solid">Solid</button>
+      <button type="button" data-op="frosted" class="active">Frosted</button>
+      <button type="button" data-op="glass">Glass</button>
+    </div>
+  </div>
+  <div class="rw-resize" id="rwResize" title="Resize"></div>
+</aside>
+
+<script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0/build/openseadragon/openseadragon.min.js"></script>
+<script type="module">
+import { createBus } from './lib/whl-bus.js';
+import { mountChrome } from './lib/whl-chrome.js';
+import { createTextPane } from './lib/whl-text.js';
+import { createRoll, COLS, DATA_COLS, hieroHTML } from './explore-common.js';
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const bus = createBus();
+
+const chrome = mountChrome({
+  title: 'Papyrus Ebers', back: 'explore-concepts.html', bus,
+  book: { label: 'EB01', title: 'Papyrus Ebers', thumb: 'assets/thumbs/EB01.jpg' },
+  adv: false, mockSwitch: 'mode-only',
+  note: '[ ] toggle rails; collapse right → window; Esc clears.',
+});
+const { viewer, store } = createRoll({ el: $('#osd'), bus, start: 'col-0045',
+  viewerOpts: { profile: { zoomOnSelect: false } } });
+
+/* ---------- persisted UI state ---------- */
+const SKEY = 'whl-explore-window-dual';
+let S = { left: 0, right: 0, w: 340, hiero: 0, secs: {}, win: { x: -1, y: -1, w: 360, h: 300, op: 'frosted' } };
+try { const s = JSON.parse(sessionStorage.getItem(SKEY) || 'null');
+  if (s && typeof s === 'object') S = { ...S, ...s, win: { ...S.win, ...(s.win || {}) }, secs: { ...(s.secs || {}) } };
+} catch {}
+const save = () => { try { sessionStorage.setItem(SKEY, JSON.stringify(S)); } catch {} };
+/* ---------- shared reading state (window ⇄ Text pane) ---------- */
+let viewCol = 'col-0045', curCol = 'col-0045', curRegion = 1, selActive = false, lastH = null;
+let txPane = null, winPane = null, txLayout = null;
+const regionsOf = c => (store.get(c) && store.get(c).source && store.get(c).source.regions) || [];
+const hasData = c => DATA_COLS.includes(c);
+
+bus.on('highlight', h => { lastH = h; viewer.applyHighlight(h);
+  if (txPane) txPane.applyHighlight(h); if (winPane) winPane.applyHighlight(h); });
+
+/* ---------- hieroglyph lines (toggle-gated, off by default) ---------- */
+function injectHiero(root, col) {
+  if (!root) return;
+  root.querySelectorAll('.hl-block').forEach(n => n.remove());
+  if (!S.hiero) return;
+  const regs = regionsOf(col);
+  root.querySelectorAll('.rg-el').forEach(el => {
+    const html = hieroHTML(regs[+el.dataset.r]); if (!html) return;
+    const tx = el.querySelector('.strip-tx2') || el.querySelector('.tx') || el.querySelector('.strip-body');
+    if (!tx) return;
+    const d = document.createElement('div'); d.className = 'hl-block'; d.innerHTML = html;
+    tx.after(d);
+  });
+}
+let hq = 0;   // debounced via macrotask (rAF stalls in occluded panes)
+const reHiero = () => { clearTimeout(hq); hq = setTimeout(() => {
+  injectHiero($('#txPane'), curCol); injectHiero($('#rwText'), curCol); }, 32); };
+const hbtn = $('#hieroBtn');
+function syncHiero() { hbtn.classList.toggle('on', !!S.hiero);
+  hbtn.setAttribute('aria-pressed', S.hiero ? 'true' : 'false'); reHiero(); }
+hbtn.addEventListener('click', () => { S.hiero = S.hiero ? 0 : 1; save(); syncHiero(); });
+/* ---------- left rail: columns + cases ---------- */
+const caseNo = l => { const m = /^Eb (\d+[a-z]?)/.exec(l || ''); return m ? m[1] : null; };
+function colRange(c) {
+  const ns = regionsOf(c).map(r => caseNo(r.case_label)).filter(Boolean);
+  return ns.length ? 'Eb ' + ns[0] + '–' + ns[ns.length - 1] : (hasData(c) ? '…' : '—');
+}
+function renderCols() {
+  $('#colList').innerHTML = COLS.map(({ key }) =>
+    `<div class="row${hasData(key) ? '' : ' dim'}${key === viewCol ? ' cur' : ''}" data-col="${key}">` +
+    `<span class="r1">Column ${+key.slice(4)}</span><span class="r2">${colRange(key)}</span></div>`).join('');
+  $('#lStrip').innerHTML = COLS.map(({ key }) =>
+    `<button type="button" class="stripbtn${key === viewCol ? ' cur' : ''}${hasData(key) ? '' : ' dim'}" data-col="${key}">${+key.slice(4)}</button>`).join('');
+}
+function renderCases() {
+  const rows = regionsOf(viewCol).map((r, i) => r.case_label ?
+    `<div class="row${viewCol === curCol && i === curRegion ? ' cur' : ''}" data-region="${i}"><span class="r1">${esc(r.case_label)}</span></div>` : '').join('');
+  $('#caseList').innerHTML = rows || `<div class="rail-empty">${hasData(viewCol) ? '…' : '—'}</div>`;
+  $('#casesTitle').textContent = 'Cases · col. ' + (+viewCol.slice(4));
+}
+$('#lrail').addEventListener('click', e => {
+  const c = e.target.closest('[data-col]'); if (c) { viewer.goto(c.dataset.col); return; }
+  const r = e.target.closest('[data-region]'); if (r) viewer.select(viewCol, +r.dataset.region);
+});
+
+/* ---------- right sidebar: commentary + entities ---------- */
+const COMM = {
+  'col-0044': [['Eb 217–224', 'Concordance: Grundriss der Medizin IV/1 ad loc. — = H 48–49, 79–82; the Hearst parallels run in block, variants orthographic.'], ['Eb 214', 'vgl. pChester Beatty VIII vso. 5,1–3, which transmits the same text in a later hand.']],
+  'col-0045': [['Eb 226–236', 'Concordance: Grundriss der Medizin IV/1 ad loc. for the cases of this column.'], ['Eb 227', 'vgl. Bln 58 — the Berlin papyrus transmits the same remedy with the drug list reordered.']],
+  'col-0046': [['Eb 242', 'Rubricated title case; the ḫꜣs.yt-fruit group it opens runs through Eb 245.'], ['Eb 243–245', '= H 71–73: the Hearst sequence keeps the order of the common Vorlage.']],
+  'col-0048': [['Eb 251d', 'Conclusion of a case begun in col. 47; only the final clause stands in this column.'], ['Eb 252–262', 'Date juice (bnj.w) is the standing vehicle through this run of prescriptions.']],
+};
+function renderComm() {
+  const es = COMM[curCol] || [];
+  $('#commList').innerHTML = es.length ? es.map(([h, t]) =>
+    `<div class="com"><div class="com-h">${h}</div><div class="com-t">${t}</div></div>`).join('') :
+    '<div class="rail-empty">—</div>';
+}
+function renderEnts() {
+  const pd = store.get(curCol), es = ((pd && pd.entities) || []).filter(e => e.type !== 'citation');
+  $('#entList').innerHTML = es.length ? es.map(e =>
+    `<div class="ent-row ent-${esc(e.type)}"><div class="ent-lab">${esc(e.label)}</div><div class="ent-sum">${esc(e.summary || '')}</div></div>`).join('') :
+    `<div class="rail-empty">${hasData(curCol) ? '…' : '—'}</div>`;
+}
+const ask = $('#askIn');
+ask.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return; e.preventDefault();
+  ask.disabled = true; setTimeout(() => { ask.disabled = false; }, 900);
+});
+
+/* ---------- panes ---------- */
+function mountTx() {
+  if (txPane) { txPane.destroy(); txPane = null; }
+  const el = $('#txPane'); el.innerHTML = '';
+  const no = !hasData(curCol);
+  $('#txEmpty').hidden = !no; el.hidden = no;
+  if (no || S.right) return;
+  txLayout = S.w >= 420 ? 'pair' : 'stacked';
+  txPane = createTextPane({ el, bus, store, book: 'EB01', page: curCol, layout: txLayout });
+  if (lastH) txPane.applyHighlight(lastH);
+  reHiero();
+}
+function mountWin() {
+  if (winPane) { winPane.destroy(); winPane = null; }
+  const el = $('#rwText'); el.innerHTML = '';
+  const no = !hasData(curCol);
+  $('#rwEmpty').hidden = !no; el.hidden = no;
+  if (no || !S.right) return;
+  winPane = createTextPane({ el, bus, store, book: 'EB01', page: curCol, layout: 'strip', stripShow: 'both' });
+  winPane.setRegion(curRegion);
+  if (lastH) winPane.applyHighlight(lastH);
+  reHiero();
+}
+function renderWinState() {
+  const regs = regionsOf(curCol), r = regs[curRegion];
+  $('#rwCol').textContent = 'Column ' + (+curCol.slice(4));
+  const label = r ? (r.case_label || (r.type === 'header' ? 'column header' : '')) : (hasData(curCol) ? '…' : '—');
+  $('#rwCase').textContent = label ? '· ' + label : '';
+  $('#rwCount').textContent = regs.length ? (curRegion + 1) + ' / ' + regs.length : '';
+  $('#rwPrev').disabled = !regs.length || curRegion <= 0;
+  $('#rwNext').disabled = !regs.length || curRegion >= regs.length - 1;
+}
+function retarget(col, region) {
+  const colChanged = col !== curCol;
+  curCol = col; curRegion = Math.max(0, +region || 0);
+  if (colChanged) { if (S.right) mountWin(); else mountTx(); renderComm(); renderEnts(); }
+  else if (winPane) winPane.setRegion(curRegion);
+  renderCases(); renderWinState();
+}
+function scrollTx(region) {   // smooth, with verify-and-jump (scrollIntoView crawls when throttled)
+  if (!txPane) return;
+  txPane.scrollTo(region);
+  setTimeout(() => {
+    const w = $('#txWrap'), n = w.querySelector(`.rg-el[data-r="${region}"]`);
+    if (!n || !txPane) return;
+    const a = w.getBoundingClientRect(), b = n.getBoundingClientRect();
+    if (b.bottom < a.top + 8 || b.top > a.bottom - 8) txPane.scrollTo(region, { instant: true });
+  }, 480);
+}
+bus.on('select', p => {
+  if (!p || p.page == null || p.region == null) return;
+  selActive = true; retarget(p.page, +p.region); reHiero();
+  if (!S.right) setTimeout(() => scrollTx(curRegion), 0);
+});
+bus.on('select:clear', () => { selActive = false; });
+bus.on('view', p => {
+  if (!p || !p.page) return;
+  if (p.page !== viewCol) { viewCol = p.page; renderCols(); renderCases(); }
+  if (p.page !== curCol && !selActive) retarget(p.page, regionsOf(p.page).length > 1 ? 1 : 0);
+});
+bus.on('layer', p => {
+  if (!p || p.status !== 'ready') return;
+  if (p.name === 'source') { renderCols(); renderCases(); renderWinState(); }
+  if (p.name === 'entities' && p.page === curCol) renderEnts();
+  reHiero();   // text panes re-render on each layer arrival, wiping injected lines
+});
+function step(d) {
+  const regs = regionsOf(curCol); if (!regs.length) return;
+  const n = Math.max(0, Math.min(regs.length - 1, curRegion + d));
+  if (n !== curRegion) viewer.select(curCol, n);   // highlight follows; no viewport jump
+}
+$('#rwPrev').onclick = () => step(-1); $('#rwNext').onclick = () => step(1);
+
+/* ---------- window geometry: drag / resize / translucency ---------- */
+const win = $('#rw'), head = $('#rwHead'), rz = $('#rwResize');
+const topMin = () => chrome.el.getBoundingClientRect().bottom + 8;
+function applyW() {
+  const W = S.win, vw = innerWidth, vh = innerHeight, ty = topMin();
+  if (vw < 120 || vh < 120) return;   // hidden/zero viewport: keep geometry, re-clamp on resize
+  W.w = Math.max(260, Math.min(W.w, vw - 16)); W.h = Math.max(160, Math.min(W.h, vh - ty - 8));
+  if (W.x < 0 && W.y < 0) { W.x = vw - W.w - 64; W.y = ty + 4; }
+  W.x = Math.max(8, Math.min(W.x, vw - W.w - 8)); W.y = Math.max(ty, Math.min(W.y, vh - 44));
+  win.style.left = W.x + 'px'; win.style.top = W.y + 'px';
+  win.style.width = W.w + 'px'; win.style.height = W.h + 'px';
+  win.dataset.op = W.op;
+  document.querySelectorAll('#opSeg button').forEach(b => b.classList.toggle('active', b.dataset.op === W.op));
+}
+let drag = null, rs = null;
+head.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  drag = { dx: e.clientX - S.win.x, dy: e.clientY - S.win.y, id: e.pointerId };
+  try { head.setPointerCapture(e.pointerId); } catch {}
+  win.classList.add('dragging');
+});
+head.addEventListener('pointermove', e => {
+  if (drag && e.pointerId === drag.id) { S.win.x = e.clientX - drag.dx; S.win.y = e.clientY - drag.dy; applyW(); }
+});
+const endDrag = () => { if (drag || rs) { drag = rs = null; win.classList.remove('dragging'); save(); } };
+head.addEventListener('pointerup', endDrag); head.addEventListener('pointercancel', endDrag);
+rz.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  rs = { dw: S.win.w - e.clientX, dh: S.win.h - e.clientY, id: e.pointerId };
+  try { rz.setPointerCapture(e.pointerId); } catch {}
+  win.classList.add('dragging'); e.preventDefault();
+});
+rz.addEventListener('pointermove', e => {
+  if (rs && e.pointerId === rs.id) { S.win.w = e.clientX + rs.dw; S.win.h = e.clientY + rs.dh; applyW(); }
+});
+rz.addEventListener('pointerup', endDrag); rz.addEventListener('pointercancel', endDrag);
+$('#opSeg').addEventListener('click', e => {
+  const b = e.target.closest('button[data-op]');
+  if (!b || b.dataset.op === S.win.op) return;
+  S.win.op = b.dataset.op; applyW(); save();
+});
+
+/* ---------- coupling: sidebar collapse ⇄ window FLIP ---------- */
+const rside = $('#rside'), lrail = $('#lrail'), MS = 240;
+const flipT = (a, b) =>   // transform carrying rect b onto rect a (origin 0 0)
+  `translate(${b.left - a.left}px,${b.top - a.top}px) scale(${b.width / a.width},${b.height / a.height})`;
+function flipFrom(rect) {                  // window flies out of the collapsed rail
+  win.hidden = false; applyW();
+  win.style.transformOrigin = '0 0'; win.style.transition = 'none';
+  win.style.transform = flipT(win.getBoundingClientRect(), rect); win.style.opacity = '.35';
+  let on = false; const go = () => {
+    if (on) return; on = true;
+    win.style.transition = `transform ${MS}ms ease,opacity ${MS}ms ease`;
+    win.style.transform = ''; win.style.opacity = ''; setTimeout(() => { win.style.transition = ''; }, MS + 40);
+  };
+  requestAnimationFrame(go); setTimeout(go, 30);
+}
+function flipInto(rect, done) {            // window is sucked into the Text section
+  win.style.transformOrigin = '0 0';
+  win.style.transition = `transform ${MS}ms ease,opacity ${MS}ms ease`;
+  win.style.transform = flipT(win.getBoundingClientRect(), rect); win.style.opacity = '.15';
+  setTimeout(() => {
+    win.hidden = true; win.style.transition = win.style.transform = win.style.opacity = '';
+    if (done) done();
+  }, MS + 20);
+}
+function syncRight() { rside.style.width = S.right ? '' : S.w + 'px'; $('#rToggle').textContent = S.right ? '‹' : '›'; }
+function toggleRight() {
+  if (!S.right) {                          // collapse → the window materializes
+    S.right = 1; save();
+    rside.classList.add('collapsed'); syncRight();
+    if (txPane) { txPane.destroy(); txPane = null; }
+    mountWin(); renderWinState();
+    flipFrom(rside.getBoundingClientRect());
+  } else {                                 // expand → the sidebar takes the window back
+    S.right = 0; save();
+    rside.classList.remove('collapsed'); syncRight();
+    mountTx();
+    const t = $('#txWrap').getBoundingClientRect();
+    flipInto(t.height > 40 ? t : rside.getBoundingClientRect(), () => {
+      if (winPane) { winPane.destroy(); winPane = null; }
+      $('#rwText').innerHTML = '';
+    });
+    setTimeout(() => { if (txPane) txPane.scrollTo(curRegion, { instant: true }); }, 0);
+  }
+}
+function syncLeft() { lrail.classList.toggle('collapsed', !!S.left); $('#lToggle').textContent = S.left ? '›' : '‹'; }
+const toggleLeft = () => { S.left = S.left ? 0 : 1; save(); syncLeft(); };
+$('#lToggle').onclick = toggleLeft; $('#rToggle').onclick = toggleRight;
+
+/* right sidebar width: drag its left edge 280–560, live layout switch */
+let rg = null; const grip = $('#rsGrip');
+function syncTxLayout() {
+  const l = S.w >= 420 ? 'pair' : 'stacked';
+  if (txPane && l !== txLayout) { txLayout = l; txPane.setLayout(l); reHiero(); }
+}
+grip.addEventListener('pointerdown', e => {
+  if (e.button !== 0 || S.right) return;
+  rg = { x: e.clientX, w: S.w, id: e.pointerId };
+  try { grip.setPointerCapture(e.pointerId); } catch {}
+  e.preventDefault();
+});
+grip.addEventListener('pointermove', e => {
+  if (!rg || e.pointerId !== rg.id) return;
+  S.w = Math.max(280, Math.min(560, rg.w + (rg.x - e.clientX)));
+  rside.style.width = S.w + 'px'; syncTxLayout();   // layout switches live while dragging
+});
+const endRg = () => { if (rg) { rg = null; save(); } };
+grip.addEventListener('pointerup', endRg); grip.addEventListener('pointercancel', endRg);
+
+/* collapsible sections: header row toggles; state per-section */
+document.querySelectorAll('.sec-h').forEach(h => h.addEventListener('click', e => {
+  if (e.target.closest('.hbtn')) return;
+  const sec = h.closest('.sec');
+  S.secs[sec.dataset.sec] = sec.classList.toggle('closed') ? 1 : 0; save();
+}));
+const applySecs = () => document.querySelectorAll('.sec').forEach(s =>
+  s.classList.toggle('closed', !!S.secs[s.dataset.sec]));
+
+/* ---------- keyboard ---------- */
+document.addEventListener('keydown', e => {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (/input|select|textarea/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowLeft') { viewer.next(); e.preventDefault(); }
+  else if (e.key === 'ArrowRight') { viewer.prev(); e.preventDefault(); }
+  else if (e.key === '[') { toggleLeft(); e.preventDefault(); }
+  else if (e.key === ']') { toggleRight(); e.preventDefault(); }
+  else if (e.key === 'Escape') bus.emit('select:clear', {});
+});
+
+/* ---------- boot ---------- */
+function layoutTop() { const t = topMin(); lrail.style.top = rside.style.top = t + 'px'; }
+window.addEventListener('resize', () => { layoutTop(); if (!win.hidden) applyW(); });
+applySecs(); syncLeft(); syncHiero();
+rside.classList.toggle('collapsed', !!S.right); syncRight(); layoutTop();
+viewCol = curCol = viewer.current() || 'col-0045';
+renderCols(); renderCases(); renderComm(); renderEnts();
+if (S.right) { mountWin(); win.hidden = false; applyW(); } else mountTx();
+renderWinState();
+
+window.__whl = { bus, chrome, store, viewer, get txPane() { return txPane; }, get winPane() { return winPane; } };
+</script>
+</body>
+</html>

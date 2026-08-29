@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Explore — Split sidebar — WHL Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Sans+Egyptian+Hieroglyphs&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css">
+<style>
+  html, body { height: 100%; }
+  body { overflow: hidden; }
+
+  /* ---- stage + panels: one flex row filling the viewport ---- */
+  .app { position: absolute; inset: 0; display: flex; }
+  .stage { flex: 1 1 auto; min-width: 0; position: relative; background: var(--bg-sunk); }
+  #osd { position: absolute; inset: 0; }
+  #osd .openseadragon-canvas { outline: none; }
+
+  /* chrome topbar → floating translucent bar over the stage only */
+  .topbar {
+    position: absolute; top: 12px; left: 12px;
+    right: calc(var(--rail-w, 392px) + 12px); z-index: 60;
+    border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--bg-raise) 80%, transparent);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    box-shadow: var(--shadow); transition: right .18s;
+    flex-wrap: wrap; row-gap: 4px;   /* narrow stage: wrap instead of overflowing */
+  }
+  .colnav { display: flex; align-items: center; gap: 2px; }
+  .colnav .cn-l { font: 600 10.5px var(--font-chrome); letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-3); margin-right: 5px; }
+  .colnav button { border: 0; background: none; padding: 4px 7px; cursor: pointer;
+    font: 12.5px var(--font-chrome); color: var(--ink-2); border-radius: var(--radius); }
+  .colnav button:hover { color: var(--ink); }
+  .colnav button.cur { background: var(--tint-select); color: var(--ink); font-weight: 600; }
+
+  /* ---- secondary sidebar: Apparatus, slides in left of the primary ---- */
+  .apx { flex: none; width: 0; overflow: hidden; background: var(--bg-raise);
+    border-left: 1px solid var(--line); transition: width .18s; }
+  .apx[data-open="1"] { width: 260px; }
+  .apx-inner { width: 260px; height: 100%; display: flex; flex-direction: column; min-height: 0; }
+  .apx-head { flex: none; padding: 11px 12px 9px; border-bottom: 1px solid var(--line);
+    font: 600 11px var(--font-chrome); letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-3); }
+  .apx-list { flex: 1; min-height: 0; overflow-y: auto; }
+  .ap-sec.collapsed .ap-b { display: none; }
+  .ap-row { display: flex; align-items: baseline; gap: 8px; width: 100%; border: 0;
+    background: none; text-align: left; padding: 5px 12px; cursor: pointer;
+    font: 12px var(--font-chrome); }
+  .ap-row:hover { background: var(--tint-region); }
+  .ap-eb { flex: none; min-width: 54px; font-weight: 600; color: var(--ink); }
+  .ap-vgl { flex: 1; min-width: 0; color: var(--ink-3); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; }
+  .ap-ln { flex: none; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .ap-skel { height: 40px; margin: 8px 12px; }
+
+  /* ---- primary sidebar: Text / Notes split ---- */
+  .sb { flex: none; width: 380px; position: relative; z-index: 50;
+    display: flex; flex-direction: column; min-height: 0;
+    background: var(--bg-raise); border-left: 1px solid var(--line); }
+  .sb-grip { position: absolute; left: -4px; top: 0; bottom: 0; width: 8px;
+    cursor: ew-resize; z-index: 6; touch-action: none; }
+  .sb-grip:hover::after, .sb-grip.active::after { content: ''; position: absolute;
+    left: 3px; top: 0; bottom: 0; width: 2px; background: var(--accent); }
+  .sb-top { flex: none; display: flex; align-items: center; padding: 6px 8px;
+    border-bottom: 1px solid var(--line); }
+  .apx-btn { border: 1px solid var(--line-2); background: none; color: var(--ink-2);
+    font: 600 10.5px var(--font-chrome); letter-spacing: .05em; text-transform: uppercase;
+    border-radius: var(--radius); padding: 3px 9px; cursor: pointer; }
+  .apx-btn:hover { border-color: var(--accent); color: var(--ink); }
+  .apx-btn[aria-pressed="true"] { background: var(--tint-select); color: var(--ink);
+    border-color: var(--accent); }
+
+  .sec { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .sec-text  { flex: var(--fT, 1.2) 1 0; }
+  .sec-notes { flex: var(--fN, .8) 1 0; }
+  .sec.collapsed { flex: 0 0 auto; }
+  .sec.collapsed .sec-b { display: none; }
+  /* one region collapsed: the other takes ALL free space (fractional flex-grow
+     sums < 1 would otherwise leave a dead gap) */
+  .sb.one .sec:not(.collapsed) { flex: 1 1 0; }
+  .sec-h { flex: none; display: flex; align-items: center; gap: 7px;
+    padding: 8px 12px 7px; border-bottom: 1px solid var(--line);
+    cursor: pointer; user-select: none; -webkit-user-select: none; }
+  .sec-l { font: 600 11px var(--font-chrome); letter-spacing: .08em;
+    text-transform: uppercase; color: var(--ink-3); }
+  .sec-sub { flex: 1; min-width: 0; font: 11px var(--font-chrome); color: var(--ink-3);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chev { flex: none; color: var(--ink-3); font-size: 10px; }
+  .sec-b { flex: 1; min-height: 0; overflow-y: auto; }
+  .sec-empty { padding: 12px; font: 14px/1.6 var(--font-read); color: var(--ink-3); }
+
+  .split { flex: none; height: 7px; position: relative; cursor: ns-resize;
+    touch-action: none; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .split::after { content: ''; position: absolute; left: 50%; top: 2px; width: 26px;
+    height: 2px; margin-left: -13px; border-radius: 2px; background: var(--line-2); }
+  .split:hover::after, .split.active::after { background: var(--accent); }
+  .sb.one .split { display: none; }
+
+  /* text region: smaller reading size; hieroglyph toggle in its header */
+  .sec-text .sec-b { --read-size: 14.5px; }
+  .hbtn { flex: none; border: 1px solid transparent; background: none; cursor: pointer;
+    padding: 1px 6px; border-radius: var(--radius); color: var(--ink-2); font-size: 15px;
+    line-height: 1.2;
+    font-family: "Noto Sans Egyptian Hieroglyphs", "Segoe UI Historic", sans-serif; }
+  .hbtn:hover { color: var(--ink); }
+  .hbtn[aria-pressed="true"] { background: var(--tint-select); border-color: var(--line-2);
+    color: var(--ink); }
+  .hl-block { grid-column: 1/-1; margin-top: 7px; padding-top: 6px;
+    border-top: 1px dashed var(--line); }
+  .hl-line { display: flex; align-items: baseline; gap: 8px; padding: 1px 0; }
+  .hl-ref { flex: none; min-width: 34px; font: 10.5px var(--font-chrome); color: var(--ink-3); }
+  .hl-t { font-family: "Noto Sans Egyptian Hieroglyphs", "Segoe UI Historic", sans-serif;
+    font-size: 17px; line-height: 1.5; }
+
+  /* notes region: merged commentary + entities, one line each, expandable */
+  .nt { border-bottom: 1px solid var(--line); }
+  .nt-line { display: flex; align-items: baseline; gap: 8px; width: 100%; border: 0;
+    background: none; text-align: left; padding: 7px 12px; cursor: pointer;
+    font: 13px var(--font-chrome); color: var(--ink); }
+  .nt-line:hover { background: var(--tint-region); }
+  .nt-dot { flex: none; align-self: center; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--ink-3); }
+  .nt-dot.plant { background: var(--ent-plant); } .nt-dot.cite { background: var(--ent-cite); }
+  .nt-dot.author { background: var(--ent-author); } .nt-dot.substance { background: var(--ent-substance); }
+  .nt-lab { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nt-n { flex: none; font: 10.5px var(--font-chrome); color: var(--ink-3); }
+  .nt-body { display: none; padding: 0 12px 9px 27px; }
+  .nt.open .nt-body { display: block; }
+  .nt-body p { margin: 0 0 6px; font: 12.5px/1.5 var(--font-chrome); color: var(--ink-2); }
+  .nt-refs { display: flex; flex-wrap: wrap; gap: 4px; }
+  .nt-ref { border: 1px solid var(--line); background: var(--bg); color: var(--ink-2);
+    font: 10.5px var(--font-chrome); border-radius: 99px; padding: 1px 8px; cursor: pointer; }
+  .nt-ref:hover { border-color: var(--accent); color: var(--ink); }
+  .nt-skel { height: 60px; margin: 10px; }
+</style>
+</head>
+<body>
+<script>const _s=localStorage.getItem('whlnext-scheme')||'archive',_m=localStorage.getItem('whlnext-mode')||'light';document.documentElement.dataset.scheme=_s;document.documentElement.dataset.mode=_m;</script>
+
+<div class="app">
+  <div class="stage"><div id="osd"></div></div>
+
+  <aside class="apx" id="apx" data-open="0" aria-label="Apparatus">
+    <div class="apx-inner">
+      <div class="apx-head">Apparatus</div>
+      <div class="apx-list" id="apxList"></div>
+    </div>
+  </aside>
+
+  <aside class="sb" id="sb" aria-label="Reading sidebar">
+    <div class="sb-grip" id="sbGrip" title="Resize"></div>
+    <div class="sb-top">
+      <button type="button" class="apx-btn" id="apxBtn" aria-pressed="false">Apparatus</button>
+    </div>
+    <section class="sec sec-text" id="secText">
+      <header class="sec-h" id="hdText">
+        <span class="sec-l">Text</span><span class="sec-sub" id="txtCol"></span>
+        <button type="button" class="hbtn" id="hieroBtn" aria-label="hieroglyphic"
+          aria-pressed="false">&#x132AA;</button>
+        <span class="chev" id="chevText">&#9662;</span>
+      </header>
+      <div class="sec-b" id="txtBody">
+        <div id="txt"></div>
+        <div class="sec-empty" id="txtEmpty" hidden>&mdash;</div>
+      </div>
+    </section>
+    <div class="split" id="split" title="Resize"></div>
+    <section class="sec sec-notes" id="secNotes">
+      <header class="sec-h" id="hdNotes">
+        <span class="sec-l">Notes</span><span class="sec-sub" id="ntCol"></span>
+        <span class="chev" id="chevNotes">&#9662;</span>
+      </header>
+      <div class="sec-b"><div id="ntList"></div></div>
+    </section>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0/build/openseadragon/openseadragon.min.js"></script>
+<script type="module">
+import { createBus } from './lib/whl-bus.js';
+import { mountChrome } from './lib/whl-chrome.js';
+import { createTextPane } from './lib/whl-text.js';
+import { createRoll, hieroHTML, COLS, DATA_COLS } from './explore-common.js';
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const bus = createBus();
+
+/* ---------- persisted panel state ---------- */
+const SKEY = 'whl-explore-split';
+let S = { w: 380, frac: .6, apx: false, text: true, notes: true, hiero: false, apxCols: {} };
+try { const s = JSON.parse(sessionStorage.getItem(SKEY) || 'null'); if (s && typeof s === 'object') S = { ...S, ...s }; } catch {}
+const save = () => { try { sessionStorage.setItem(SKEY, JSON.stringify(S)); } catch {} };
+
+/* ---------- chrome + column row ---------- */
+const chrome = mountChrome({
+  title: 'Papyrus Ebers', back: 'explore-concepts.html', bus,
+  book: { label: 'EB01', title: 'Papyrus Ebers', thumb: 'assets/thumbs/EB01.jpg' },
+  adv: false, mockSwitch: 'mode-only',
+  note: 'Split sidebar; drag edge and splitter; Esc clears.',
+});
+const colnav = document.createElement('div');
+colnav.className = 'colnav';
+colnav.innerHTML = '<span class="cn-l">Column</span>' +
+  COLS.map(c => `<button type="button" data-col="${c.key}">${+c.key.slice(4)}</button>`).join('');
+chrome.el.insertBefore(colnav, chrome.el.querySelector('.mock-switch'));
+colnav.addEventListener('click', e => {
+  const b = e.target.closest('button[data-col]');
+  if (!b) return;
+  bus.emit('select:clear', {});   /* explicit navigation unpins the panels */
+  viewer.goto(b.dataset.col);
+  retarget(b.dataset.col);
+});
+const colnavCur = col => colnav.querySelectorAll('button[data-col]')
+  .forEach(b => b.classList.toggle('cur', b.dataset.col === col));
+
+/* ---------- the roll (shared substrate) ---------- */
+const { viewer, store } = createRoll({
+  el: $('#osd'), bus, start: 'col-0045',
+  viewerOpts: { profile: { zoomOnSelect: false, viewportEvents: true } },
+});
+const regionsOf = col =>
+  (store.get(col) && store.get(col).source && store.get(col).source.regions) || [];
+const ebOf = label => { const m = /^Eb [0-9]+[a-z]?/.exec(label || ''); return m ? m[0] : ''; };
+
+/* ---------- highlight fan-out ---------- */
+let pane = null, lastH = null;
+bus.on('highlight', h => { lastH = h; viewer.applyHighlight(h); if (pane) pane.applyHighlight(h); });
+
+/* ---------- Text region: whl-text pane, stacked↔pair on sidebar width ---------- */
+let curCol = null, selActive = false;
+const txtEl = $('#txt'), txtEmpty = $('#txtEmpty');
+const layoutFor = () => S.w >= 470 ? 'pair' : 'stacked';
+
+function injectHiero() {
+  txtEl.querySelectorAll('.hl-block').forEach(n => n.remove());
+  if (!S.hiero) return;
+  const regs = regionsOf(curCol);
+  txtEl.querySelectorAll('.rg-el').forEach(n => {
+    const h = hieroHTML(regs[+n.dataset.r]);
+    if (h) { const d = document.createElement('div'); d.className = 'hl-block'; d.innerHTML = h; n.appendChild(d); }
+  });
+}
+function mountText(col) {
+  if (pane) { pane.destroy(); pane = null; }
+  txtEl.innerHTML = '';
+  const noData = !DATA_COLS.includes(col);
+  txtEmpty.hidden = !noData;
+  $('#txtCol').textContent = '· ' + +col.slice(4);
+  if (noData) return;
+  pane = createTextPane({ el: txtEl, bus, store, book: 'EB01', page: col, layout: layoutFor() });
+  if (lastH) pane.applyHighlight(lastH);
+  injectHiero();
+}
+function checkLayout() {
+  if (!pane) return;
+  const l = layoutFor();
+  if (txtEl.dataset.layout !== l) { pane.setLayout(l); injectHiero(); }
+}
+
+/* ---------- Notes region: commentary + entities, one line each ---------- */
+const ntList = $('#ntList');
+function renderNotes() {
+  $('#ntCol').textContent = '· ' + +curCol.slice(4);
+  if (!DATA_COLS.includes(curCol)) { ntList.innerHTML = '<div class="sec-empty">&mdash;</div>'; return; }
+  const ents = store.get(curCol) && store.get(curCol).entities;
+  if (!Array.isArray(ents)) { ntList.innerHTML = '<div class="skel nt-skel"></div>'; return; }
+  const regs = regionsOf(curCol);
+  const items = ents.map(e => ({ e, at: Math.min(...(e.mentions || []).map(m => m.region ?? 999), 999) }))
+    .sort((a, b) => a.at - b.at);
+  ntList.innerHTML = items.map(({ e }) => {
+    const cls = e.type === 'citation' ? 'cite' : (e.type || '');
+    const rs = [...new Set((e.mentions || []).map(m => m.region))];
+    const refs = rs.map(r => {
+      const lab = ebOf(regs[r] && regs[r].case_label) || 'r. ' + r;
+      return `<button type="button" class="nt-ref" data-r="${r}">${esc(lab)}</button>`;
+    }).join('');
+    return `<div class="nt"><button type="button" class="nt-line"><span class="nt-dot ${cls}"></span>` +
+      `<span class="nt-lab">${esc(e.label)}</span><span class="nt-n">${rs.length > 1 ? rs.length : ''}</span></button>` +
+      `<div class="nt-body"><p>${esc(e.summary || '')}</p><div class="nt-refs">${refs}</div></div></div>`;
+  }).join('');
+}
+ntList.addEventListener('click', e => {
+  const ref = e.target.closest('.nt-ref');
+  if (ref) { viewer.select(curCol, +ref.dataset.r); return; }
+  const line = e.target.closest('.nt-line');
+  if (line) line.closest('.nt').classList.toggle('open');
+});
+
+/* ---------- Apparatus: case concordance for the visible columns ---------- */
+const apxEl = $('#apx'), apxList = $('#apxList'), apxBtn = $('#apxBtn');
+let visCols = ['col-0045'], visKey = '';
+const lineRange = r => {
+  const L = r.lines || []; if (!L.length) return '';
+  const a = L[0], b = L[L.length - 1]; if (a === b) return a;
+  const [pa] = a.split(','), [pb, sb] = b.split(',');
+  return pa === pb ? `${a}–${sb}` : `${a}–${b}`;
+};
+function renderApx() {
+  if (!S.apx) return;
+  apxList.innerHTML = visCols.map(k => {
+    const open = S.apxCols[k] !== false;
+    let rows;
+    if (!DATA_COLS.includes(k)) rows = '<div class="sec-empty">&mdash;</div>';
+    else if (!regionsOf(k).length) rows = '<div class="skel ap-skel"></div>';
+    else rows = regionsOf(k).map((r, i) => {
+      const eb = ebOf(r.case_label);
+      if (!eb) return '';
+      const rest = (r.case_label || '').slice(eb.length).replace(/^[,\s]+/, '');
+      return `<button type="button" class="ap-row" data-col="${k}" data-r="${i}">` +
+        `<span class="ap-eb">${esc(eb)}</span><span class="ap-vgl">${esc(rest)}</span>` +
+        `<span class="ap-ln">${esc(lineRange(r))}</span></button>`;
+    }).join('');
+    return `<section class="ap-sec${open ? '' : ' collapsed'}" data-col="${k}">` +
+      `<header class="sec-h ap-h"><span class="sec-l">Column ${+k.slice(4)}</span>` +
+      `<span class="sec-sub"></span><span class="chev">${open ? '&#9662;' : '&#9656;'}</span></header>` +
+      `<div class="ap-b">${rows}</div></section>`;
+  }).join('');
+}
+apxList.addEventListener('click', e => {
+  const row = e.target.closest('.ap-row');
+  if (row) { viewer.select(row.dataset.col, +row.dataset.r); return; }
+  const h = e.target.closest('.ap-h');
+  if (h) {
+    const k = h.closest('.ap-sec').dataset.col;
+    S.apxCols[k] = S.apxCols[k] === false; save(); renderApx();
+  }
+});
+bus.on('viewport', v => {
+  const vis = COLS.filter(c => {
+    const r = viewer.worldRect(c.key);
+    return r && r.x < v.x + v.w && r.x + r.w > v.x;
+  }).map(c => c.key);
+  const key = vis.join();
+  if (vis.length && key !== visKey) { visKey = key; visCols = vis; renderApx(); }
+});
+
+/* ---------- selection / view wiring ---------- */
+function retarget(col) {
+  if (col === curCol) return;
+  curCol = col;
+  mountText(col); renderNotes(); colnavCur(col);
+}
+/* smooth scroll + verify-and-jump fallback (throttled panes crawl — lib seam) */
+function scrollText(region) {
+  requestAnimationFrame(() => { if (pane) pane.scrollTo(region); });
+  setTimeout(() => {
+    const n = txtEl.querySelector(`.rg-el[data-r="${region}"]`), b = $('#txtBody');
+    if (!n || !pane) return;
+    const nr = n.getBoundingClientRect(), br = b.getBoundingClientRect();
+    if (nr.top > br.bottom - 40 || nr.bottom < br.top + 40) pane.scrollTo(region, { instant: true });
+  }, 450);
+}
+bus.on('select', p => {
+  if (!p || p.page == null || p.region == null) return;
+  selActive = true;
+  retarget(p.page);
+  scrollText(p.region);
+});
+bus.on('select:clear', () => { selActive = false; });
+bus.on('view', p => {
+  if (!p || !p.page) return;
+  colnavCur(p.page);
+  if (!selActive) retarget(p.page);
+});
+bus.on('layer', ev => {   /* deferred: run after whl-text's own re-render */
+  if (!ev || ev.status !== 'ready') return;
+  if (ev.page === curCol && ['source', 'associations', 'entities'].includes(ev.name))
+    requestAnimationFrame(() => { injectHiero(); renderNotes(); });
+  if (ev.name === 'source' && visCols.includes(ev.page)) requestAnimationFrame(renderApx);
+});
+
+/* ---------- panel state application ---------- */
+const sb = $('#sb'), secText = $('#secText'), secNotes = $('#secNotes');
+const setRail = () => document.documentElement.style
+  .setProperty('--rail-w', (S.w + (S.apx ? 260 : 0)) + 'px');
+function applyGeom() {
+  S.w = Math.max(300, Math.min(620, S.w));
+  S.frac = Math.max(.12, Math.min(.88, S.frac));
+  sb.style.width = S.w + 'px';
+  sb.style.setProperty('--fT', S.frac);
+  sb.style.setProperty('--fN', 1 - S.frac);
+  setRail(); checkLayout();
+}
+function applySections() {
+  secText.classList.toggle('collapsed', !S.text);
+  secNotes.classList.toggle('collapsed', !S.notes);
+  sb.classList.toggle('one', !S.text || !S.notes);
+  $('#chevText').innerHTML = S.text ? '&#9662;' : '&#9656;';
+  $('#chevNotes').innerHTML = S.notes ? '&#9662;' : '&#9656;';
+}
+function applyApx() {
+  apxEl.dataset.open = S.apx ? '1' : '0';
+  apxBtn.setAttribute('aria-pressed', String(S.apx));
+  setRail();
+  if (S.apx) renderApx();
+}
+$('#hdText').addEventListener('click', e => {
+  if (e.target.closest('#hieroBtn')) return;
+  S.text = !S.text; applySections(); save();
+});
+$('#hdNotes').addEventListener('click', () => { S.notes = !S.notes; applySections(); save(); });
+$('#hieroBtn').addEventListener('click', () => {
+  S.hiero = !S.hiero;
+  $('#hieroBtn').setAttribute('aria-pressed', String(S.hiero));
+  injectHiero(); save();
+});
+apxBtn.addEventListener('click', () => { S.apx = !S.apx; applyApx(); save(); });
+
+/* ---------- drags: sidebar width (live layout) + splitter ---------- */
+function dragify(el, onMove) {
+  let id = null;
+  el.addEventListener('pointerdown', e => {
+    if (e.button !== 0) return;
+    id = e.pointerId; el.classList.add('active');
+    try { el.setPointerCapture(id); } catch {}
+    e.preventDefault();
+  });
+  el.addEventListener('pointermove', e => { if (id !== null && e.pointerId === id) onMove(e); });
+  const end = () => { if (id === null) return; id = null; el.classList.remove('active'); save(); };
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+}
+dragify($('#sbGrip'), e => { S.w = innerWidth - e.clientX; applyGeom(); });
+dragify($('#split'), e => {
+  const a = secText.getBoundingClientRect(), b = secNotes.getBoundingClientRect();
+  const heads = 33, total = (b.bottom - a.top) - 2 * heads - 7;
+  if (total > 60) { S.frac = (e.clientY - a.top - heads) / total; applyGeom(); }
+});
+
+/* ---------- keyboard: arrows pan columns, Esc clears ---------- */
+document.addEventListener('keydown', e => {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (/input|select|textarea/i.test(e.target.tagName)) return;
+  if (e.key === 'ArrowLeft') { viewer.next(); e.preventDefault(); }
+  else if (e.key === 'ArrowRight') { viewer.prev(); e.preventDefault(); }
+  else if (e.key === 'Escape') {
+    bus.emit('select:clear', {});
+    ntList.querySelectorAll('.nt.open').forEach(n => n.classList.remove('open'));
+  }
+});
+
+/* ---------- boot ---------- */
+applyGeom(); applySections(); applyApx();
+$('#hieroBtn').setAttribute('aria-pressed', String(S.hiero));
+retarget(viewer.current() || 'col-0045');
+
+window.__whl = { bus, chrome, store, viewer, get pane() { return pane; } };
+</script>
+</body>
+</html>
